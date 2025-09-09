@@ -36,7 +36,10 @@
       "Bash(gh pr edit:*)",
       "Bash(gh pr merge:*)",
       "Bash(git stash:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(gh run watch:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

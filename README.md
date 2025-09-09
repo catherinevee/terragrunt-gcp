@@ -14,32 +14,28 @@ terragrunt-gcp/
 │   ├── terragrunt.hcl              # Root configuration
 │   ├── accounts/
 │   │   └── account.hcl              # Organization settings
-│   ├── environments/
-│   │   ├── dev/                     # Development environment
-│   │   │   ├── env.hcl
-│   │   │   ├── dev-us-central1-vpc.hcl
-│   │   │   └── dev-us-central1-gke.hcl
-│   │   ├── staging/                 # Staging environment
-│   │   │   └── env.hcl
-│   │   └── prod/                    # Production environment
-│   │       └── env.hcl
-│   └── modules/
-│       ├── networking/              # VPC, subnets, firewall
-│       │   └── vpc/
-│       ├── compute/                 # GKE, Cloud Run
-│       │   └── gke/
-│       ├── data/                    # Cloud SQL, GCS
-│       │   └── cloud-sql/
-│       └── security/                # IAM, KMS
-│           └── iam/
+│   └── environments/
+│       ├── dev/                     # Development environment
+│       │   ├── env.hcl
+│       │   └── us-central1/         # Region-specific resources
+│       │       ├── network.hcl      # VPC (Terraform Registry)
+│       │       ├── gke.hcl          # GKE cluster (Terraform Registry)
+│       │       └── cloud-sql.hcl    # PostgreSQL (Terraform Registry)
+│       ├── staging/                 # Staging environment
+│       │   └── env.hcl
+│       └── prod/                    # Production environment
+│           └── env.hcl
 ├── .github/
-│   ├── workflows/                   # CI/CD pipelines
-│   │   ├── terraform-pipeline.yml   # Unified pipeline (plan/apply/destroy)
-│   │   ├── drift-detection.yml      # Scheduled drift checks
-│   │   └── setup-infrastructure.yml # Initial setup
-│   └── actions/
-│       └── setup-environment/       # Unified setup action
-└── CLAUDE.md                        # AI assistant guide
+│   └── workflows/                   # CI/CD pipelines
+│       ├── ci-cd.yml               # Main CI/CD pipeline
+│       ├── terraform-pipeline.yml   # Terraform operations
+│       ├── drift-detection.yml      # Scheduled drift checks
+│       └── setup-infrastructure.yml # Initial GCP setup
+├── docs/                           # Documentation
+├── scripts/                        # Automation scripts
+├── test/                          # Test suites
+├── policies/                      # OPA policies
+└── CLAUDE.md                      # AI assistant guide
 ```
 
 ## 🚀 Quick Start

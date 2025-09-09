@@ -1,27 +1,83 @@
-name: "[DEPRECATED] Terraform Pipeline"
-
-# This workflow has been deprecated and replaced by main.yml
-# It exists only to prevent GitHub Actions failures for historical commits
-# DO NOT USE - Will be removed after GitHub cache clears
+name: Terraform Pipeline
 
 on:
   push:
+    branches: [main, develop]
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/**'
   pull_request:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
+    inputs:
+      operation:
+        description: 'Operation to perform'
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      environment:
+        description: 'Environment to target'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+env:
+  TERRAFORM_VERSION: '1.5.7'
+  TERRAGRUNT_VERSION: '0.52.0'
 
 jobs:
-  deprecated-notice:
+  terraform:
+    name: Terraform ${{ github.event.inputs.operation || 'plan' }}
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    
     steps:
-      - name: Deprecation Notice
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Setup Terragrunt
         run: |
-          echo "::warning::This workflow has been DEPRECATED"
-          echo "This workflow has been replaced by:"
-          echo "  - .github/workflows/main.yml (main orchestrator)"
-          echo "  - .github/workflows/reusable-terraform.yml (terraform operations)"
-          echo ""
-          echo "Please update your references to use the new consolidated workflows."
-          echo "This stub will be removed once GitHub stops referencing it."
-          exit 0
+          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Configure GCP Credentials
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Terragrunt Init
+        working-directory: infrastructure/environments/${{ github.event.inputs.environment || 'dev' }}
+        run: terragrunt run-all init --terragrunt-non-interactive
+
+      - name: Terragrunt Plan
+        if: github.event.inputs.operation == 'plan' || github.event_name == 'pull_request'
+        working-directory: infrastructure/environments/${{ github.event.inputs.environment || 'dev' }}
+        run: terragrunt run-all plan --terragrunt-non-interactive
+
+      - name: Terragrunt Apply
+        if: github.event.inputs.operation == 'apply' && github.ref == 'refs/heads/main'
+        working-directory: infrastructure/environments/${{ github.event.inputs.environment || 'dev' }}
+        run: terragrunt run-all apply --terragrunt-non-interactive --auto-approve
+
+      - name: Terragrunt Destroy
+        if: github.event.inputs.operation == 'destroy'
+        working-directory: infrastructure/environments/${{ github.event.inputs.environment || 'dev' }}
+        run: terragrunt run-all destroy --terragrunt-non-interactive --auto-approve

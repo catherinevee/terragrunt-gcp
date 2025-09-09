@@ -1,29 +1,178 @@
-name: "[DEPRECATED] Setup Infrastructure"
-
-# This workflow has been deprecated and replaced by main.yml
-# It exists only to prevent GitHub Actions failures for historical commits
-# DO NOT USE - Will be removed after GitHub cache clears
+name: Setup Infrastructure
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
+    inputs:
+      project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      organization:
+        description: 'Organization name'
+        required: true
+        default: 'yanka'
+        type: string
+      region:
+        description: 'Primary GCP Region'
+        required: true
+        default: 'us-central1'
+        type: string
+      enable_apis:
+        description: 'Enable required GCP APIs'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  TERRAFORM_VERSION: '1.5.7'
+  TERRAGRUNT_VERSION: '0.52.0'
 
 jobs:
-  deprecated-notice:
+  setup:
+    name: Initial Setup
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Deprecation Notice
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Setup Terragrunt
         run: |
-          echo "::warning::This workflow has been DEPRECATED"
-          echo "This workflow has been replaced by:"
-          echo "  - .github/workflows/main.yml (main orchestrator)"
-          echo "  - .github/workflows/reusable-setup.yml (setup operations)"
-          echo ""
-          echo "To setup infrastructure, use:"
-          echo "  gh workflow run main.yml -f operation=setup -f environment=dev"
-          echo ""
-          echo "This stub will be removed once GitHub stops referencing it."
-          exit 0
+          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+
+      - name: Configure GCP Credentials
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable Required APIs
+        if: inputs.enable_apis
+        run: |
+          echo "🔧 Enabling required GCP APIs..."
+          
+          APIS=(
+            "compute.googleapis.com"
+            "container.googleapis.com"
+            "sqladmin.googleapis.com"
+            "cloudresourcemanager.googleapis.com"
+            "iam.googleapis.com"
+            "cloudkms.googleapis.com"
+            "secretmanager.googleapis.com"
+            "monitoring.googleapis.com"
+            "logging.googleapis.com"
+            "servicenetworking.googleapis.com"
+            "redis.googleapis.com"
+            "cloudfunctions.googleapis.com"
+            "run.googleapis.com"
+            "artifactregistry.googleapis.com"
+          )
+          
+          for api in "${APIS[@]}"; do
+            echo "Enabling $api..."
+            gcloud services enable "$api" --project="${{ inputs.project_id }}"
+          done
+          
+          echo "✅ All required APIs enabled"
+
+      - name: Create State Bucket
+        run: |
+          echo "🪣 Creating Terraform state bucket..."
+          
+          BUCKET_NAME="terraform-state-${{ inputs.project_id }}"
+          LOCATION="${{ inputs.region }}"
+          
+          # Check if bucket exists
+          if gsutil ls -b "gs://${BUCKET_NAME}" 2>/dev/null; then
+            echo "Bucket gs://${BUCKET_NAME} already exists"
+          else
+            # Create bucket
+            gsutil mb -p "${{ inputs.project_id }}" -l "${LOCATION}" "gs://${BUCKET_NAME}"
+            
+            # Enable versioning
+            gsutil versioning set on "gs://${BUCKET_NAME}"
+            
+            # Set lifecycle policy for old versions
+            cat > lifecycle.json <<EOF
+          {
+            "lifecycle": {
+              "rule": [
+                {
+                  "action": {"type": "Delete"},
+                  "condition": {
+                    "numNewerVersions": 10,
+                    "isLive": false
+                  }
+                }
+              ]
+            }
+          }
+          EOF
+            gsutil lifecycle set lifecycle.json "gs://${BUCKET_NAME}"
+            
+            echo "✅ State bucket created: gs://${BUCKET_NAME}"
+          fi
+
+      - name: Setup Service Accounts
+        run: |
+          echo "👤 Setting up service accounts..."
+          
+          # Terraform service account
+          SA_NAME="terraform-sa"
+          SA_EMAIL="${SA_NAME}@${{ inputs.project_id }}.iam.gserviceaccount.com"
+          
+          # Check if SA exists
+          if gcloud iam service-accounts describe "${SA_EMAIL}" --project="${{ inputs.project_id }}" 2>/dev/null; then
+            echo "Service account ${SA_EMAIL} already exists"
+          else
+            # Create service account
+            gcloud iam service-accounts create "${SA_NAME}" \
+              --display-name="Terraform Service Account" \
+              --project="${{ inputs.project_id }}"
+            
+            # Grant necessary roles
+            ROLES=(
+              "roles/editor"
+              "roles/resourcemanager.projectIamAdmin"
+              "roles/storage.admin"
+            )
+            
+            for role in "${ROLES[@]}"; do
+              gcloud projects add-iam-policy-binding "${{ inputs.project_id }}" \
+                --member="serviceAccount:${SA_EMAIL}" \
+                --role="${role}"
+            done
+            
+            echo "✅ Service account created: ${SA_EMAIL}"
+          fi
+
+      - name: Initialize Terragrunt
+        run: |
+          echo "🚀 Initializing Terragrunt..."
+          cd infrastructure
+          terragrunt init --terragrunt-non-interactive
+          echo "✅ Terragrunt initialized successfully"
+
+      - name: Summary
+        run: |
+          echo "## 📋 Infrastructure Setup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project ID**: ${{ inputs.project_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Organization**: ${{ inputs.organization }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ inputs.region }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **State Bucket**: terraform-state-${{ inputs.project_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Run the Terraform Pipeline workflow to deploy infrastructure" >> $GITHUB_STEP_SUMMARY
+          echo "2. Configure environment-specific variables" >> $GITHUB_STEP_SUMMARY
+          echo "3. Set up monitoring and alerts" >> $GITHUB_STEP_SUMMARY

@@ -44,9 +44,12 @@ versioning:
     random: "3.5.1"  # Pinned exact version
     
   modules:
-    source_pattern: "git::https://github.com/yanka/terraform-modules.git//modules/{module}?ref={version}"
+    source_pattern: "tfr:///terraform-google-modules/{module}/google?version={version}"
     versioning: "Semantic versioning (MAJOR.MINOR.PATCH)"
-    example: "git::https://github.com/yanka/terraform-modules.git//modules/vpc?ref=v1.2.3"
+    examples:
+      network: "tfr:///terraform-google-modules/network/google?version=9.0.0"
+      gke: "tfr:///terraform-google-modules/kubernetes-engine/google?version=29.0.0"
+      cloud_sql: "tfr:///GoogleCloudPlatform/sql-db/google//modules/postgresql?version=18.0.0"
 ```
 
 ### Architecture Summary
@@ -454,74 +457,109 @@ compliance:
 
 ### Directory Mapping
 ```
-infrastructure/
-├── terragrunt.hcl                    # Root: remote state, providers
-├── accounts/account.hcl              # Organization settings
-├── environments/
-│   └── {env}/
-│       ├── env.hcl                   # Environment variables
-│       └── {env}-{region}-{resource}.hcl  # Resource configs
-├── modules/
-│   ├── networking/                   # VPC, subnets, LB, CDN
-│   ├── compute/                      # GKE, Cloud Run, Functions
-│   ├── data/                         # Databases, storage
-│   └── security/                     # IAM, KMS, secrets
-└── .github/workflows/                # CI/CD pipelines
+terragrunt-gcp/
+├── infrastructure/
+│   ├── terragrunt.hcl              # Root configuration
+│   ├── accounts/
+│   │   └── account.hcl              # Organization settings
+│   └── environments/
+│       ├── dev/
+│       │   ├── env.hcl              # Dev environment config
+│       │   └── us-central1/         # Region-specific resources
+│       │       ├── network.hcl      # VPC using Terraform Registry
+│       │       ├── gke.hcl          # GKE using Terraform Registry
+│       │       └── cloud-sql.hcl    # Cloud SQL using Terraform Registry
+│       ├── staging/
+│       │   └── env.hcl
+│       └── prod/
+│           └── env.hcl
+├── .github/
+│   └── workflows/
+│       ├── ci-cd.yml                # Main CI/CD pipeline
+│       ├── terraform-pipeline.yml   # Terraform operations
+│       ├── drift-detection.yml      # Drift detection
+│       └── setup-infrastructure.yml # Initial setup
+├── docs/                            # Documentation
+├── scripts/                         # Automation scripts
+├── test/                           # Test files
+├── policies/                       # OPA policies
+└── CLAUDE.md                       # AI assistant guide
 ```
 
 ### Naming Conventions
 ```yaml
 resources: "{environment}-{region}-{resource_type}"
-files: "{environment}-{region}-{resource}.hcl"
-modules: "{category}/{resource_type}"
+files: "{region}/{resource}.hcl"  # Organized by region within environment
+modules: "Terraform Registry modules from terraform-google-modules"
 labels:
   environment: [dev, staging, prod]
-  component: [networking, compute, data, security]
-  resource: [specific-resource-name]
+  region: [us-central1, europe-west1]
   managed_by: terragrunt
 ```
 
 ---
 
-## 🔧 Module Templates
+## 🔧 Module Usage
 
-### Creating a New Module
+### Using Terraform Registry Modules
 ```hcl
-# modules/{category}/{resource}/main.tf
+# infrastructure/environments/{env}/{region}/{resource}.hcl
 
-# Resource definitions
-resource "google_{resource_type}" "{name}" {
-  name    = var.name
-  project = var.project_id
-  region  = var.region
+terraform {
+  # Source from Terraform Registry
+  source = "tfr:///terraform-google-modules/{module}/google?version={version}"
+}
+
+include "root" {
+  path = find_in_parent_folders()
+}
+
+include "env" {
+  path = find_in_parent_folders("env.hcl")
+}
+
+# Dependencies if needed
+dependency "network" {
+  config_path = "../network"
   
-  # Resource-specific configuration
+  mock_outputs = {
+    network_name = "mock-network"
+    subnets_names = ["mock-subnet"]
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
+}
+
+locals {
+  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  environment = local.env_vars.locals.environment
+  region = "us-central1"
+}
+
+inputs = {
+  project_id = "${local.environment}-project"
+  # Module-specific inputs based on registry module requirements
+}
+```
+
+### Available Registry Modules
+```yaml
+networking:
+  vpc: "terraform-google-modules/network/google"
+  firewall: "terraform-google-modules/network/google//modules/firewall-rules"
+  nat: "terraform-google-modules/cloud-nat/google"
   
-  labels = var.labels
-}
-
-# modules/{category}/{resource}/variables.tf
-variable "name" {
-  description = "Resource name"
-  type        = string
-}
-
-variable "project_id" {
-  description = "GCP Project ID"
-  type        = string
-}
-
-variable "labels" {
-  description = "Resource labels"
-  type        = map(string)
-  default     = {}
-}
-
-# modules/{category}/{resource}/outputs.tf
-output "id" {
-  description = "Resource ID"
-  value       = google_{resource_type}.{name}.id
-}
+compute:
+  gke: "terraform-google-modules/kubernetes-engine/google"
+  cloud_run: "GoogleCloudPlatform/cloud-run/google"
+  
+data:
+  cloud_sql: "GoogleCloudPlatform/sql-db/google"
+  gcs: "terraform-google-modules/cloud-storage/google"
+  bigquery: "terraform-google-modules/bigquery/google"
+  
+security:
+  iam: "terraform-google-modules/iam/google"
+  kms: "terraform-google-modules/kms/google"
 ```
 
 ---
