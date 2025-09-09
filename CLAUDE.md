@@ -16,11 +16,37 @@ project_type: infrastructure_as_code
 platform: google_cloud_platform
 iac_tool: terragrunt
 orchestration: terraform
+terraform_version: "1.5.7"  # Exact version - see .terraform-version
+terragrunt_version: "0.52.0"  # Exact version - see .terragrunt-version
 environments: [dev, staging, prod]
 primary_region: us-central1
 deployment_method: gitops
 ci_cd: github_actions
 state_backend: gcs
+compliance_framework: [SOC2, PCI-DSS, HIPAA]
+maturity_level: production_grade
+```
+
+### Version Management Strategy
+```yaml
+versioning:
+  terraform:
+    version: "1.5.7"  # Pinned exact version
+    upgrade_policy: "Quarterly review, test in dev->staging->prod"
+    
+  terragrunt:
+    version: "0.52.0"  # Pinned exact version
+    upgrade_policy: "Align with Terraform upgrades"
+    
+  providers:
+    google: "5.10.0"  # Pinned exact version
+    google-beta: "5.10.0"  # Pinned exact version
+    random: "3.5.1"  # Pinned exact version
+    
+  modules:
+    source_pattern: "git::https://github.com/yanka/terraform-modules.git//modules/{module}?ref={version}"
+    versioning: "Semantic versioning (MAJOR.MINOR.PATCH)"
+    example: "git::https://github.com/yanka/terraform-modules.git//modules/vpc?ref=v1.2.3"
 ```
 
 ### Architecture Summary
@@ -30,6 +56,256 @@ User → Load Balancer → CDN → [Cloud Run | GKE | App Engine]
                     [Cloud SQL | Redis | BigQuery]
                               ↓
                     [Pub/Sub | Cloud Functions]
+```
+
+### Dependency Management Strategy
+```yaml
+dependency_resolution:
+  order:
+    1. Core networking (VPC, subnets)
+    2. Security foundations (IAM, KMS)
+    3. Data layer (databases, storage)
+    4. Compute layer (GKE, Cloud Run)
+    5. Application layer (services)
+    
+  mock_outputs:
+    purpose: "Enable parallel development and testing"
+    pattern: |
+      dependency "vpc" {
+        config_path = "../networking/vpc"
+        mock_outputs = {
+          network_id = "mock-vpc-id"
+          self_link = "mock-vpc-self-link"
+        }
+        mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
+      }
+    
+  circular_dependency_prevention:
+    - Use explicit dependency declarations
+    - Avoid bidirectional dependencies
+    - Use data sources for cross-environment references
+    - Implement dependency graph validation in CI
+
+dependency_graph_validation:
+  command: "terragrunt graph-dependencies | dot -Tpng > dependencies.png"
+  ci_check: "terragrunt graph-dependencies | grep -q 'cycle' && exit 1 || exit 0"
+```
+
+### Blast Radius Control
+```yaml
+blast_radius_strategy:
+  principles:
+    - Isolate environments completely
+    - Separate state files per component
+    - Use resource-level locks
+    - Implement gradual rollouts
+    
+  environment_isolation:
+    networking:
+      - Separate VPCs per environment
+      - No cross-environment peering in prod
+      - Dedicated service accounts
+    
+    state_management:
+      - Separate GCS buckets per environment
+      - Component-level state files
+      - State file encryption with separate KMS keys
+    
+  change_control:
+    small_changes:
+      - Single resource updates
+      - Automated approval for dev
+      - Manual approval for staging/prod
+    
+    large_changes:
+      - Blue-green deployments
+      - Canary releases
+      - Feature flags
+      - Rollback plans required
+    
+  resource_limits:
+    per_deployment:
+      max_resources: 50
+      max_deletion: 10
+      require_approval: true
+    
+    protection_rules:
+      - Prevent deletion of stateful resources
+      - Require explicit confirmation for data resources
+      - Block changes during business hours (prod)
+```
+
+### Security Baselines and Compliance
+```yaml
+security_baselines:
+  iam:
+    service_accounts:
+      - No Owner or Editor roles
+      - Unique per service/environment
+      - Key rotation every 90 days
+      - Workload Identity for GKE
+    
+    least_privilege:
+      - Custom roles preferred
+      - Time-bound access (IAM Conditions)
+      - Regular access reviews
+      - Break-glass procedures documented
+  
+  network:
+    vpc_security:
+      - Private Google Access enabled
+      - VPC Flow Logs enabled
+      - Private service networking for databases
+      - Firewall rules with source restrictions
+    
+    encryption:
+      - TLS 1.2+ for all traffic
+      - HTTPS-only load balancers
+      - Cloud Armor DDoS protection
+      - SSL policies enforced
+  
+  data:
+    encryption_at_rest:
+      - Customer-managed KMS keys
+      - Separate keys per environment
+      - Key rotation enabled
+      - HSM for production keys
+    
+    data_loss_prevention:
+      - DLP policies for PII
+      - VPC Service Controls
+      - Access Transparency logs
+      - Data residency compliance
+  
+  compliance_frameworks:
+    soc2:
+      - Audit logging enabled
+      - Change management process
+      - Incident response procedures
+      - Annual security reviews
+    
+    pci_dss:
+      - Network segmentation
+      - Tokenization for card data
+      - WAF rules configured
+      - Quarterly vulnerability scans
+    
+    hipaa:
+      - BAA with Google Cloud
+      - PHI encryption requirements
+      - Access controls and audit logs
+      - Backup and disaster recovery
+
+validation_rules:
+  pre_deployment:
+    - Security scanning (gcloud scc)
+    - Policy validation (OPA/Sentinel)
+    - Cost estimation (Infracost)
+    - Compliance checks
+  
+  post_deployment:
+    - Configuration drift detection
+    - Security posture verification
+    - Performance baseline establishment
+    - Cost tracking initialization
+```
+
+### Cost Control Patterns
+```yaml
+cost_optimization:
+  compute:
+    instance_selection:
+      - Use E2 instances for dev/staging
+      - Spot/Preemptible for batch workloads
+      - Committed use discounts for prod
+      - Right-sizing based on metrics
+    
+    autoscaling:
+      dev:
+        min_nodes: 1
+        max_nodes: 3
+      staging:
+        min_nodes: 2
+        max_nodes: 5
+      prod:
+        min_nodes: 3
+        max_nodes: 20
+    
+  storage:
+    lifecycle_policies:
+      - Archive after 90 days
+      - Delete dev backups after 7 days
+      - Compress logs before storage
+      - Use regional instead of multi-regional
+    
+    optimization:
+      - Deduplication enabled
+      - Appropriate storage classes
+      - Snapshot retention limits
+      - Unused resource cleanup
+  
+  networking:
+    traffic_optimization:
+      - CDN for static content
+      - Regional load balancers where possible
+      - Minimize cross-region traffic
+      - Cloud NAT instead of NAT instances
+    
+    cost_monitoring:
+      - Per-label cost tracking
+      - Budget alerts configured
+      - Anomaly detection enabled
+      - Weekly cost reports
+  
+  database:
+    instance_optimization:
+      - Dev/staging shutdown schedules
+      - Read replicas vs larger instances
+      - Connection pooling
+      - Query optimization
+    
+    backup_strategy:
+      dev:
+        retention_days: 7
+        frequency: daily
+      staging:
+        retention_days: 14
+        frequency: daily
+      prod:
+        retention_days: 30
+        frequency: continuous
+
+cost_governance:
+  budgets:
+    dev:
+      monthly_limit: 5000
+      alert_thresholds: [50, 80, 100]
+    staging:
+      monthly_limit: 10000
+      alert_thresholds: [50, 80, 100]
+    prod:
+      monthly_limit: 50000
+      alert_thresholds: [50, 80, 90, 100]
+  
+  policies:
+    - Require cost estimates for changes > $100/month
+    - Automatic resource cleanup in dev after 7 days idle
+    - Approval required for expensive resources
+    - Monthly cost review meetings
+  
+  tagging_strategy:
+    required_labels:
+      - environment
+      - team
+      - cost_center
+      - project
+      - owner
+    
+    cost_allocation:
+      - Export to BigQuery
+      - Dashboard in Data Studio
+      - Chargeback reports
+      - Optimization recommendations
 ```
 
 ---

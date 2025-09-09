@@ -1,79 +1,74 @@
 # Account-level configuration
+# This file contains organization-wide settings that apply to all environments
 
 locals {
   # Organization details
-  organization = "acme"  # Change this to your organization name
+  organization = "yanka"  # Changed from default - this should match your organization name
+  billing_account = "XXXXXX-XXXXXX-XXXXXX"  # Your GCP billing account ID
   
-  # GCP Account/Project configuration
-  project_id = get_env("GCP_PROJECT_ID", "acme-platform-prod")
+  # Project naming convention: {organization}-{environment}-project
+  # This will be overridden by environment-specific configurations
+  project_id = "${local.organization}-${local.environment}-project"
   
-  # Billing account
-  billing_account = get_env("GCP_BILLING_ACCOUNT", "")
+  # Default domain for the organization
+  domain = "${local.organization}.com"
   
-  # Organization ID (if using organization-level resources)
-  org_id = get_env("GCP_ORG_ID", "")
-  
-  # Default settings
-  default_region = "europe-west1"
-  default_zone   = "europe-west1-b"
-  
-  # Account-wide labels
-  account_labels = {
+  # Organization-wide tags
+  organization_tags = {
     organization = local.organization
-    cost_center  = "platform"
-    team         = "infrastructure"
+    cost_center  = "engineering"
+    team         = "platform"
   }
   
-  # Service account for Terraform/Terragrunt operations
-  terraform_service_account = "terraform@${local.project_id}.iam.gserviceaccount.com"
-  
-  # Enable APIs list
-  enabled_apis = [
-    "compute.googleapis.com",
-    "container.googleapis.com",
-    "run.googleapis.com",
-    "cloudfunctions.googleapis.com",
-    "storage.googleapis.com",
-    "bigquery.googleapis.com",
-    "sqladmin.googleapis.com",
-    "secretmanager.googleapis.com",
-    "cloudkms.googleapis.com",
-    "pubsub.googleapis.com",
-    "redis.googleapis.com",
-    "servicenetworking.googleapis.com",
-    "vpcaccess.googleapis.com",
-    "cloudresourcemanager.googleapis.com",
-    "iam.googleapis.com",
-    "logging.googleapis.com",
-    "monitoring.googleapis.com",
-    "cloudbilling.googleapis.com",
-    "billingbudgets.googleapis.com",
-    "cloudasset.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "cloudscheduler.googleapis.com",
-    "cloudtasks.googleapis.com"
-  ]
-  
-  # Notification channels for alerts
+  # Notification settings
   notification_channels = {
-    email = get_env("ALERT_EMAIL", "platform-team@acme.com")
-    slack = get_env("SLACK_WEBHOOK", "")
+    email = "alerts@${local.domain}"
+    slack = "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+  }
+  
+  # Compliance and governance settings
+  compliance = {
+    data_residency     = "US"  # US, EU, ASIA
+    encryption_type    = "GOOGLE_MANAGED"  # GOOGLE_MANAGED or CMEK
+    retention_days     = 90
+    audit_log_enabled  = true
+  }
+  
+  # Backup configuration
+  backup = {
+    enabled              = true
+    retention_days       = 30
+    cross_region_enabled = true
+    backup_regions       = ["us-west1", "us-east1"]
+  }
+  
+  # Security settings
+  security = {
+    enable_vpc_flow_logs    = true
+    enable_firewall_logging = true
+    enable_audit_logs       = true
+    enable_dlp              = false  # Data Loss Prevention
+    enable_binary_auth      = false  # Binary Authorization for GKE
+  }
+  
+  # Network configuration
+  network = {
+    enable_private_google_access = true
+    enable_private_ip_google_apis = true
+    nat_ip_allocate_option       = "AUTO_ONLY"
+    nat_source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  }
+  
+  # Default resource quotas
+  quotas = {
+    max_nodes_per_cluster = 100
+    max_instances_per_zone = 50
+    max_storage_tb = 10
   }
   
   # Cost management
-  budget_alert_thresholds = [0.5, 0.75, 0.9, 1.0, 1.2]
-  
-  # Compliance and governance
-  compliance_standards = ["cis", "pci-dss", "hipaa"]
-  
-  # Data residency requirements (European regions)
-  allowed_regions = [
-    "europe-west1",  # Belgium
-    "europe-west2",  # London
-    "europe-west3",  # Frankfurt
-    "europe-west4",  # Netherlands
-    "europe-north1", # Finland
-    "europe-central2" # Warsaw
-  ]
+  budget = {
+    alert_spent_percents = [50, 75, 90, 100]
+    alert_pubsub_topic   = "budget-alerts"
+  }
 }

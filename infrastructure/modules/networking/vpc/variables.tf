@@ -3,17 +3,36 @@
 variable "name" {
   description = "The name of the VPC network"
   type        = string
+  
+  validation {
+    condition     = can(regex("^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", var.name))
+    error_message = "VPC name must start with a lowercase letter, contain only lowercase letters, numbers, and hyphens, and be at most 63 characters."
+  }
 }
 
 variable "project_id" {
   description = "The GCP project ID"
   type        = string
+  
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", var.project_id))
+    error_message = "Project ID must be 6-30 characters, start with a lowercase letter, and contain only lowercase letters, numbers, and hyphens."
+  }
 }
 
 variable "region" {
   description = "The region for regional resources"
   type        = string
   default     = "us-central1"
+  
+  validation {
+    condition = contains([
+      "us-central1", "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4",
+      "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6",
+      "asia-east1", "asia-northeast1", "asia-southeast1"
+    ], var.region)
+    error_message = "Region must be a valid GCP region."
+  }
 }
 
 variable "auto_create_subnetworks" {
@@ -26,12 +45,22 @@ variable "routing_mode" {
   description = "The network routing mode (REGIONAL or GLOBAL)"
   type        = string
   default     = "REGIONAL"
+  
+  validation {
+    condition     = contains(["REGIONAL", "GLOBAL"], var.routing_mode)
+    error_message = "Routing mode must be either REGIONAL or GLOBAL."
+  }
 }
 
 variable "mtu" {
   description = "The network MTU"
   type        = number
   default     = 1460
+  
+  validation {
+    condition     = var.mtu >= 1300 && var.mtu <= 8896
+    error_message = "MTU must be between 1300 and 8896."
+  }
 }
 
 variable "delete_default_routes_on_create" {
@@ -150,6 +179,20 @@ variable "labels" {
   description = "Labels to apply to resources"
   type        = map(string)
   default     = {}
+  
+  validation {
+    condition = alltrue([
+      for k, v in var.labels : can(regex("^[a-z][a-z0-9_-]{0,62}$", k))
+    ])
+    error_message = "Label keys must start with a lowercase letter and contain only lowercase letters, numbers, underscores, and hyphens."
+  }
+  
+  validation {
+    condition = alltrue([
+      for k, v in var.labels : length(v) <= 63
+    ])
+    error_message = "Label values must be 63 characters or less."
+  }
 }
 
 variable "tags" {

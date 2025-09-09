@@ -1,0 +1,283 @@
+{
+  "version": "1.0.0",
+  "modules": {
+    "networking": {
+      "vpc": {
+        "version": "1.0.0",
+        "source": "./infrastructure/modules/networking/vpc",
+        "description": "Creates and manages VPC networks with subnets, NAT, and firewall rules",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google", "google-beta"],
+        "tags": ["networking", "vpc", "core"],
+        "maturity": "stable",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "subnets": {
+        "version": "1.0.0",
+        "source": "./infrastructure/modules/networking/subnets",
+        "description": "Manages subnet configurations with secondary ranges for GKE",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["networking", "subnets"],
+        "maturity": "stable",
+        "compliance": ["soc2", "pci-dss"]
+      },
+      "nat": {
+        "version": "1.0.0",
+        "source": "./infrastructure/modules/networking/nat",
+        "description": "Cloud NAT gateway for outbound internet connectivity",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["networking", "nat", "egress"],
+        "maturity": "stable",
+        "compliance": ["soc2"]
+      },
+      "firewall": {
+        "version": "1.0.0",
+        "source": "./infrastructure/modules/networking/firewall",
+        "description": "Firewall rules management with security best practices",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["networking", "security", "firewall"],
+        "maturity": "stable",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "load-balancer": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/networking/load-balancer",
+        "description": "Global and regional load balancer configurations",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google", "google-beta"],
+        "tags": ["networking", "load-balancing"],
+        "maturity": "beta",
+        "compliance": ["soc2"]
+      },
+      "cdn": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/networking/cdn",
+        "description": "Cloud CDN configuration for content delivery",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["networking", "cdn", "performance"],
+        "maturity": "beta",
+        "compliance": ["soc2"]
+      }
+    },
+    "compute": {
+      "gke": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/compute/gke",
+        "description": "GKE cluster with Workload Identity and security hardening",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google", "google-beta"],
+        "tags": ["compute", "kubernetes", "gke"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "cloud-run": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/compute/cloud-run",
+        "description": "Serverless container deployment with Cloud Run",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google", "google-beta"],
+        "tags": ["compute", "serverless", "containers"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss"]
+      },
+      "cloud-functions": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/compute/cloud-functions",
+        "description": "Event-driven serverless functions",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["compute", "serverless", "functions"],
+        "maturity": "alpha",
+        "compliance": ["soc2"]
+      },
+      "compute-engine": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/compute/compute-engine",
+        "description": "VM instances and instance groups",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["compute", "vms"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss"]
+      }
+    },
+    "data": {
+      "cloud-sql": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/data/cloud-sql",
+        "description": "Managed SQL databases with HA and backups",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google", "google-beta"],
+        "tags": ["data", "database", "sql"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "bigquery": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/data/bigquery",
+        "description": "Data warehouse and analytics",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["data", "analytics", "warehouse"],
+        "maturity": "beta",
+        "compliance": ["soc2", "hipaa"]
+      },
+      "cloud-storage": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/data/cloud-storage",
+        "description": "Object storage with lifecycle policies",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["data", "storage", "objects"],
+        "maturity": "stable",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "redis": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/data/redis",
+        "description": "Managed Redis for caching",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["data", "cache", "redis"],
+        "maturity": "beta",
+        "compliance": ["soc2"]
+      }
+    },
+    "security": {
+      "iam": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/security/iam",
+        "description": "IAM roles and service accounts management",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["security", "iam", "access"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "kms": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/security/kms",
+        "description": "Encryption key management",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["security", "encryption", "kms"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "secret-manager": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/security/secret-manager",
+        "description": "Secrets storage and rotation",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["security", "secrets"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "cloud-armor": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/security/cloud-armor",
+        "description": "DDoS protection and WAF rules",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["security", "waf", "ddos"],
+        "maturity": "alpha",
+        "compliance": ["soc2", "pci-dss"]
+      }
+    },
+    "monitoring": {
+      "logging": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/monitoring/logging",
+        "description": "Centralized logging configuration",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["monitoring", "logging", "observability"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss", "hipaa"]
+      },
+      "metrics": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/monitoring/metrics",
+        "description": "Custom metrics and dashboards",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["monitoring", "metrics", "observability"],
+        "maturity": "alpha",
+        "compliance": ["soc2"]
+      },
+      "alerts": {
+        "version": "0.1.0",
+        "source": "./infrastructure/modules/monitoring/alerts",
+        "description": "Alert policies and notification channels",
+        "min_terraform_version": "1.5.0",
+        "providers": ["google"],
+        "tags": ["monitoring", "alerts", "observability"],
+        "maturity": "beta",
+        "compliance": ["soc2", "pci-dss"]
+      }
+    }
+  },
+  "usage_guidelines": {
+    "versioning": {
+      "strategy": "semantic",
+      "format": "MAJOR.MINOR.PATCH",
+      "breaking_changes": "Increment MAJOR version",
+      "new_features": "Increment MINOR version",
+      "bug_fixes": "Increment PATCH version"
+    },
+    "maturity_levels": {
+      "alpha": "Early development, expect breaking changes",
+      "beta": "Feature complete, testing in progress",
+      "stable": "Production ready, backward compatible"
+    },
+    "compliance_tags": {
+      "soc2": "SOC 2 Type II compliant",
+      "pci-dss": "PCI DSS compliant",
+      "hipaa": "HIPAA compliant"
+    },
+    "testing_requirements": {
+      "alpha": "Basic validation tests",
+      "beta": "Integration tests required",
+      "stable": "Full test coverage including security scans"
+    }
+  },
+  "module_standards": {
+    "required_files": [
+      "main.tf",
+      "variables.tf",
+      "outputs.tf",
+      "versions.tf",
+      "README.md"
+    ],
+    "optional_files": [
+      "locals.tf",
+      "data.tf",
+      "examples/",
+      "tests/"
+    ],
+    "naming_conventions": {
+      "resources": "snake_case",
+      "variables": "snake_case",
+      "outputs": "snake_case",
+      "labels": "snake_case"
+    },
+    "documentation": {
+      "readme_sections": [
+        "Description",
+        "Usage",
+        "Requirements",
+        "Providers",
+        "Inputs",
+        "Outputs",
+        "Examples"
+      ],
+      "auto_generated": true,
+      "tool": "terraform-docs"
+    }
+  }
+}
