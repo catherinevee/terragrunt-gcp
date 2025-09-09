@@ -1,5 +1,9 @@
 # GCP Terragrunt Infrastructure
 
+![Terraform Pipeline](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/terraform-pipeline.yml/badge.svg)
+![Setup Infrastructure](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/setup-infrastructure.yml/badge.svg)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Production-ready Terragrunt infrastructure for Google Cloud Platform with multi-environment support, GitOps workflows, and comprehensive security controls.
 
 ## 📁 Project Structure
@@ -29,10 +33,12 @@ terragrunt-gcp/
 │       └── security/                # IAM, KMS
 │           └── iam/
 ├── .github/
-│   └── workflows/                   # CI/CD pipelines
-│       ├── terragrunt-plan.yml
-│       ├── terragrunt-apply.yml
-│       └── terragrunt-destroy.yml
+│   ├── workflows/                   # CI/CD pipelines
+│   │   ├── terraform-pipeline.yml   # Unified pipeline (plan/apply/destroy)
+│   │   ├── drift-detection.yml      # Scheduled drift checks
+│   │   └── setup-infrastructure.yml # Initial setup
+│   └── actions/
+│       └── setup-environment/       # Unified setup action
 └── CLAUDE.md                        # AI assistant guide
 ```
 
@@ -162,28 +168,35 @@ inputs = {
 
 ## 📊 CI/CD Workflows
 
-### Pull Request Workflow
-1. Developer creates PR
-2. Terragrunt plan runs automatically
-3. Security scan with Checkov
-4. Cost estimation with Infracost
-5. Manual review and approval
-6. Merge to main
+### Unified Terraform Pipeline
+The project uses a single consolidated pipeline (`terraform-pipeline.yml`) that handles all operations:
 
-### Deployment Workflow
-1. Merge to main triggers deployment
-2. Dev deploys automatically
-3. Staging requires approval
-4. Production requires 2 approvals
-5. Post-deployment tests run
-6. Slack notifications sent
+#### Automatic Triggers
+- **Pull Request**: Runs plan, security scan, and cost estimation
+- **Push to main**: Auto-deploys to dev environment
+- **Schedule**: Daily drift detection (configurable)
 
-### Destruction Workflow
-1. Manual trigger only
-2. Confirmation required
-3. State backup created
-4. Production requires additional approval
-5. Verification after destruction
+#### Manual Operations (workflow_dispatch)
+- **plan**: Preview changes for any environment
+- **apply**: Deploy infrastructure with optional auto-approve
+- **destroy**: Tear down infrastructure with safety checks
+- **plan-destroy**: Preview destruction changes
+- **drift-check**: Detect configuration drift
+- **cost-estimate**: Analyze infrastructure costs
+
+### Pipeline Stages
+1. **Detect Changes**: Identifies affected environments and operation type
+2. **Security Scan**: Runs Checkov and OPA policy validation
+3. **Cost Estimation**: Calculates cost impact with Infracost
+4. **Terraform Operation**: Executes the requested operation (plan/apply/destroy)
+5. **Validation**: Runs smoke tests post-deployment
+6. **Notification**: Sends status updates via Slack
+
+### Safety Features
+- Concurrency control prevents parallel runs
+- Production requires manual approval
+- Automatic state backups before changes
+- Drift detection alerts for unexpected changes
 
 ## 🛠️ Common Operations
 
