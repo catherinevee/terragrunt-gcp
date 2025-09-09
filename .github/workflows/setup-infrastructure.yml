@@ -36,6 +36,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: setup-infrastructure
+  cancel-in-progress: false
+
 env:
   GCP_PROJECT_ID: ${{ inputs.project_id }}
   ORGANIZATION: ${{ inputs.organization }}
@@ -46,6 +50,7 @@ jobs:
   setup-secrets:
     name: Setup GitHub Secrets and GCP Resources
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     
     permissions:
       contents: read

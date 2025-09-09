@@ -2,92 +2,92 @@
 
 locals {
   environment = "dev"
-  region      = "europe-west1"
-  zone        = "europe-west1-b"
+  region      = "us-central1"
+  zone        = "us-central1-a"
   
-  # Environment-specific project (optional - can use same project with env prefix)
-  project_suffix = "dev"
+  # Project configuration
+  project_id = "yanka-dev-project"  # Override the default from account.hcl
   
-  # Networking
-  vpc_cidr = "10.0.0.0/16"
-  
-  # Kubernetes configuration
-  gke_config = {
-    min_nodes = 1
-    max_nodes = 3
-    machine_type = "n1-standard-2"
-    preemptible = true
-    disk_size_gb = 30
-    auto_repair = true
-    auto_upgrade = true
+  # Network configuration
+  network_config = {
+    vpc_cidr          = "10.0.0.0/16"
+    public_subnet_cidr  = "10.0.1.0/24"
+    private_subnet_cidr = "10.0.10.0/24"
+    pods_subnet_cidr    = "10.0.100.0/21"  # For GKE pods
+    services_subnet_cidr = "10.0.108.0/21"  # For GKE services
   }
   
-  # Cloud Run configuration
-  cloud_run_config = {
-    max_instances = 10
-    min_instances = 0
-    cpu_limit = "1"
-    memory_limit = "512Mi"
-    timeout_seconds = 300
-    max_concurrent_requests = 80
+  # Resource sizing (smaller for dev)
+  resource_sizing = {
+    # GKE configuration
+    gke_node_count       = 2
+    gke_min_nodes        = 1
+    gke_max_nodes        = 3
+    gke_machine_type     = "e2-standard-2"
+    gke_disk_size_gb     = 50
+    gke_preemptible      = true  # Use preemptible nodes to save costs
+    
+    # Cloud SQL configuration
+    db_tier              = "db-f1-micro"
+    db_disk_size         = 10
+    db_disk_type         = "PD_HDD"
+    db_backup_enabled    = false
+    db_ha_enabled        = false  # No HA in dev
+    
+    # Redis configuration
+    redis_tier           = "BASIC"
+    redis_memory_size_gb = 1
+    
+    # Cloud Run configuration
+    cloudrun_cpu         = "1"
+    cloudrun_memory      = "512Mi"
+    cloudrun_min_instances = 0
+    cloudrun_max_instances = 10
+    
+    # Storage configuration
+    storage_class        = "STANDARD"
+    enable_versioning    = false
   }
   
-  # Database configuration
-  database_config = {
-    tier = "db-f1-micro"
-    high_availability = false
-    backup_enabled = true
-    backup_start_time = "03:00"
-    maintenance_window_day = 7
-    maintenance_window_hour = 3
-    deletion_protection = false
-  }
-  
-  # Storage configuration
-  storage_config = {
-    storage_class = "STANDARD"
-    lifecycle_age_days = 30
-    versioning = false
-  }
-  
-  # Monitoring and alerting
-  monitoring_config = {
-    log_retention_days = 7
-    metrics_retention_days = 30
-    alerting_enabled = false
-    error_reporting_enabled = true
+  # Environment-specific features
+  features = {
+    enable_monitoring      = true
+    enable_logging         = true
+    enable_tracing        = false
+    enable_profiling      = false
+    enable_debug_mode     = true
+    enable_auto_scaling   = false
+    enable_cdn            = false
+    enable_armor          = false  # Cloud Armor DDoS protection
   }
   
   # Cost optimization
   cost_optimization = {
     use_preemptible_nodes = true
-    use_spot_instances = true
-    auto_shutdown_enabled = true
-    shutdown_time = "22:00"
-    startup_time = "08:00"
+    auto_shutdown_enabled = true  # Shutdown resources after hours
+    shutdown_schedule     = "0 20 * * *"  # 8 PM daily
+    startup_schedule      = "0 8 * * 1-5"  # 8 AM weekdays
   }
   
-  # Security settings
-  security_config = {
-    enable_private_google_access = true
-    enable_private_ip_google_access = true
-    enable_flow_logs = false
-    enable_cloud_armor = false
-    enable_binary_authorization = false
+  # Dev-specific settings
+  dev_settings = {
+    allow_public_access    = true
+    enable_ssh_access      = true
+    enable_debug_endpoints = true
+    log_level             = "DEBUG"
   }
   
-  # Environment tags
-  environment_tags = [
-    "dev",
-    "development",
-    "non-production"
-  ]
+  # DNS configuration
+  dns = {
+    zone_name    = "dev-yanka-com"
+    dns_name     = "dev.yanka.com."
+    subdomain    = "dev"
+  }
   
-  # Environment labels
-  environment_labels = {
-    environment = local.environment
-    region = local.region
-    cost_center = "development"
-    data_classification = "non-sensitive"
+  # Tagging
+  environment_tags = {
+    environment  = "development"
+    auto_shutdown = "true"
+    cost_center  = "development"
   }
 }

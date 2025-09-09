@@ -1,23 +1,30 @@
 # Root Terragrunt configuration
+# This file is included by all child terragrunt.hcl files
 
 locals {
-  # Parse account and region from path
-  account_vars = read_terragrunt_config(find_in_parent_folders("account.hcl", "accounts/account.hcl"))
+  # Parse the account configuration
+  account_vars = read_terragrunt_config(find_in_parent_folders("accounts/account.hcl"))
   
-  # Extract organization and project information
+  # Parse the environment configuration
+  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl", "env.hcl"))
+  
+  # Extract commonly used variables
   organization = local.account_vars.locals.organization
   project_id   = local.account_vars.locals.project_id
+  region       = local.env_vars.locals.region
+  environment  = local.env_vars.locals.environment
   
-  # Common labels for all resources
+  # Common labels to apply to all resources
   common_labels = {
-    managed_by   = "terragrunt"
     organization = local.organization
+    environment  = local.environment
+    managed_by   = "terragrunt"
     project      = local.project_id
-    created_by   = "platform-team"
+    region       = local.region
   }
   
-  # Default region if not specified
-  default_region = "europe-west1"
+  # State bucket name
+  state_bucket = "${local.organization}-terraform-state-${local.environment}"
 }
 
 # Configure remote state storage in GCS
@@ -25,39 +32,51 @@ remote_state {
   backend = "gcs"
   generate = {
     path      = "backend.tf"
-    if_exists = "overwrite"
+    if_exists = "overwrite_terragrunt"
   }
   config = {
-    bucket         = "${local.organization}-terraform-state-${local.project_id}"
+    bucket         = local.state_bucket
     prefix         = "${path_relative_to_include()}/terraform.tfstate"
     project        = local.project_id
-    location       = local.default_region
+    location       = local.region
     
     # Enable state locking
     enable_bucket_policy_only = true
     
     # Encryption
     encryption_key = null  # Uses Google-managed encryption
+    
+    # Versioning (bucket should have versioning enabled)
+    skip_bucket_creation     = false
+    skip_bucket_versioning   = false
+    skip_bucket_public_access_prevention = false
   }
 }
 
 # Generate provider configuration
 generate "provider" {
   path      = "provider.tf"
-  if_exists = "overwrite"
+  if_exists = "overwrite_terragrunt"
   contents  = <<EOF
 provider "google" {
   project = "${local.project_id}"
-  region  = "${local.default_region}"
+  region  = "${local.region}"
 }
 
 provider "google-beta" {
   project = "${local.project_id}"
-  region  = "${local.default_region}"
+  region  = "${local.region}"
+}
+EOF
 }
 
+# Generate versions configuration
+generate "versions" {
+  path      = "versions.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
 terraform {
-  required_version = ">= 1.3.0"
+  required_version = ">= 1.5.0"
   
   required_providers {
     google = {
@@ -77,45 +96,53 @@ terraform {
 EOF
 }
 
-# Default inputs available to all configurations
-inputs = {
-  project_id = local.project_id
-  region     = local.default_region
-  labels     = local.common_labels
-}
-
-# Terragrunt settings
+# Configure Terragrunt behavior
 terraform {
-  # Force Terraform to keep trying to acquire a lock for up to 20 minutes
+  # Force Terraform to keep trying to acquire a lock for up to 10 minutes
   # if someone else already has the lock
   extra_arguments "retry_lock" {
     commands = get_terraform_commands_that_need_locking()
     arguments = [
-      "-lock-timeout=20m"
+      "-lock-timeout=10m"
     ]
   }
-  
-  # Automatically create missing resource providers
+
+  # Pass common variables to all Terraform commands
+  extra_arguments "common_vars" {
+    commands = get_terraform_commands_that_need_vars()
+    arguments = [
+      "-compact-warnings",
+    ]
+  }
+
+  # Auto-approve for non-production environments during apply
   extra_arguments "auto_approve" {
-    commands = ["apply", "destroy"]
+    commands = ["apply"]
     arguments = concat(
-      get_env("CI", "false") == "true" ? ["-auto-approve"] : [],
+      local.environment != "prod" ? ["-auto-approve"] : [],
       []
     )
   }
-  
-  # Custom plan output
-  extra_arguments "custom_plan" {
-    commands = ["plan"]
-    arguments = [
-      "-out=tfplan.binary"
-    ]
-  }
 }
 
-# Retry configuration for transient errors
+# Configure retry behavior
 retry_configuration {
   retry_on_exit_codes = [1]
-  retry_attempts      = 3
-  retry_sleep_interval_sec = 5
+  retryable_errors = [
+    "(?s).*Error acquiring the state lock.*",
+    "(?s).*Error locking state.*",
+    "(?s).*dial tcp.*i/o timeout.*",
+    "(?s).*TLS handshake timeout.*",
+  ]
+  max_retry_attempts = 3
+  sleep_interval_sec = 5
+}
+
+# Configure inputs that will be passed to all Terraform modules
+inputs = {
+  project_id   = local.project_id
+  region       = local.region
+  environment  = local.environment
+  organization = local.organization
+  labels       = local.common_labels
 }
