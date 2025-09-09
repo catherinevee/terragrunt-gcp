@@ -1,5 +1,6 @@
 # GCP Terragrunt Infrastructure
 
+![Infrastructure Management](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/main.yml/badge.svg)
 ![Test Simple](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/test-simple.yml/badge.svg)
 ![Terraform Pipeline](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/terraform-pipeline.yml/badge.svg)
 ![Setup Infrastructure](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/setup-infrastructure.yml/badge.svg)

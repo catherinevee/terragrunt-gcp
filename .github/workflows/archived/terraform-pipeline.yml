@@ -1,0 +1,555 @@
+name: Terraform Pipeline
+
+on:
+  # Trigger on PR for validation
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/terraform-pipeline.yml'
+      - '.github/actions/**'
+      - '*.hcl'
+      - '*.tf'
+
+  # Trigger on push to main for auto-deployment to dev (only for infrastructure changes)
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+      - '!infrastructure/**/*.md'
+      - '!infrastructure/**/*.txt'
+
+  # Manual trigger for any operation
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Operation to perform'
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+          - plan-destroy
+          - drift-check
+          - cost-estimate
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+          - all
+      auto_approve:
+        description: 'Auto-approve changes (use with caution)'
+        required: false
+        type: boolean
+        default: false
+      parallel:
+        description: 'Run in parallel across environments'
+        required: false
+        type: boolean
+        default: false
+      target_modules:
+        description: 'Specific modules to target (comma-separated, optional)'
+        required: false
+        type: string
+
+# Single concurrency group for the entire pipeline
+concurrency:
+  group: terraform-${{ github.event_name }}-${{ github.event.inputs.environment || 'auto' }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TF_IN_AUTOMATION: 'true'
+  TERRAFORM_VERSION: '1.5.7'
+  TERRAGRUNT_VERSION: '0.52.0'
+
+jobs:
+  # ============================================================================
+  # STAGE 1: Detect Changes and Set Configuration
+  # ============================================================================
+  
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      environments: ${{ steps.detect.outputs.environments }}
+      operation: ${{ steps.detect.outputs.operation }}
+      auto_approve: ${{ steps.detect.outputs.auto_approve }}
+      should_run: ${{ steps.detect.outputs.should_run }}
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Configuration
+        id: detect
+        run: |
+          # Determine operation based on event
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            OPERATION="plan"
+            # Check for infrastructure changes
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD || true)
+            if [[ -n "$CHANGED_FILES" ]]; then
+              ENVIRONMENTS=$(echo "$CHANGED_FILES" | \
+                grep -E 'infrastructure/environments/(dev|staging|prod)' | \
+                sed -E 's|infrastructure/environments/([^/]+)/.*|\1|' | sort -u | tr '\n' ',' | sed 's/,$//' || true)
+            fi
+            # If no environment-specific changes, check for module changes
+            if [[ -z "$ENVIRONMENTS" ]]; then
+              if echo "$CHANGED_FILES" | grep -q 'infrastructure/modules/'; then
+                ENVIRONMENTS="dev"  # Default to dev for module changes
+              fi
+            fi
+            AUTO_APPROVE="false"
+          elif [[ "${{ github.event_name }}" == "push" ]] && [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            OPERATION="apply"
+            ENVIRONMENTS="dev"
+            AUTO_APPROVE="true"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            OPERATION="${{ github.event.inputs.operation || 'plan' }}"
+            ENVIRONMENTS="${{ github.event.inputs.environment || 'dev' }}"
+            AUTO_APPROVE="${{ github.event.inputs.auto_approve || 'false' }}"
+          else
+            OPERATION="plan"
+            ENVIRONMENTS=""
+            AUTO_APPROVE="false"
+          fi
+          
+          # Handle 'all' environment selection
+          if [[ "$ENVIRONMENTS" == "all" ]]; then
+            ENVIRONMENTS="dev,staging,prod"
+          fi
+          
+          # Default to dev if no environment specified but we have a workflow_dispatch
+          if [[ -z "$ENVIRONMENTS" ]] && [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENVIRONMENTS="dev"
+          fi
+          
+          # Check if we should run
+          if [[ -z "$ENVIRONMENTS" ]]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "environments=" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "environments=$ENVIRONMENTS" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "operation=$OPERATION" >> $GITHUB_OUTPUT
+          echo "auto_approve=$AUTO_APPROVE" >> $GITHUB_OUTPUT
+          
+          # Log configuration
+          echo "::notice::Operation: $OPERATION"
+          echo "::notice::Environments: $ENVIRONMENTS"
+          echo "::notice::Auto-approve: $AUTO_APPROVE"
+
+  # ============================================================================
+  # STAGE 2: Security and Compliance Checks (Pre-deployment)
+  # ============================================================================
+  
+  security-scan:
+    name: Security Scan
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should_run == 'true' && contains('plan,apply', needs.detect-changes.outputs.operation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Run Checkov Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infrastructure/
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov.sarif
+          skip_check: CKV_GCP_32,CKV_GCP_34  # Example skips
+
+      - name: Upload SARIF Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov.sarif
+
+      - name: Run OPA Policy Validation
+        if: hashFiles('policies/opa/*.rego') != ''
+        run: |
+          # Install OPA
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+          chmod +x opa
+          sudo mv opa /usr/local/bin/
+          
+          # Run policy checks
+          for env in $(echo "${{ needs.detect-changes.outputs.environments }}" | tr ',' ' '); do
+            echo "::group::OPA Policy Check - $env"
+            terragrunt run-all plan --terragrunt-working-dir=infrastructure/environments/$env \
+              --out=plan.json --json
+            opa eval -d policies/opa/ -i plan.json "data.terraform.deny[msg]"
+            echo "::endgroup::"
+          done
+
+  # ============================================================================
+  # STAGE 3: Cost Estimation
+  # ============================================================================
+  
+  cost-estimate:
+    name: Cost Estimation
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.should_run == 'true' && 
+      contains('plan,apply,cost-estimate', needs.detect-changes.outputs.operation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Generate Cost Estimates
+        run: |
+          for env in $(echo "${{ needs.detect-changes.outputs.environments }}" | tr ',' ' '); do
+            echo "::group::Cost Estimate - $env"
+            cd infrastructure/environments/$env
+            terragrunt run-all plan -out=plan.tfplan
+            infracost breakdown --path=plan.tfplan \
+              --format=json \
+              --out-file=/tmp/infracost-$env.json
+            echo "::endgroup::"
+          done
+          
+          # Combine all estimates
+          infracost output --path="/tmp/infracost-*.json" \
+            --format=table \
+            --show-skipped
+
+      - name: Post Cost Comment to PR
+        if: github.event_name == 'pull_request'
+        uses: infracost/actions/comment@v1
+        with:
+          path: /tmp/infracost-*.json
+          behavior: update
+
+  # ============================================================================
+  # STAGE 4: Main Terraform Operations
+  # ============================================================================
+  
+  terraform-operation:
+    name: Terraform ${{ needs.detect-changes.outputs.operation }} - ${{ matrix.environment }}
+    needs: [detect-changes, security-scan, cost-estimate]
+    if: |
+      always() && 
+      needs.detect-changes.outputs.should_run == 'true' &&
+      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped') &&
+      (needs.cost-estimate.result == 'success' || needs.cost-estimate.result == 'skipped')
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJson(needs.detect-changes.outputs.environments != '' && format('[{0}]', format('"{0}"', replace(needs.detect-changes.outputs.environments, ',', '","'))) || '["dev"]') }}
+      max-parallel: ${{ github.event.inputs.parallel == 'true' && 3 || 1 }}
+    
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ contains('apply,destroy', needs.detect-changes.outputs.operation) && 60 || 30 }}
+    
+    environment:
+      name: ${{ matrix.environment }}
+      url: https://console.cloud.google.com/home/dashboard?project=${{ secrets.GCP_PROJECT_ID }}
+    
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          working_directory: infrastructure/environments/${{ matrix.environment }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          cache_key_prefix: terragrunt-${{ matrix.environment }}
+
+      - name: Terragrunt Init
+        working-directory: infrastructure/environments/${{ matrix.environment }}
+        run: |
+          terragrunt run-all init --terragrunt-non-interactive
+          terragrunt run-all validate
+
+      - name: Terragrunt Plan
+        if: contains('plan,plan-destroy', needs.detect-changes.outputs.operation)
+        working-directory: infrastructure/environments/${{ matrix.environment }}
+        run: |
+          if [[ "${{ needs.detect-changes.outputs.operation }}" == "plan-destroy" ]]; then
+            terragrunt run-all plan -destroy -out=plan.tfplan
+          else
+            terragrunt run-all plan -out=plan.tfplan
+          fi
+          
+          # Generate plan summary
+          terragrunt show -json plan.tfplan | jq -r '
+            "## Terraform Plan Summary\n" +
+            "**Environment:** ${{ matrix.environment }}\n" +
+            "**Resources:** \((.resource_changes // []) | length) to change\n" +
+            "  - Create: \(([.resource_changes[] | select(.change.actions[] == "create")] | length))\n" +
+            "  - Update: \(([.resource_changes[] | select(.change.actions[] == "update")] | length))\n" +
+            "  - Delete: \(([.resource_changes[] | select(.change.actions[] == "delete")] | length))\n"
+          ' >> $GITHUB_STEP_SUMMARY
+
+      - name: Terragrunt Apply
+        if: needs.detect-changes.outputs.operation == 'apply'
+        working-directory: infrastructure/environments/${{ matrix.environment }}
+        run: |
+          # Check for approval requirements
+          if [[ "${{ matrix.environment }}" == "prod" ]] && [[ "${{ needs.detect-changes.outputs.auto_approve }}" != "true" ]]; then
+            echo "::error::Production deployment requires manual approval"
+            exit 1
+          fi
+          
+          # Apply with optional auto-approve
+          if [[ "${{ needs.detect-changes.outputs.auto_approve }}" == "true" ]]; then
+            terragrunt run-all apply --terragrunt-non-interactive -auto-approve
+          else
+            terragrunt run-all apply --terragrunt-non-interactive
+          fi
+          
+          # Capture outputs
+          terragrunt run-all output -json > outputs.json
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Terragrunt Destroy
+        if: needs.detect-changes.outputs.operation == 'destroy'
+        working-directory: infrastructure/environments/${{ matrix.environment }}
+        run: |
+          # Extra safety check for production
+          if [[ "${{ matrix.environment }}" == "prod" ]]; then
+            echo "::warning::Production destruction requires explicit confirmation"
+            if [[ "${{ needs.detect-changes.outputs.auto_approve }}" != "true" ]]; then
+              echo "::error::Production destruction must be explicitly approved"
+              exit 1
+            fi
+          fi
+          
+          # Destroy with optional auto-approve
+          if [[ "${{ needs.detect-changes.outputs.auto_approve }}" == "true" ]]; then
+            terragrunt run-all destroy --terragrunt-non-interactive -auto-approve
+          else
+            terragrunt run-all destroy --terragrunt-non-interactive
+          fi
+          
+          echo "## Resources Destroyed" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Drift Detection
+        if: needs.detect-changes.outputs.operation == 'drift-check'
+        working-directory: infrastructure/environments/${{ matrix.environment }}
+        run: |
+          echo "## Drift Detection Report - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+          
+          # Run refresh and capture drift
+          terragrunt run-all refresh
+          terragrunt run-all plan -detailed-exitcode -out=drift.tfplan || PLAN_EXIT=$?
+          
+          if [[ ${PLAN_EXIT:-0} -eq 0 ]]; then
+            echo "✅ No drift detected" >> $GITHUB_STEP_SUMMARY
+          elif [[ ${PLAN_EXIT:-0} -eq 2 ]]; then
+            echo "⚠️ Drift detected! Resources have changed outside of Terraform:" >> $GITHUB_STEP_SUMMARY
+            terragrunt show -json drift.tfplan | jq -r '.resource_changes[] | 
+              select(.change.actions != ["no-op"]) | 
+              "- \(.address): \(.change.actions | join(", "))"' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Error during drift detection" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Upload Plan Artifacts
+        if: always() && contains('plan,plan-destroy,drift-check', needs.detect-changes.outputs.operation)
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plans-${{ matrix.environment }}
+          path: |
+            infrastructure/environments/${{ matrix.environment }}/**/*.tfplan
+            infrastructure/environments/${{ matrix.environment }}/**/outputs.json
+          retention-days: 7
+
+  # ============================================================================
+  # STAGE 5: Post-Deployment Validation
+  # ============================================================================
+  
+  validate-deployment:
+    name: Validate Deployment
+    needs: [detect-changes, terraform-operation]
+    if: |
+      always() && 
+      needs.terraform-operation.result == 'success' && 
+      needs.detect-changes.outputs.operation == 'apply'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Run Smoke Tests
+        run: |
+          for env in $(echo "${{ needs.detect-changes.outputs.environments }}" | tr ',' ' '); do
+            echo "::group::Smoke Tests - $env"
+            
+            # Example smoke tests
+            echo "Testing network connectivity..."
+            gcloud compute networks list --project=${{ secrets.GCP_PROJECT_ID }}
+            
+            echo "Testing IAM configuration..."
+            gcloud projects get-iam-policy ${{ secrets.GCP_PROJECT_ID }}
+            
+            echo "Testing resource health..."
+            gcloud compute instances list --project=${{ secrets.GCP_PROJECT_ID }}
+            
+            echo "::endgroup::"
+          done
+
+      - name: Update Documentation
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # Generate updated infrastructure documentation
+          echo "## Infrastructure State - $(date)" > INFRASTRUCTURE_STATE.md
+          echo "Last deployment: ${{ github.sha }}" >> INFRASTRUCTURE_STATE.md
+          echo "Environments deployed: ${{ needs.detect-changes.outputs.environments }}" >> INFRASTRUCTURE_STATE.md
+
+  # ============================================================================
+  # STAGE 6: Notifications and Cleanup
+  # ============================================================================
+  
+  notify:
+    name: Send Notifications
+    needs: [detect-changes, terraform-operation, validate-deployment]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Determine Status
+        id: status
+        run: |
+          if [[ "${{ needs.terraform-operation.result }}" == "success" ]]; then
+            if [[ "${{ needs.validate-deployment.result }}" == "success" || "${{ needs.validate-deployment.result }}" == "skipped" ]]; then
+              echo "status=success" >> $GITHUB_OUTPUT
+              echo "emoji=✅" >> $GITHUB_OUTPUT
+            else
+              echo "status=validation-failed" >> $GITHUB_OUTPUT
+              echo "emoji=⚠️" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${{ needs.terraform-operation.result }}" == "failure" ]]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          else
+            echo "status=skipped" >> $GITHUB_OUTPUT
+            echo "emoji=⏭️" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Slack Notification
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "${{ steps.status.outputs.emoji }} Terraform Pipeline: ${{ steps.status.outputs.status }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ steps.status.outputs.emoji }} Terraform Pipeline Results"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Operation:*\n${{ needs.detect-changes.outputs.operation }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environments:*\n${{ needs.detect-changes.outputs.environments }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\n${{ steps.status.outputs.status }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Triggered by:*\n${{ github.actor }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+                  }
+                }
+              ]
+            }
+
+      - name: Create GitHub Summary
+        if: always()
+        run: |
+          echo "# Terraform Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Detection | ${{ needs.detect-changes.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cost Estimate | ${{ needs.cost-estimate.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform Operation | ${{ needs.terraform-operation.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | ${{ needs.validate-deployment.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Operation:** ${{ needs.detect-changes.outputs.operation }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environments:** ${{ needs.detect-changes.outputs.environments }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY

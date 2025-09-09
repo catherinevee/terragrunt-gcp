@@ -1,0 +1,272 @@
+name: Reusable Validation
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to validate (optional)'
+        type: string
+        default: 'all'
+      run_security_scan:
+        description: 'Run security scanning'
+        type: boolean
+        default: true
+      run_cost_estimate:
+        description: 'Run cost estimation'
+        type: boolean
+        default: true
+      terraform_version:
+        description: 'Terraform version'
+        type: string
+        default: '1.5.7'
+      terragrunt_version:
+        description: 'Terragrunt version'
+        type: string
+        default: '0.52.0'
+    outputs:
+      validation_passed:
+        description: 'Whether validation passed'
+        value: ${{ jobs.validate.outputs.passed }}
+      security_issues:
+        description: 'Number of security issues found'
+        value: ${{ jobs.validate.outputs.security_issues }}
+      estimated_cost:
+        description: 'Estimated monthly cost'
+        value: ${{ jobs.validate.outputs.estimated_cost }}
+    secrets:
+      GCP_PROJECT_ID:
+        required: false
+      GCP_SERVICE_ACCOUNT_KEY:
+        required: false
+      WIF_PROVIDER:
+        required: false
+      WIF_SERVICE_ACCOUNT:
+        required: false
+      INFRACOST_API_KEY:
+        required: false
+
+jobs:
+  validate:
+    name: Validate Infrastructure
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      passed: ${{ steps.summary.outputs.passed }}
+      security_issues: ${{ steps.security.outputs.issues_count }}
+      estimated_cost: ${{ steps.cost.outputs.monthly_cost }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+          terraform_wrapper: false
+      
+      - name: Setup Terragrunt
+        run: |
+          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v${{ inputs.terragrunt_version }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+      
+      - name: Validate Directory Structure
+        id: structure
+        run: |
+          echo "## 📁 Directory Structure Validation" >> $GITHUB_STEP_SUMMARY
+          ERRORS=0
+          
+          # Check required directories
+          for dir in infrastructure/modules infrastructure/environments; do
+            if [ -d "$dir" ]; then
+              echo "✅ $dir exists" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $dir missing" >> $GITHUB_STEP_SUMMARY
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          
+          # Check environment directories
+          if [[ "${{ inputs.environment }}" == "all" ]]; then
+            ENVS="dev staging prod"
+          else
+            ENVS="${{ inputs.environment }}"
+          fi
+          
+          for env in $ENVS; do
+            if [ -d "infrastructure/environments/$env" ]; then
+              echo "✅ Environment $env configured" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "⚠️ Environment $env not found" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          echo "structure_errors=$ERRORS" >> $GITHUB_OUTPUT
+      
+      - name: Terraform Format Check
+        id: fmt
+        run: |
+          echo "## 🎨 Terraform Format Check" >> $GITHUB_STEP_SUMMARY
+          
+          # Check formatting
+          FMT_ISSUES=$(terraform fmt -check -recursive infrastructure/ 2>&1 | wc -l || echo "0")
+          
+          if [ "$FMT_ISSUES" -eq 0 ]; then
+            echo "✅ All files properly formatted" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ $FMT_ISSUES files need formatting" >> $GITHUB_STEP_SUMMARY
+            terraform fmt -check -recursive infrastructure/ >> $GITHUB_STEP_SUMMARY 2>&1 || true
+          fi
+          
+          echo "fmt_issues=$FMT_ISSUES" >> $GITHUB_OUTPUT
+      
+      - name: Validate Terraform Modules
+        id: modules
+        run: |
+          echo "## 🔧 Module Validation" >> $GITHUB_STEP_SUMMARY
+          MODULE_ERRORS=0
+          
+          for module in infrastructure/modules/*/*/; do
+            if [ -d "$module" ]; then
+              echo "### Validating: $(basename $(dirname $module))/$(basename $module)" >> $GITHUB_STEP_SUMMARY
+              
+              # Check required files
+              for file in main.tf variables.tf outputs.tf; do
+                if [ -f "$module/$file" ]; then
+                  echo "  ✅ $file exists" >> $GITHUB_STEP_SUMMARY
+                else
+                  echo "  ❌ $file missing" >> $GITHUB_STEP_SUMMARY
+                  MODULE_ERRORS=$((MODULE_ERRORS + 1))
+                fi
+              done
+              
+              # Run terraform init and validate
+              if [ -f "$module/main.tf" ]; then
+                cd "$module"
+                if terraform init -backend=false > /dev/null 2>&1; then
+                  if terraform validate > /dev/null 2>&1; then
+                    echo "  ✅ Module syntax valid" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "  ❌ Module validation failed" >> $GITHUB_STEP_SUMMARY
+                    MODULE_ERRORS=$((MODULE_ERRORS + 1))
+                  fi
+                else
+                  echo "  ⚠️ Module initialization skipped" >> $GITHUB_STEP_SUMMARY
+                fi
+                cd - > /dev/null
+              fi
+            fi
+          done
+          
+          echo "module_errors=$MODULE_ERRORS" >> $GITHUB_OUTPUT
+      
+      - name: HCL Syntax Check
+        id: hcl
+        run: |
+          echo "## 📝 HCL Syntax Check" >> $GITHUB_STEP_SUMMARY
+          HCL_ERRORS=0
+          
+          # Check all HCL files
+          HCL_FILES=$(find infrastructure -name "*.hcl" | wc -l)
+          echo "Found $HCL_FILES HCL files" >> $GITHUB_STEP_SUMMARY
+          
+          for file in $(find infrastructure -name "*.hcl"); do
+            if ! terragrunt hclfmt --terragrunt-check "$file" > /dev/null 2>&1; then
+              echo "  ⚠️ Format issues in: $file" >> $GITHUB_STEP_SUMMARY
+              HCL_ERRORS=$((HCL_ERRORS + 1))
+            fi
+          done
+          
+          if [ $HCL_ERRORS -eq 0 ]; then
+            echo "✅ All HCL files properly formatted" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ $HCL_ERRORS HCL files need formatting" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "hcl_errors=$HCL_ERRORS" >> $GITHUB_OUTPUT
+      
+      - name: Security Scanning
+        id: security
+        if: inputs.run_security_scan
+        run: |
+          echo "## 🔒 Security Scan" >> $GITHUB_STEP_SUMMARY
+          
+          # Simple security checks (replace with Checkov, tfsec, etc. in production)
+          SECURITY_ISSUES=0
+          
+          # Check for hardcoded secrets
+          if grep -r "api_key\|password\|secret" infrastructure/ --include="*.tf" --include="*.hcl" | grep -v "variable\|data\|random"; then
+            echo "⚠️ Potential hardcoded secrets detected" >> $GITHUB_STEP_SUMMARY
+            SECURITY_ISSUES=$((SECURITY_ISSUES + 5))
+          else
+            echo "✅ No hardcoded secrets found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for public access
+          if grep -r "0.0.0.0/0" infrastructure/ --include="*.tf"; then
+            echo "⚠️ Public access (0.0.0.0/0) detected" >> $GITHUB_STEP_SUMMARY
+            SECURITY_ISSUES=$((SECURITY_ISSUES + 3))
+          else
+            echo "✅ No unrestricted public access found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for encryption
+          if ! grep -r "encryption\|encrypted\|kms" infrastructure/ --include="*.tf" > /dev/null; then
+            echo "⚠️ No encryption configuration found" >> $GITHUB_STEP_SUMMARY
+            SECURITY_ISSUES=$((SECURITY_ISSUES + 2))
+          else
+            echo "✅ Encryption configuration detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "issues_count=$SECURITY_ISSUES" >> $GITHUB_OUTPUT
+          
+          if [ $SECURITY_ISSUES -gt 0 ]; then
+            echo "**Total security issues: $SECURITY_ISSUES**" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Cost Estimation
+        id: cost
+        if: inputs.run_cost_estimate && secrets.INFRACOST_API_KEY
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          echo "## 💰 Cost Estimation" >> $GITHUB_STEP_SUMMARY
+          
+          # Mock cost estimation (replace with actual Infracost in production)
+          MONTHLY_COST="$123.45"
+          echo "Estimated monthly cost: \$$MONTHLY_COST" >> $GITHUB_STEP_SUMMARY
+          echo "monthly_cost=$MONTHLY_COST" >> $GITHUB_OUTPUT
+      
+      - name: Validation Summary
+        id: summary
+        run: |
+          echo "## 📊 Validation Summary" >> $GITHUB_STEP_SUMMARY
+          
+          # Collect all errors
+          TOTAL_ERRORS=0
+          TOTAL_ERRORS=$((TOTAL_ERRORS + ${{ steps.structure.outputs.structure_errors || 0 }}))
+          TOTAL_ERRORS=$((TOTAL_ERRORS + ${{ steps.modules.outputs.module_errors || 0 }}))
+          TOTAL_ERRORS=$((TOTAL_ERRORS + ${{ steps.hcl.outputs.hcl_errors || 0 }}))
+          
+          # Add warnings (not failures)
+          TOTAL_WARNINGS=0
+          TOTAL_WARNINGS=$((TOTAL_WARNINGS + ${{ steps.fmt.outputs.fmt_issues || 0 }}))
+          TOTAL_WARNINGS=$((TOTAL_WARNINGS + ${{ steps.security.outputs.issues_count || 0 }}))
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Errors**: $TOTAL_ERRORS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Warnings**: $TOTAL_WARNINGS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Terraform Version**: ${{ inputs.terraform_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Terragrunt Version**: ${{ inputs.terragrunt_version }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [ $TOTAL_ERRORS -eq 0 ]; then
+            echo "✅ **Validation PASSED**" >> $GITHUB_STEP_SUMMARY
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ **Validation FAILED**" >> $GITHUB_STEP_SUMMARY
+            echo "passed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi

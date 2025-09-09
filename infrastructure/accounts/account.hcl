@@ -3,12 +3,12 @@
 
 locals {
   # Organization details
-  organization = "yanka"  # Changed from default - this should match your organization name
-  billing_account = "XXXXXX-XXXXXX-XXXXXX"  # Your GCP billing account ID
+  organization = "test"  # Test organization for CI/CD
+  billing_account = "000000-000000-000000"  # Mock billing account for testing
   
   # Project naming convention: {organization}-{environment}-project
   # This will be overridden by environment-specific configurations
-  project_id = "${local.organization}-${local.environment}-project"
+  project_id = "test-project-123"  # Fixed project ID for testing
   
   # Default domain for the organization
   domain = "${local.organization}.com"

@@ -1,0 +1,281 @@
+name: Reusable Drift Detection
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to check for drift'
+        type: string
+        required: true
+      auto_remediate:
+        description: 'Automatically fix drift if detected'
+        type: boolean
+        default: false
+      create_issue:
+        description: 'Create GitHub issue if drift detected'
+        type: boolean
+        default: true
+      terraform_version:
+        description: 'Terraform version'
+        type: string
+        default: '1.5.7'
+      terragrunt_version:
+        description: 'Terragrunt version'
+        type: string
+        default: '0.52.0'
+    outputs:
+      drift_detected:
+        description: 'Whether drift was detected'
+        value: ${{ jobs.detect.outputs.drift_detected }}
+      resources_to_add:
+        description: 'Number of resources to add'
+        value: ${{ jobs.detect.outputs.resources_to_add }}
+      resources_to_change:
+        description: 'Number of resources to change'
+        value: ${{ jobs.detect.outputs.resources_to_change }}
+      resources_to_destroy:
+        description: 'Number of resources to destroy'
+        value: ${{ jobs.detect.outputs.resources_to_destroy }}
+    secrets:
+      GCP_PROJECT_ID:
+        required: false
+      GCP_SERVICE_ACCOUNT_KEY:
+        required: false
+      WIF_PROVIDER:
+        required: false
+      WIF_SERVICE_ACCOUNT:
+        required: false
+      GITHUB_TOKEN:
+        required: false
+
+env:
+  TF_IN_AUTOMATION: 'true'
+
+jobs:
+  detect:
+    name: Detect Drift - ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      drift_detected: ${{ steps.drift.outputs.detected }}
+      resources_to_add: ${{ steps.drift.outputs.add }}
+      resources_to_change: ${{ steps.drift.outputs.change }}
+      resources_to_destroy: ${{ steps.drift.outputs.destroy }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+          terragrunt_version: ${{ inputs.terragrunt_version }}
+          working_directory: infrastructure/environments/${{ inputs.environment }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          cache_key_prefix: drift-${{ inputs.environment }}
+      
+      - name: Initialize Terragrunt
+        working-directory: infrastructure/environments/${{ inputs.environment }}
+        run: |
+          terragrunt run-all init --terragrunt-non-interactive \
+            --terragrunt-parallelism 4
+      
+      - name: Refresh State
+        working-directory: infrastructure/environments/${{ inputs.environment }}
+        run: |
+          echo "Refreshing state to detect drift..."
+          terragrunt run-all refresh --terragrunt-non-interactive \
+            --terragrunt-parallelism 4
+      
+      - name: Detect Drift
+        id: drift
+        working-directory: infrastructure/environments/${{ inputs.environment }}
+        run: |
+          echo "## 🔍 Drift Detection Report - ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Run plan with detailed exit code
+          set +e
+          terragrunt run-all plan --terragrunt-non-interactive \
+            --terragrunt-parallelism 4 \
+            -detailed-exitcode \
+            -out=drift.tfplan 2>&1 | tee drift_output.txt
+          EXITCODE=$?
+          set -e
+          
+          # Exit codes: 0 = no changes, 1 = error, 2 = changes present
+          if [ $EXITCODE -eq 2 ]; then
+            echo "⚠️ **DRIFT DETECTED**" >> $GITHUB_STEP_SUMMARY
+            echo "detected=true" >> $GITHUB_OUTPUT
+            
+            # Extract drift details
+            ADD=$(grep -E '[0-9]+ to add' drift_output.txt | grep -oE '[0-9]+' | head -1 || echo "0")
+            CHANGE=$(grep -E '[0-9]+ to change' drift_output.txt | grep -oE '[0-9]+' | head -1 || echo "0")
+            DESTROY=$(grep -E '[0-9]+ to destroy' drift_output.txt | grep -oE '[0-9]+' | head -1 || echo "0")
+            
+            echo "add=$ADD" >> $GITHUB_OUTPUT
+            echo "change=$CHANGE" >> $GITHUB_OUTPUT
+            echo "destroy=$DESTROY" >> $GITHUB_OUTPUT
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Changes Detected:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Resources to add**: $ADD" >> $GITHUB_STEP_SUMMARY
+            echo "- **Resources to change**: $CHANGE" >> $GITHUB_STEP_SUMMARY
+            echo "- **Resources to destroy**: $DESTROY" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Show first 50 lines of changes
+            echo "### Change Details (first 50 lines):" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -50 drift_output.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            
+          elif [ $EXITCODE -eq 0 ]; then
+            echo "✅ **No drift detected** - Infrastructure is in sync" >> $GITHUB_STEP_SUMMARY
+            echo "detected=false" >> $GITHUB_OUTPUT
+            echo "add=0" >> $GITHUB_OUTPUT
+            echo "change=0" >> $GITHUB_OUTPUT
+            echo "destroy=0" >> $GITHUB_OUTPUT
+            
+          else
+            echo "❌ **Error during drift detection**" >> $GITHUB_STEP_SUMMARY
+            echo "detected=error" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Error Output:" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -50 drift_output.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+      
+      - name: Save Drift Report
+        if: steps.drift.outputs.detected == 'true'
+        run: |
+          # Create detailed drift report
+          cat > drift_report_${{ inputs.environment }}.md << EOF
+          # Drift Detection Report
+          
+          **Environment**: ${{ inputs.environment }}
+          **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Run ID**: ${{ github.run_id }}
+          
+          ## Summary
+          - Resources to add: ${{ steps.drift.outputs.add }}
+          - Resources to change: ${{ steps.drift.outputs.change }}
+          - Resources to destroy: ${{ steps.drift.outputs.destroy }}
+          
+          ## Full Output
+          \`\`\`
+          $(cat infrastructure/environments/${{ inputs.environment }}/drift_output.txt)
+          \`\`\`
+          
+          ## Actions
+          - [View Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - Auto-remediation: ${{ inputs.auto_remediate && 'Enabled' || 'Disabled' }}
+          EOF
+      
+      - name: Upload Drift Artifacts
+        if: steps.drift.outputs.detected == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report-${{ inputs.environment }}-${{ github.run_id }}
+          path: |
+            drift_report_${{ inputs.environment }}.md
+            infrastructure/environments/${{ inputs.environment }}/drift_output.txt
+            infrastructure/environments/${{ inputs.environment }}/drift.tfplan
+          retention-days: 30
+      
+      - name: Create GitHub Issue
+        if: steps.drift.outputs.detected == 'true' && inputs.create_issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN || github.token }}
+          script: |
+            const fs = require('fs');
+            const environment = '${{ inputs.environment }}';
+            
+            // Read drift report
+            let reportContent = 'Drift detected in infrastructure';
+            try {
+              reportContent = fs.readFileSync(`drift_report_${environment}.md`, 'utf8');
+            } catch (e) {
+              console.log('Could not read drift report:', e);
+            }
+            
+            const issueTitle = `🔍 Drift Detected in ${environment.toUpperCase()} Environment`;
+            
+            // Check for existing open issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['drift-detection', environment]
+            });
+            
+            const existingIssue = issues.find(issue => issue.title.includes(environment.toUpperCase()));
+            
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `## Updated Drift Detection\n\n${reportContent}\n\n**Updated at**: ${new Date().toISOString()}`
+              });
+              console.log(`Updated existing issue #${existingIssue.number}`);
+            } else {
+              // Create new issue
+              const { data: newIssue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: reportContent,
+                labels: ['drift-detection', environment, 'infrastructure']
+              });
+              console.log(`Created new issue #${newIssue.number}`);
+            }
+  
+  remediate:
+    name: Auto-Remediate Drift
+    needs: detect
+    if: inputs.auto_remediate && needs.detect.outputs.drift_detected == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Manual Approval for Production
+        if: inputs.environment == 'prod'
+        run: |
+          echo "::warning::Production auto-remediation requires careful review"
+          echo "Proceeding with auto-remediation for ${{ inputs.environment }}..."
+      
+      - name: Apply Remediation
+        uses: ./.github/workflows/reusable-terraform.yml
+        with:
+          operation: apply
+          environment: ${{ inputs.environment }}
+          auto_approve: true
+          terraform_version: ${{ inputs.terraform_version }}
+          terragrunt_version: ${{ inputs.terragrunt_version }}
+        # secrets: inherit is implicit in workflow_call
+      
+      - name: Verify Remediation
+        run: |
+          echo "## ✅ Auto-Remediation Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Drift in ${{ inputs.environment }} has been automatically remediated." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review the apply output" >> $GITHUB_STEP_SUMMARY
+          echo "2. Verify services are functioning correctly" >> $GITHUB_STEP_SUMMARY
+          echo "3. Close any related drift issues" >> $GITHUB_STEP_SUMMARY

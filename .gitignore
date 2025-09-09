@@ -100,3 +100,5 @@ infracost-reports/
 # Monitoring
 grafana-storage/
 prometheus-data/
+# Backups
+.backup-*
