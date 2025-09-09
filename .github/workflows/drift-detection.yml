@@ -2,8 +2,8 @@ name: Drift Detection
 
 on:
   schedule:
-    # Run every 6 hours
-    - cron: '0 */6 * * *'
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       environment:
@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        environment: ${{ fromJson(github.event.inputs.environment == 'all' && '["dev", "staging", "prod"]' || format('["{0}"]', github.event.inputs.environment)) }}
+        environment: ${{ fromJson((github.event_name == 'schedule' || github.event.inputs.environment == 'all' || github.event.inputs.environment == '') && '["dev", "staging", "prod"]' || format('["{0}"]', github.event.inputs.environment || 'dev')) }}
       fail-fast: false
     
     outputs:
@@ -49,25 +49,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform and Terragrunt
-        uses: ./.github/actions/setup-terraform
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
         with:
-          terraform-version: ${{ env.TERRAFORM_VERSION }}
-          terragrunt-version: ${{ env.TERRAGRUNT_VERSION }}
-
-      - name: Setup GCP Authentication
-        uses: ./.github/actions/setup-gcp
-        with:
-          auth-method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
-          wif-provider: ${{ secrets.WIF_PROVIDER }}
-          wif-service-account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          service-account-key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project-id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: Setup Terragrunt Cache
-        uses: ./.github/actions/terragrunt-cache
-        with:
-          environment: ${{ matrix.environment }}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+          working_directory: infrastructure/environments/${{ matrix.environment }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          cache_key_prefix: drift-${{ matrix.environment }}
 
       - name: Terragrunt Init
         working-directory: infrastructure/environments/${{ matrix.environment }}

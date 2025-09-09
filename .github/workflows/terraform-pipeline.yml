@@ -6,14 +6,18 @@ on:
     branches: [main, develop]
     paths:
       - 'infrastructure/**'
-      - '.github/workflows/terraform-pipeline-unified.yml'
+      - '.github/workflows/terraform-pipeline.yml'
       - '.github/actions/**'
+      - '*.hcl'
+      - '*.tf'
 
-  # Trigger on push to main for auto-deployment to dev
+  # Trigger on push to main for auto-deployment to dev (only for infrastructure changes)
   push:
     branches: [main]
     paths:
       - 'infrastructure/**'
+      - '!infrastructure/**/*.md'
+      - '!infrastructure/**/*.txt'
 
   # Manual trigger for any operation
   workflow_dispatch:
@@ -90,18 +94,28 @@ jobs:
           # Determine operation based on event
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             OPERATION="plan"
-            ENVIRONMENTS=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | \
-              grep -E 'infrastructure/environments/(dev|staging|prod)' | \
-              sed -E 's|infrastructure/environments/([^/]+)/.*|\1|' | sort -u | tr '\n' ',' | sed 's/,$//')
+            # Check for infrastructure changes
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD || true)
+            if [[ -n "$CHANGED_FILES" ]]; then
+              ENVIRONMENTS=$(echo "$CHANGED_FILES" | \
+                grep -E 'infrastructure/environments/(dev|staging|prod)' | \
+                sed -E 's|infrastructure/environments/([^/]+)/.*|\1|' | sort -u | tr '\n' ',' | sed 's/,$//' || true)
+            fi
+            # If no environment-specific changes, check for module changes
+            if [[ -z "$ENVIRONMENTS" ]]; then
+              if echo "$CHANGED_FILES" | grep -q 'infrastructure/modules/'; then
+                ENVIRONMENTS="dev"  # Default to dev for module changes
+              fi
+            fi
             AUTO_APPROVE="false"
           elif [[ "${{ github.event_name }}" == "push" ]] && [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             OPERATION="apply"
             ENVIRONMENTS="dev"
             AUTO_APPROVE="true"
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            OPERATION="${{ github.event.inputs.operation }}"
-            ENVIRONMENTS="${{ github.event.inputs.environment }}"
-            AUTO_APPROVE="${{ github.event.inputs.auto_approve }}"
+            OPERATION="${{ github.event.inputs.operation || 'plan' }}"
+            ENVIRONMENTS="${{ github.event.inputs.environment || 'dev' }}"
+            AUTO_APPROVE="${{ github.event.inputs.auto_approve || 'false' }}"
           else
             OPERATION="plan"
             ENVIRONMENTS=""
@@ -113,14 +127,20 @@ jobs:
             ENVIRONMENTS="dev,staging,prod"
           fi
           
+          # Default to dev if no environment specified but we have a workflow_dispatch
+          if [[ -z "$ENVIRONMENTS" ]] && [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENVIRONMENTS="dev"
+          fi
+          
           # Check if we should run
           if [[ -z "$ENVIRONMENTS" ]]; then
             echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "environments=" >> $GITHUB_OUTPUT
           else
             echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "environments=$ENVIRONMENTS" >> $GITHUB_OUTPUT
           fi
           
-          echo "environments=$ENVIRONMENTS" >> $GITHUB_OUTPUT
           echo "operation=$OPERATION" >> $GITHUB_OUTPUT
           echo "auto_approve=$AUTO_APPROVE" >> $GITHUB_OUTPUT
           
@@ -147,9 +167,9 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-environment
         with:
-          gcp_auth_method: ${{ vars.GCP_AUTH_METHOD || 'workload-identity' }}
-          gcp_service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          gcp_workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Run Checkov Security Scan
@@ -204,9 +224,9 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-environment
         with:
-          gcp_auth_method: ${{ vars.GCP_AUTH_METHOD || 'workload-identity' }}
-          gcp_service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          gcp_workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Setup Infracost
@@ -254,7 +274,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: ${{ fromJson(format('[{0}]', format('"{0}"', replace(needs.detect-changes.outputs.environments, ',', '","')))) }}
+        environment: ${{ fromJson(needs.detect-changes.outputs.environments != '' && format('[{0}]', format('"{0}"', replace(needs.detect-changes.outputs.environments, ',', '","'))) || '["dev"]') }}
       max-parallel: ${{ github.event.inputs.parallel == 'true' && 3 || 1 }}
     
     runs-on: ubuntu-latest
@@ -262,7 +282,7 @@ jobs:
     
     environment:
       name: ${{ matrix.environment }}
-      url: https://console.cloud.google.com/home/dashboard?project=${{ vars.GCP_PROJECT_ID }}
+      url: https://console.cloud.google.com/home/dashboard?project=${{ secrets.GCP_PROJECT_ID }}
     
     permissions:
       contents: read
@@ -277,9 +297,9 @@ jobs:
         uses: ./.github/actions/setup-environment
         with:
           working_directory: infrastructure/environments/${{ matrix.environment }}
-          gcp_auth_method: ${{ vars.GCP_AUTH_METHOD || 'workload-identity' }}
-          gcp_service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          gcp_workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           cache_key_prefix: terragrunt-${{ matrix.environment }}
 
@@ -407,9 +427,9 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-environment
         with:
-          gcp_auth_method: ${{ vars.GCP_AUTH_METHOD || 'workload-identity' }}
-          gcp_service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          gcp_workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Run Smoke Tests
@@ -419,13 +439,13 @@ jobs:
             
             # Example smoke tests
             echo "Testing network connectivity..."
-            gcloud compute networks list --project=${{ vars.GCP_PROJECT_ID }}
+            gcloud compute networks list --project=${{ secrets.GCP_PROJECT_ID }}
             
             echo "Testing IAM configuration..."
-            gcloud projects get-iam-policy ${{ vars.GCP_PROJECT_ID }}
+            gcloud projects get-iam-policy ${{ secrets.GCP_PROJECT_ID }}
             
             echo "Testing resource health..."
-            gcloud compute instances list --project=${{ vars.GCP_PROJECT_ID }}
+            gcloud compute instances list --project=${{ secrets.GCP_PROJECT_ID }}
             
             echo "::endgroup::"
           done
@@ -470,7 +490,7 @@ jobs:
           fi
 
       - name: Slack Notification
-        if: vars.SLACK_WEBHOOK != ''
+        if: secrets.SLACK_WEBHOOK != ''
         uses: slackapi/slack-github-action@v1
         with:
           webhook-url: ${{ secrets.SLACK_WEBHOOK }}

@@ -1,6 +1,7 @@
-name: Setup Infrastructure Secrets
+name: Setup Infrastructure
 
 on:
+  # Only manual trigger - this is an admin operation
   workflow_dispatch:
     inputs:
       project_id:

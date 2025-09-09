@@ -52,14 +52,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup GCP Authentication
-        uses: ./.github/actions/setup-gcp
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
         with:
-          auth-method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
-          wif-provider: ${{ secrets.WIF_PROVIDER }}
-          wif-service-account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          service-account-key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project-id: ${{ secrets.GCP_PROJECT_ID }}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Diagnose Issues
         id: diagnose
@@ -169,17 +170,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform and Terragrunt
-        uses: ./.github/actions/setup-terraform
-
-      - name: Setup GCP Authentication
-        uses: ./.github/actions/setup-gcp
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
         with:
-          auth-method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
-          wif-provider: ${{ secrets.WIF_PROVIDER }}
-          wif-service-account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          service-account-key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project-id: ${{ secrets.GCP_PROJECT_ID }}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Force Unlock State
         run: |
@@ -296,14 +295,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup GCP Authentication
-        uses: ./.github/actions/setup-gcp
+      - name: Setup Environment
+        uses: ./.github/actions/setup-environment
         with:
-          auth-method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
-          wif-provider: ${{ secrets.WIF_PROVIDER }}
-          wif-service-account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          service-account-key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project-id: ${{ secrets.GCP_PROJECT_ID }}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terragrunt_version: ${{ env.TERRAGRUNT_VERSION }}
+          gcp_auth_method: ${{ secrets.WIF_PROVIDER && 'workload-identity' || 'service-account' }}
+          gcp_service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          gcp_workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          gcp_service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Heal Resources
         run: |
