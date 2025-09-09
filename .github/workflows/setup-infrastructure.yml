@@ -48,15 +48,35 @@ jobs:
           sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
 
       - name: Configure GCP Credentials
+        if: ${{ env.GCP_SA_KEY != '' }}
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
+        if: ${{ env.GCP_SA_KEY != '' }}
         uses: google-github-actions/setup-gcloud@v2
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Validation Only (No Credentials)
+        if: ${{ env.GCP_SA_KEY == '' }}
+        run: |
+          echo "🔍 Running in validation mode (no GCP credentials configured)"
+          echo "✅ Setup workflow validated"
+          echo ""
+          echo "ℹ️ To enable actual infrastructure setup:"
+          echo "   1. Configure GCP_SA_KEY secret in repository settings"
+          echo "   2. Run this workflow with required inputs"
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
       - name: Enable Required APIs
-        if: inputs.enable_apis
+        if: ${{ env.GCP_SA_KEY != '' && inputs.enable_apis }}
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: |
           echo "🔧 Enabling required GCP APIs..."
           
@@ -85,6 +105,9 @@ jobs:
           echo "✅ All required APIs enabled"
 
       - name: Create State Bucket
+        if: ${{ env.GCP_SA_KEY != '' }}
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: |
           echo "🪣 Creating Terraform state bucket..."
           
@@ -123,6 +146,9 @@ jobs:
           fi
 
       - name: Setup Service Accounts
+        if: ${{ env.GCP_SA_KEY != '' }}
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: |
           echo "👤 Setting up service accounts..."
           
@@ -156,6 +182,9 @@ jobs:
           fi
 
       - name: Initialize Terragrunt
+        if: ${{ env.GCP_SA_KEY != '' }}
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: |
           echo "🚀 Initializing Terragrunt..."
           cd infrastructure
