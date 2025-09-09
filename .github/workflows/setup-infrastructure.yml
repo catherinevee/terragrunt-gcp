@@ -1,0 +1,438 @@
+name: Setup Infrastructure Secrets
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      organization:
+        description: 'Organization name'
+        required: true
+        default: 'yanka'
+        type: string
+      region:
+        description: 'GCP Region'
+        required: true
+        default: 'europe-west1'
+        type: string
+      auth_method:
+        description: 'Authentication method'
+        required: true
+        type: choice
+        options:
+          - 'workload-identity'
+          - 'service-account-key'
+        default: 'workload-identity'
+      setup_slack:
+        description: 'Setup Slack notifications'
+        required: false
+        type: boolean
+        default: false
+      setup_infracost:
+        description: 'Setup Infracost'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  GCP_PROJECT_ID: ${{ inputs.project_id }}
+  ORGANIZATION: ${{ inputs.organization }}
+  REGION: ${{ inputs.region }}
+  GITHUB_REPO: ${{ github.repository }}
+
+jobs:
+  setup-secrets:
+    name: Setup GitHub Secrets and GCP Resources
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      actions: write
+      secrets: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+      
+      - name: Authenticate to GCP
+        run: |
+          echo "${{ secrets.GCP_SETUP_KEY }}" | base64 -d > /tmp/gcp-key.json
+          gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
+          gcloud config set project ${{ env.GCP_PROJECT_ID }}
+          rm -f /tmp/gcp-key.json
+      
+      - name: Get Project Number
+        id: project
+        run: |
+          PROJECT_NUMBER=$(gcloud projects describe ${{ env.GCP_PROJECT_ID }} --format="value(projectNumber)")
+          echo "project_number=$PROJECT_NUMBER" >> $GITHUB_OUTPUT
+      
+      - name: Enable Required APIs
+        run: |
+          APIS=(
+            "compute.googleapis.com"
+            "container.googleapis.com"
+            "storage.googleapis.com"
+            "cloudresourcemanager.googleapis.com"
+            "servicenetworking.googleapis.com"
+            "iam.googleapis.com"
+            "iamcredentials.googleapis.com"
+            "sqladmin.googleapis.com"
+            "secretmanager.googleapis.com"
+            "cloudkms.googleapis.com"
+          )
+          
+          for api in "${APIS[@]}"; do
+            echo "Enabling $api..."
+            gcloud services enable $api --project=${{ env.GCP_PROJECT_ID }} || true
+          done
+      
+      - name: Create Service Account
+        id: service_account
+        run: |
+          SA_NAME="github-actions-sa"
+          SA_EMAIL="${SA_NAME}@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+          
+          # Check if SA exists
+          if gcloud iam service-accounts describe ${SA_EMAIL} --project=${{ env.GCP_PROJECT_ID }} 2>/dev/null; then
+            echo "Service account already exists: ${SA_EMAIL}"
+          else
+            gcloud iam service-accounts create ${SA_NAME} \
+              --display-name="GitHub Actions Service Account" \
+              --description="Used by GitHub Actions for Terragrunt deployments" \
+              --project=${{ env.GCP_PROJECT_ID }}
+            echo "Service account created: ${SA_EMAIL}"
+          fi
+          
+          echo "sa_email=$SA_EMAIL" >> $GITHUB_OUTPUT
+      
+      - name: Grant IAM Roles
+        run: |
+          ROLES=(
+            "roles/editor"
+            "roles/storage.admin"
+            "roles/resourcemanager.projectIamAdmin"
+            "roles/iam.serviceAccountUser"
+            "roles/iam.serviceAccountKeyAdmin"
+          )
+          
+          for role in "${ROLES[@]}"; do
+            echo "Granting $role..."
+            gcloud projects add-iam-policy-binding ${{ env.GCP_PROJECT_ID }} \
+              --member="serviceAccount:${{ steps.service_account.outputs.sa_email }}" \
+              --role="$role" \
+              --condition=None 2>/dev/null || true
+          done
+      
+      - name: Setup Workload Identity Federation
+        if: inputs.auth_method == 'workload-identity'
+        id: wif
+        run: |
+          POOL_NAME="github-pool"
+          PROVIDER_NAME="github-provider"
+          
+          # Create workload identity pool
+          if gcloud iam workload-identity-pools describe ${POOL_NAME} --location=global --project=${{ env.GCP_PROJECT_ID }} 2>/dev/null; then
+            echo "Workload identity pool already exists: ${POOL_NAME}"
+          else
+            gcloud iam workload-identity-pools create ${POOL_NAME} \
+              --location="global" \
+              --display-name="GitHub Actions Pool" \
+              --description="Pool for GitHub Actions authentication" \
+              --project=${{ env.GCP_PROJECT_ID }}
+            echo "Workload identity pool created: ${POOL_NAME}"
+          fi
+          
+          # Create workload identity provider
+          if gcloud iam workload-identity-pools providers describe ${PROVIDER_NAME} \
+            --workload-identity-pool=${POOL_NAME} \
+            --location=global \
+            --project=${{ env.GCP_PROJECT_ID }} 2>/dev/null; then
+            echo "Workload identity provider already exists: ${PROVIDER_NAME}"
+          else
+            gcloud iam workload-identity-pools providers create-oidc ${PROVIDER_NAME} \
+              --location="global" \
+              --workload-identity-pool="${POOL_NAME}" \
+              --display-name="GitHub Provider" \
+              --description="OIDC provider for GitHub Actions" \
+              --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+              --issuer-uri="https://token.actions.githubusercontent.com" \
+              --project=${{ env.GCP_PROJECT_ID }}
+            echo "Workload identity provider created: ${PROVIDER_NAME}"
+          fi
+          
+          # Get provider resource name
+          WIF_PROVIDER=$(gcloud iam workload-identity-pools providers describe ${PROVIDER_NAME} \
+            --location="global" \
+            --workload-identity-pool="${POOL_NAME}" \
+            --project=${{ env.GCP_PROJECT_ID }} \
+            --format="value(name)")
+          
+          # Bind service account to workload identity
+          gcloud iam service-accounts add-iam-policy-binding ${{ steps.service_account.outputs.sa_email }} \
+            --role="roles/iam.workloadIdentityUser" \
+            --member="principalSet://iam.googleapis.com/${WIF_PROVIDER}/attribute.repository/${{ env.GITHUB_REPO }}" \
+            --project=${{ env.GCP_PROJECT_ID }}
+          
+          echo "wif_provider=$WIF_PROVIDER" >> $GITHUB_OUTPUT
+      
+      - name: Setup Service Account Key
+        if: inputs.auth_method == 'service-account-key'
+        id: sa_key
+        run: |
+          # Create service account key
+          gcloud iam service-accounts keys create /tmp/sa-key.json \
+            --iam-account=${{ steps.service_account.outputs.sa_email }} \
+            --project=${{ env.GCP_PROJECT_ID }}
+          
+          # Encode key
+          SA_KEY=$(cat /tmp/sa-key.json | base64 -w 0)
+          echo "sa_key=$SA_KEY" >> $GITHUB_OUTPUT
+          
+          # Clean up
+          rm -f /tmp/sa-key.json
+      
+      - name: Create GCS Buckets
+        id: buckets
+        run: |
+          STATE_BUCKET="${{ env.ORGANIZATION }}-terraform-state-${{ env.GCP_PROJECT_ID }}"
+          BACKUP_BUCKET="${{ env.ORGANIZATION }}-terraform-backups-${{ env.GCP_PROJECT_ID }}"
+          
+          for bucket in ${STATE_BUCKET} ${BACKUP_BUCKET}; do
+            if gsutil ls -b gs://${bucket} 2>/dev/null; then
+              echo "Bucket already exists: ${bucket}"
+            else
+              gsutil mb -p ${{ env.GCP_PROJECT_ID }} -c STANDARD -l ${{ env.REGION }} gs://${bucket}/
+              gsutil versioning set on gs://${bucket}/
+              gsutil uniformbucketlevelaccess set on gs://${bucket}/
+              
+              # Set lifecycle policy for backup bucket
+              if [ "${bucket}" == "${BACKUP_BUCKET}" ]; then
+                cat > /tmp/lifecycle.json <<EOF
+          {
+            "lifecycle": {
+              "rule": [
+                {
+                  "action": {"type": "Delete"},
+                  "condition": {"age": 90}
+                }
+              ]
+            }
+          }
+          EOF
+                gsutil lifecycle set /tmp/lifecycle.json gs://${bucket}/
+                rm -f /tmp/lifecycle.json
+              fi
+              
+              echo "Bucket created: ${bucket}"
+            fi
+          done
+          
+          echo "state_bucket=$STATE_BUCKET" >> $GITHUB_OUTPUT
+          echo "backup_bucket=$BACKUP_BUCKET" >> $GITHUB_OUTPUT
+      
+      - name: Set GitHub Secrets
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { Octokit } = require('@octokit/rest');
+            const sodium = require('tweetsodium');
+            
+            // Initialize Octokit with the token
+            const octokit = new Octokit({
+              auth: '${{ secrets.GITHUB_TOKEN }}'
+            });
+            
+            // Get the repository public key for secret encryption
+            const { data: { key, key_id } } = await octokit.rest.actions.getRepoPublicKey({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            // Helper function to encrypt secrets
+            function encryptSecret(secret) {
+              const messageBytes = Buffer.from(secret);
+              const keyBytes = Buffer.from(key, 'base64');
+              const encryptedBytes = sodium.seal(messageBytes, keyBytes);
+              return Buffer.from(encryptedBytes).toString('base64');
+            }
+            
+            // Define secrets to set
+            const secrets = {
+              'GCP_PROJECT_ID': '${{ env.GCP_PROJECT_ID }}',
+              'STATE_BUCKET': '${{ steps.buckets.outputs.state_bucket }}',
+              'BACKUP_BUCKET': '${{ steps.buckets.outputs.backup_bucket }}'
+            };
+            
+            // Add authentication-specific secrets
+            if ('${{ inputs.auth_method }}' === 'workload-identity') {
+              secrets['WIF_PROVIDER'] = '${{ steps.wif.outputs.wif_provider }}';
+              secrets['WIF_SERVICE_ACCOUNT'] = '${{ steps.service_account.outputs.sa_email }}';
+            } else {
+              secrets['GCP_SERVICE_ACCOUNT_KEY'] = '${{ steps.sa_key.outputs.sa_key }}';
+            }
+            
+            // Set each secret
+            for (const [name, value] of Object.entries(secrets)) {
+              if (value) {
+                console.log(`Setting secret: ${name}`);
+                await octokit.rest.actions.createOrUpdateRepoSecret({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  secret_name: name,
+                  encrypted_value: encryptSecret(value),
+                  key_id: key_id
+                });
+              }
+            }
+            
+            console.log('All secrets have been set successfully');
+      
+      - name: Create GitHub Environments
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const environments = ['dev', 'staging', 'prod'];
+            
+            for (const env of environments) {
+              console.log(`Creating environment: ${env}`);
+              
+              try {
+                await github.rest.repos.createOrUpdateEnvironment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  environment_name: env,
+                  wait_timer: env === 'prod' ? 5 : 0,
+                  reviewers: [],
+                  deployment_branch_policy: null
+                });
+                console.log(`Environment ${env} created/updated`);
+              } catch (error) {
+                console.log(`Environment ${env} might already exist: ${error.message}`);
+              }
+            }
+      
+      - name: Setup Slack Webhook
+        if: inputs.setup_slack
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { Octokit } = require('@octokit/rest');
+            const sodium = require('tweetsodium');
+            
+            // You would need to pass the Slack webhook URL as a secret or input
+            const slackWebhook = '${{ secrets.SLACK_WEBHOOK_SETUP }}';
+            
+            if (slackWebhook) {
+              const octokit = new Octokit({
+                auth: '${{ secrets.GITHUB_TOKEN }}'
+              });
+              
+              const { data: { key, key_id } } = await octokit.rest.actions.getRepoPublicKey({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              function encryptSecret(secret) {
+                const messageBytes = Buffer.from(secret);
+                const keyBytes = Buffer.from(key, 'base64');
+                const encryptedBytes = sodium.seal(messageBytes, keyBytes);
+                return Buffer.from(encryptedBytes).toString('base64');
+              }
+              
+              await octokit.rest.actions.createOrUpdateRepoSecret({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                secret_name: 'SLACK_WEBHOOK',
+                encrypted_value: encryptSecret(slackWebhook),
+                key_id: key_id
+              });
+              
+              console.log('Slack webhook configured');
+            }
+      
+      - name: Setup Infracost
+        if: inputs.setup_infracost
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { Octokit } = require('@octokit/rest');
+            const sodium = require('tweetsodium');
+            
+            // You would need to pass the Infracost API key as a secret or input
+            const infracostKey = '${{ secrets.INFRACOST_API_KEY_SETUP }}';
+            
+            if (infracostKey) {
+              const octokit = new Octokit({
+                auth: '${{ secrets.GITHUB_TOKEN }}'
+              });
+              
+              const { data: { key, key_id } } = await octokit.rest.actions.getRepoPublicKey({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              function encryptSecret(secret) {
+                const messageBytes = Buffer.from(secret);
+                const keyBytes = Buffer.from(key, 'base64');
+                const encryptedBytes = sodium.seal(messageBytes, keyBytes);
+                return Buffer.from(encryptedBytes).toString('base64');
+              }
+              
+              await octokit.rest.actions.createOrUpdateRepoSecret({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                secret_name: 'INFRACOST_API_KEY',
+                encrypted_value: encryptSecret(infracostKey),
+                key_id: key_id
+              });
+              
+              console.log('Infracost API key configured');
+            }
+      
+      - name: Summary
+        run: |
+          echo "## Setup Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Resources Created:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service Account:** ${{ steps.service_account.outputs.sa_email }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **State Bucket:** ${{ steps.buckets.outputs.state_bucket }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backup Bucket:** ${{ steps.buckets.outputs.backup_bucket }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ inputs.auth_method }}" == "workload-identity" ]; then
+            echo "- **WIF Provider:** ${{ steps.wif.outputs.wif_provider }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Authentication:** Service Account Key" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### GitHub Configuration:" >> $GITHUB_STEP_SUMMARY
+          echo "- Secrets configured" >> $GITHUB_STEP_SUMMARY
+          echo "- Environments created (dev, staging, prod)" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ inputs.setup_slack }}" == "true" ]; then
+            echo "- Slack notifications enabled" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ inputs.setup_infracost }}" == "true" ]; then
+            echo "- Infracost configured" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Update \`infrastructure/accounts/account.hcl\` with:" >> $GITHUB_STEP_SUMMARY
+          echo "   - organization = \"${{ env.ORGANIZATION }}\"" >> $GITHUB_STEP_SUMMARY
+          echo "   - project_id = \"${{ env.GCP_PROJECT_ID }}\"" >> $GITHUB_STEP_SUMMARY
+          echo "2. Create a pull request to test the pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "3. Monitor the pipeline in the Actions tab" >> $GITHUB_STEP_SUMMARY
