@@ -298,7 +298,7 @@ jobs:
           fi
 
       - name: Send Slack Notification
-        if: always() && secrets.SLACK_WEBHOOK
+        if: always()
         uses: 8398a7/action-slack@v3
         with:
           status: custom

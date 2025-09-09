@@ -490,7 +490,7 @@ jobs:
           fi
 
       - name: Slack Notification
-        if: secrets.SLACK_WEBHOOK != ''
+        if: always()
         uses: slackapi/slack-github-action@v1
         with:
           webhook-url: ${{ secrets.SLACK_WEBHOOK }}
