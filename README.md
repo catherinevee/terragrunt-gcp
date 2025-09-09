@@ -1,5 +1,6 @@
 # GCP Terragrunt Infrastructure
 
+![Test Simple](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/test-simple.yml/badge.svg)
 ![Terraform Pipeline](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/terraform-pipeline.yml/badge.svg)
 ![Setup Infrastructure](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/setup-infrastructure.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
