@@ -1,9 +1,7 @@
 # GCP Terragrunt Infrastructure
 
+![CI/CD Pipeline](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/ci-cd.yml/badge.svg)
 ![Infrastructure Management](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/main.yml/badge.svg)
-![Test Simple](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/test-simple.yml/badge.svg)
-![Terraform Pipeline](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/terraform-pipeline.yml/badge.svg)
-![Setup Infrastructure](https://github.com/catherinevee/terragrunt-gcp/actions/workflows/setup-infrastructure.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Production-ready Terragrunt infrastructure for Google Cloud Platform with multi-environment support, GitOps workflows, and comprehensive security controls.
