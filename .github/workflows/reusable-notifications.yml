@@ -1,0 +1,210 @@
+name: Reusable Notifications
+
+on:
+  workflow_call:
+    inputs:
+      status:
+        description: 'Status of the operation'
+        type: string
+        required: true
+      operation:
+        description: 'Operation performed'
+        type: string
+        required: true
+      environment:
+        description: 'Target environment'
+        type: string
+        required: true
+      details:
+        description: 'Additional details'
+        type: string
+        default: ''
+      notify_slack:
+        description: 'Send Slack notification'
+        type: boolean
+        default: true
+      create_issue:
+        description: 'Create GitHub issue on failure'
+        type: boolean
+        default: false
+    secrets:
+      SLACK_WEBHOOK:
+        required: false
+      GITHUB_TOKEN:
+        required: false
+
+jobs:
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Prepare Notification Data
+        id: prepare
+        run: |
+          # Determine emoji based on status
+          case "${{ inputs.status }}" in
+            success)
+              EMOJI="✅"
+              COLOR="good"
+              ;;
+            failure|failed)
+              EMOJI="❌"
+              COLOR="danger"
+              ;;
+            warning|drift)
+              EMOJI="⚠️"
+              COLOR="warning"
+              ;;
+            info)
+              EMOJI="ℹ️"
+              COLOR="#0000FF"
+              ;;
+            *)
+              EMOJI="❓"
+              COLOR="#808080"
+              ;;
+          esac
+          
+          echo "emoji=$EMOJI" >> $GITHUB_OUTPUT
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
+          
+          # Create message
+          MESSAGE="$EMOJI *${{ inputs.operation }}* in *${{ inputs.environment }}*: ${{ inputs.status }}"
+          echo "message=$MESSAGE" >> $GITHUB_OUTPUT
+          
+          # Add to GitHub summary
+          echo "## Notification Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ inputs.status }} $EMOJI" >> $GITHUB_STEP_SUMMARY
+          echo "- **Operation**: ${{ inputs.operation }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          if [[ -n "${{ inputs.details }}" ]]; then
+            echo "- **Details**: ${{ inputs.details }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Send Slack Notification
+        if: inputs.notify_slack && secrets.SLACK_WEBHOOK
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          # Build Slack payload
+          PAYLOAD=$(cat <<EOF
+          {
+            "text": "${{ steps.prepare.outputs.message }}",
+            "attachments": [
+              {
+                "color": "${{ steps.prepare.outputs.color }}",
+                "fields": [
+                  {
+                    "title": "Operation",
+                    "value": "${{ inputs.operation }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Environment",
+                    "value": "${{ inputs.environment }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Status",
+                    "value": "${{ inputs.status }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Triggered By",
+                    "value": "${{ github.actor }}",
+                    "short": true
+                  }
+                ],
+                "footer": "GitHub Actions",
+                "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                "ts": $(date +%s),
+                "actions": [
+                  {
+                    "type": "button",
+                    "text": "View Run",
+                    "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+          
+          # Send to Slack
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$SLACK_WEBHOOK" || echo "Failed to send Slack notification"
+      
+      - name: Create GitHub Issue on Failure
+        if: inputs.create_issue && inputs.status == 'failure' && secrets.GITHUB_TOKEN
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN || github.token }}
+          script: |
+            const title = `🚨 ${context.payload.inputs?.operation || 'Operation'} Failed in ${context.payload.inputs?.environment || 'environment'}`;
+            const body = `
+            ## Failure Report
+            
+            **Operation**: ${{ inputs.operation }}
+            **Environment**: ${{ inputs.environment }}
+            **Status**: ${{ inputs.status }}
+            **Run ID**: ${context.runId}
+            **Actor**: ${context.actor}
+            
+            ### Details
+            ${{ inputs.details || 'No additional details provided.' }}
+            
+            ### Links
+            - [View Workflow Run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            - [View Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/attempts/1)
+            
+            ### Next Steps
+            1. Review the workflow logs for error details
+            2. Fix the underlying issue
+            3. Re-run the workflow
+            
+            ---
+            *This issue was automatically created by the CI/CD pipeline*
+            `;
+            
+            // Check for existing open issue with same title
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['ci-failure', '${{ inputs.environment }}']
+            });
+            
+            const existingIssue = issues.find(issue => issue.title === title);
+            
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `## Update: Another failure occurred\n\n${body}`
+              });
+              console.log(`Updated existing issue #${existingIssue.number}`);
+            } else {
+              // Create new issue
+              const { data: newIssue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['ci-failure', '${{ inputs.environment }}', 'infrastructure']
+              });
+              console.log(`Created new issue #${newIssue.number}`);
+            }
+      
+      - name: Send Email Notification
+        if: inputs.status == 'failure' && vars.NOTIFICATION_EMAIL
+        run: |
+          echo "Email notification would be sent to: ${{ vars.NOTIFICATION_EMAIL }}"
+          echo "Subject: ${{ steps.prepare.outputs.message }}"
+          echo "Note: Email sending requires additional setup with an email service"

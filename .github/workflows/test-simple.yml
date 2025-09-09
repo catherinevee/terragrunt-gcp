@@ -1,0 +1,29 @@
+name: Test Simple
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Simple Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Echo Test
+        run: |
+          echo "✅ Workflow is running successfully"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Repository: ${{ github.repository }}"
+      
+      - name: Success Message
+        run: |
+          echo "::notice::Test Simple workflow completed successfully"
+          echo "This is a basic workflow to verify GitHub Actions is working."

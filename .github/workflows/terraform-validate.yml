@@ -1,4 +1,4 @@
-name: "[DEPRECATED] Terraform Pipeline"
+name: "[DEPRECATED] Terraform Validate"
 
 # This workflow has been deprecated and replaced by main.yml
 # It exists only to prevent GitHub Actions failures for historical commits
@@ -19,9 +19,11 @@ jobs:
         run: |
           echo "::warning::This workflow has been DEPRECATED"
           echo "This workflow has been replaced by:"
-          echo "  - .github/workflows/main.yml (main orchestrator)"
-          echo "  - .github/workflows/reusable-terraform.yml (terraform operations)"
+          echo "  - .github/workflows/main.yml (main orchestrator with validate operation)"
+          echo "  - .github/workflows/reusable-validation.yml (validation logic)"
           echo ""
-          echo "Please update your references to use the new consolidated workflows."
+          echo "To run validation, use:"
+          echo "  gh workflow run main.yml -f operation=validate -f environment=dev"
+          echo ""
           echo "This stub will be removed once GitHub stops referencing it."
           exit 0

@@ -1,0 +1,89 @@
+name: Terraform Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate Terraform Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      
+      - name: Setup Terragrunt
+        run: |
+          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v0.52.0/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+      
+      - name: Validate Module Structure
+        run: |
+          echo "Validating Terraform modules structure..."
+          
+          # Check if required directories exist
+          for dir in infrastructure/modules infrastructure/environments; do
+            if [ -d "$dir" ]; then
+              echo "✓ $dir exists"
+            else
+              echo "✗ $dir missing"
+              exit 1
+            fi
+          done
+          
+          # Validate each module has required files
+          for module in infrastructure/modules/*/*/; do
+            if [ -d "$module" ]; then
+              echo "Checking module: $module"
+              for file in main.tf variables.tf outputs.tf; do
+                if [ -f "$module/$file" ]; then
+                  echo "  ✓ $file exists"
+                else
+                  echo "  ✗ $file missing"
+                fi
+              done
+            fi
+          done
+      
+      - name: Terraform Format Check
+        run: |
+          echo "Checking Terraform formatting..."
+          terraform fmt -check -recursive infrastructure/ || true
+      
+      - name: Validate Terraform Syntax
+        run: |
+          echo "Validating Terraform syntax in modules..."
+          for module in infrastructure/modules/*/*/; do
+            if [ -d "$module" ]; then
+              echo "Validating: $module"
+              cd "$module"
+              terraform init -backend=false
+              terraform validate
+              cd - > /dev/null
+            fi
+          done
+      
+      - name: Check HCL Syntax
+        run: |
+          echo "Checking HCL syntax..."
+          find infrastructure -name "*.hcl" -exec echo "Checking: {}" \; -exec terragrunt hclfmt --terragrunt-check {} \; || true
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Terraform version: $(terraform version -json | jq -r .terraform_version)" >> $GITHUB_STEP_SUMMARY
+          echo "- Terragrunt version: $(terragrunt --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- Modules validated: $(find infrastructure/modules -type d -name "*.tf" | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- HCL files checked: $(find infrastructure -name "*.hcl" | wc -l)" >> $GITHUB_STEP_SUMMARY

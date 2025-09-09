@@ -22,7 +22,21 @@
       "Bash(gh pr checks:*)",
       "Bash(gh pr close:*)",
       "Bash(git rm:*)",
-      "Bash(git stash:*)"
+      "Bash(gh api:*)",
+      "Bash(sed:*)",
+      "Bash(yamllint:*)",
+      "Bash(for file in .github/workflows/reusable-*.yml .github/workflows/main.yml)",
+      "Bash(./test-consolidated-workflows.sh:*)",
+      "Bash(DRY_RUN=true ./cleanup-repository.sh)",
+      "Bash(DRY_RUN=false ./cleanup-repository.sh)",
+      "Bash(tree:*)",
+      "Bash(./test-workflows.sh:*)",
+      "Bash(./scripts/test-workflows.sh:*)",
+      "Bash(DRY_RUN=true ./scripts/cleanup-subfolders.sh)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(git stash:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
