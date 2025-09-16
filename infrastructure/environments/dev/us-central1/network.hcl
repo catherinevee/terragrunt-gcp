@@ -18,13 +18,13 @@ locals {
 }
 
 inputs = {
-  project_id   = "${local.environment}-project"
-  network_name = "${local.environment}-${local.region}-vpc"
+  project_id   = "acme-ecommerce-platform-${local.environment}"
+  network_name = "acme-ecommerce-platform-vpc-${local.environment}"
   routing_mode = "REGIONAL"
 
   subnets = [
     {
-      subnet_name           = "${local.environment}-${local.region}-subnet-01"
+      subnet_name           = "acme-ecommerce-web-tier-${local.environment}"
       subnet_ip             = "10.0.1.0/24"
       subnet_region         = local.region
       subnet_private_access = "true"
@@ -32,7 +32,7 @@ inputs = {
       description           = "Main subnet for ${local.environment} in ${local.region}"
     },
     {
-      subnet_name           = "${local.environment}-${local.region}-subnet-02"
+      subnet_name           = "acme-ecommerce-app-tier-${local.environment}"
       subnet_ip             = "10.0.2.0/24"
       subnet_region         = local.region
       subnet_private_access = "true"
@@ -42,7 +42,7 @@ inputs = {
   ]
 
   secondary_ranges = {
-    "${local.environment}-${local.region}-subnet-01" = [
+    "acme-ecommerce-web-tier-${local.environment}" = [
       {
         range_name    = "gke-pods"
         ip_cidr_range = "10.1.0.0/16"
@@ -58,7 +58,7 @@ inputs = {
   
   firewall_rules = [
     {
-      name        = "${local.environment}-allow-internal"
+      name        = "acme-ecommerce-allow-internal-${local.environment}"
       description = "Allow internal traffic"
       direction   = "INGRESS"
       priority    = 1000

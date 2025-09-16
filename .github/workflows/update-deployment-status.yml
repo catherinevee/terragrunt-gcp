@@ -1,0 +1,129 @@
+name: Update Deployment Status Badge
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update status badge'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  TF_VERSION: '1.9.0'
+  PROJECT_ID: 'cataziza-platform-dev'
+  GCP_REGION: 'europe-west1'
+
+jobs:
+  update-status:
+    name: Update Deployment Status
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Google Cloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+    
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Make scripts executable
+      run: |
+        chmod +x scripts/status/check-deployment-status.sh
+        chmod +x scripts/status/generate-badges.js
+    
+    - name: Check deployment status
+      id: check-status
+      run: |
+        echo "🔍 Checking deployment status..."
+        cd scripts/status
+        ./check-deployment-status.sh
+        
+        # Read the status
+        STATUS=$(cat status.txt)
+        echo "Status: $STATUS"
+        echo "status=$STATUS" >> $GITHUB_OUTPUT
+        
+        # Display status file contents
+        if [ -f "deployment-status.json" ]; then
+          echo "📄 Status JSON:"
+          cat deployment-status.json
+        fi
+    
+    - name: Generate badges
+      run: |
+        echo "🎨 Generating status badges..."
+        cd scripts/status
+        node generate-badges.js
+        
+        # Generate dynamic badge
+        node badge.js > ../../docs/status/badge.svg
+        echo "✅ Dynamic badge generated"
+    
+    - name: Create docs directory
+      run: |
+        mkdir -p docs/status
+    
+    - name: Copy status files
+      run: |
+        cp scripts/status/deployment-status.json docs/status/ 2>/dev/null || echo "No status file to copy"
+        cp scripts/status/badge-generator.html docs/status/index.html
+    
+    - name: Commit and push changes
+      if: steps.check-status.outputs.status != ''
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add all changes
+        git add .
+        
+        # Check if there are changes to commit
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "🔄 Update deployment status: ${{ steps.check-status.outputs.status }} [skip ci]"
+          git push
+          echo "✅ Status updated and pushed"
+        fi
+    
+    - name: Create status summary
+      if: always()
+      run: |
+        echo "## 🚀 Deployment Status Update" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** ${{ steps.check-status.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Project:** ${{ env.PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Region:** ${{ env.GCP_REGION }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f "scripts/status/deployment-status.json" ]; then
+          echo "**Status Details:**" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat scripts/status/deployment-status.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Badge URLs" >> $GITHUB_STEP_SUMMARY
+        echo "- **Live:** \`https://catherinevee.github.io/terraform-gcp/status/live.svg\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Unalive:** \`https://catherinevee.github.io/terraform-gcp/status/unalive.svg\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Dynamic:** \`https://catherinevee.github.io/terraform-gcp/status/badge.svg\`" >> $GITHUB_STEP_SUMMARY

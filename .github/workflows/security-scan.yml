@@ -1,0 +1,132 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install security tools
+      run: |
+        # Install Checkov
+        pip install checkov
+        
+        # Install Trivy
+        sudo apt-get update
+        sudo apt-get install wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install trivy
+        
+        # Install Gosec
+        go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+        
+        # Install Semgrep
+        pip install semgrep
+        
+    - name: Run Checkov security analysis
+      run: |
+        echo "🔍 Running Checkov security analysis..."
+        checkov -d . --framework dockerfile --framework kubernetes --framework secrets --output json --output-file-path checkov-results.json || true
+        
+    - name: Run Trivy vulnerability scan
+      run: |
+        echo "🔍 Running Trivy vulnerability scan..."
+        trivy fs --format json --output trivy-results.json . || true
+        
+    - name: Run Gosec Go security scan
+      run: |
+        echo "🔍 Running Gosec Go security scan..."
+        gosec -fmt json -out gosec-results.json ./... || true
+        
+    - name: Run Semgrep security scan
+      run: |
+        echo "🔍 Running Semgrep security scan..."
+        semgrep --config=auto --json --output=semgrep-results.json . || true
+        
+    - name: Generate security report
+      run: |
+        echo "📊 Generating security report..."
+        python3 scripts/security-report.py
+        
+    - name: Update security badges
+      run: |
+        echo "🏷️ Updating security badges..."
+        python3 scripts/security-badge.py
+        
+    - name: Commit and push security updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add docs/badges/security-*.svg docs/badges/security-results.json
+        git diff --staged --quiet || git commit -m "Update security badges and report [skip ci]"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload security artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-scan-${{ github.sha }}
+        path: |
+          checkov-results.json
+          trivy-results.json
+          gosec-results.json
+          semgrep-results.json
+          docs/badges/security-*.svg
+          docs/badges/security-results.json
+        retention-days: 30
+        
+    - name: Security scan summary
+      run: |
+        echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Tool | Status | Issues Found |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|--------|--------------|" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f checkov-results.json ]; then
+          checkov_issues=$(jq '.failed // 0' checkov-results.json)
+          echo "| Checkov | ✅ | $checkov_issues |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Checkov | ❌ | N/A |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f trivy-results.json ]; then
+          trivy_issues=$(jq '.Results | length' trivy-results.json)
+          echo "| Trivy | ✅ | $trivy_issues |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Trivy | ❌ | N/A |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f gosec-results.json ]; then
+          gosec_issues=$(jq '.Issues | length' gosec-results.json)
+          echo "| Gosec | ✅ | $gosec_issues |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Gosec | ❌ | N/A |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f semgrep-results.json ]; then
+          semgrep_issues=$(jq '.results | length' semgrep-results.json)
+          echo "| Semgrep | ✅ | $semgrep_issues |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| Semgrep | ❌ | N/A |" >> $GITHUB_STEP_SUMMARY
+        fi

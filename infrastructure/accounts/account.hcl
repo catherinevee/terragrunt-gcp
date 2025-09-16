@@ -3,12 +3,12 @@
 
 locals {
   # Organization details
-  organization = "test"  # Test organization for CI/CD
+  organization = "acme-corp"  # ACME Corporation - E-commerce Platform
   billing_account = "000000-000000-000000"  # Mock billing account for testing
   
-  # Project naming convention: {organization}-{environment}-project
+  # Project naming convention: {organization}-{business-unit}-{application}-{environment}
   # This will be overridden by environment-specific configurations
-  project_id = "test-project-123"  # Fixed project ID for testing
+  project_id = "acme-ecommerce-platform"  # ACME E-commerce Platform Project
   
   # Default domain for the organization
   domain = "${local.organization}.com"
@@ -16,8 +16,10 @@ locals {
   # Organization-wide tags
   organization_tags = {
     organization = local.organization
+    business_unit = "ecommerce"
     cost_center  = "engineering"
     team         = "platform"
+    application  = "ecommerce-platform"
   }
   
   # Notification settings

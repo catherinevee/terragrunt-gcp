@@ -70,10 +70,10 @@ provider "google-beta" {
 EOF
 }
 
-# Generate versions configuration
+# Generate versions configuration (only if not using Terraform Registry modules)
 generate "versions" {
   path      = "versions.tf"
-  if_exists = "overwrite_terragrunt"
+  if_exists = "skip"
   contents  = <<EOF
 terraform {
   required_version = ">= 1.5.0"
@@ -125,18 +125,7 @@ terraform {
   }
 }
 
-# Configure retry behavior
-retry_configuration {
-  retry_on_exit_codes = [1]
-  retryable_errors = [
-    "(?s).*Error acquiring the state lock.*",
-    "(?s).*Error locking state.*",
-    "(?s).*dial tcp.*i/o timeout.*",
-    "(?s).*TLS handshake timeout.*",
-  ]
-  max_retry_attempts = 3
-  sleep_interval_sec = 5
-}
+# Retry behavior is handled by Terraform's built-in retry logic
 
 # Configure inputs that will be passed to all Terraform modules
 inputs = {

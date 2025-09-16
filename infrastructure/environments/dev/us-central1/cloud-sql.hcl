@@ -28,8 +28,8 @@ locals {
 }
 
 inputs = {
-  project_id = "${local.environment}-project"
-  name       = "${local.environment}-${local.region}-postgres"
+  project_id = "acme-ecommerce-platform-${local.environment}"
+  name       = "acme-orders-database-${local.environment}"
   
   database_version = "POSTGRES_15"
   region          = local.region
@@ -86,7 +86,7 @@ inputs = {
   # Additional databases
   additional_databases = [
     {
-      name      = "application_db"
+      name      = "acme_customer_portal_db"
       charset   = "UTF8"
       collation = "en_US.UTF8"
     }
@@ -95,7 +95,7 @@ inputs = {
   # Additional users
   additional_users = [
     {
-      name     = "app_user"
+      name     = "acme_ecommerce_app_user"
       password = "" # Will be generated
     }
   ]

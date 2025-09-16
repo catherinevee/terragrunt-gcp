@@ -1,0 +1,66 @@
+name: Release Version Badge
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Check for new releases daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  release-badge:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Get latest release version
+      id: get_version
+      run: |
+        # Get the latest release version using GitHub API
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/catherinevee/driftmgr/releases/latest | jq -r '.tag_name')
+        echo "Latest version: $LATEST_VERSION"
+        echo "VERSION=$LATEST_VERSION" >> $GITHUB_OUTPUT
+        
+        # Remove 'v' prefix if present
+        CLEAN_VERSION=${LATEST_VERSION#v}
+        echo "Clean version: $CLEAN_VERSION"
+        echo "CLEAN_VERSION=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Generate release badge
+      run: |
+        VERSION="${{ steps.get_version.outputs.CLEAN_VERSION }}"
+        
+        # Generate badge URL using shields.io
+        BADGE_URL="https://img.shields.io/badge/Release-v${VERSION}-blue?style=flat-square&logo=github&logoColor=white"
+        
+        echo "Badge URL: $BADGE_URL"
+        
+        # Create badges directory
+        mkdir -p docs/badges
+        
+        # Save badge URL to file
+        echo "$BADGE_URL" > docs/badges/release-version-badge.txt
+        
+        # Also create a JSON file with version info
+        cat > docs/badges/release-info.json << EOF
+        {
+          "version": "${{ steps.get_version.outputs.VERSION }}",
+          "clean_version": "${{ steps.get_version.outputs.CLEAN_VERSION }}",
+          "badge_url": "$BADGE_URL",
+          "last_updated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        }
+        EOF
+        
+        echo "Release badge generated successfully!"
+        echo "Version: ${{ steps.get_version.outputs.VERSION }}"
+        echo "Badge URL: $BADGE_URL"

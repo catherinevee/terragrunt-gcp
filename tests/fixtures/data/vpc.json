@@ -1,0 +1,54 @@
+{
+  "name": "test-vpc",
+  "cidr": "10.0.0.0/16",
+  "description": "Test VPC for unit testing",
+  "routing_mode": "GLOBAL",
+  "subnets": [
+    {
+      "name": "web-subnet",
+      "cidr": "10.0.1.0/24",
+      "region": "europe-west1",
+      "description": "Web tier subnet"
+    },
+    {
+      "name": "app-subnet",
+      "cidr": "10.0.2.0/24",
+      "region": "europe-west1",
+      "description": "Application tier subnet"
+    },
+    {
+      "name": "db-subnet",
+      "cidr": "10.0.3.0/24",
+      "region": "europe-west1",
+      "description": "Database tier subnet"
+    }
+  ],
+  "firewall_rules": [
+    {
+      "name": "allow-http",
+      "description": "Allow HTTP traffic",
+      "direction": "INGRESS",
+      "priority": 1000,
+      "source_ranges": ["0.0.0.0/0"],
+      "allowed": [
+        {
+          "protocol": "tcp",
+          "ports": ["80"]
+        }
+      ]
+    },
+    {
+      "name": "allow-https",
+      "description": "Allow HTTPS traffic",
+      "direction": "INGRESS",
+      "priority": 1000,
+      "source_ranges": ["0.0.0.0/0"],
+      "allowed": [
+        {
+          "protocol": "tcp",
+          "ports": ["443"]
+        }
+      ]
+    }
+  ]
+}

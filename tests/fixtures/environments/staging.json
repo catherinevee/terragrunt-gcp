@@ -1,0 +1,44 @@
+{
+  "project_id": "acme-ecommerce-platform-staging",
+  "region": "europe-west1",
+  "environment": "staging",
+  "resources": {
+    "vpc_name": "cataziza-ecommerce-platform-staging-vpc",
+    "subnets": [
+      "web-subnet",
+      "app-subnet",
+      "db-subnet"
+    ],
+    "instances": [
+      "cataziza-ecommerce-web-1",
+      "cataziza-ecommerce-web-2",
+      "cataziza-ecommerce-app-1",
+      "cataziza-ecommerce-app-2"
+    ],
+    "databases": [
+      "cataziza-ecommerce-orders-db",
+      "cataziza-ecommerce-customer-db"
+    ],
+    "buckets": [
+      "cataziza-ecommerce-data",
+      "cataziza-ecommerce-logs"
+    ]
+  },
+  "dependencies": [
+    "global",
+    "europe-west1",
+    "europe-west3"
+  ],
+  "test_data": {
+    "sample_data": "test-data-staging",
+    "test_user": "test-user-staging",
+    "test_orders": 1000,
+    "test_customers": 500
+  },
+  "config": {
+    "region": "europe-west1",
+    "zone": "europe-west1-a",
+    "project_id": "acme-ecommerce-platform-staging",
+    "environment": "staging"
+  }
+}

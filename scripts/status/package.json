@@ -1,0 +1,28 @@
+{
+  "name": "terraform-deployment-status",
+  "version": "1.0.0",
+  "description": "Dynamic status badge generator for Terraform deployments",
+  "main": "generate-badges.js",
+  "scripts": {
+    "generate": "node generate-badges.js",
+    "check-status": "node check-status.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "terraform",
+    "deployment",
+    "status",
+    "badge",
+    "github",
+    "gcp"
+  ],
+  "author": "Cataziza Corporation",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/catherinevee/terraform-gcp.git"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "test-sql",
+  "database_version": "POSTGRES_14",
+  "tier": "db-f1-micro",
+  "disk_size": 10,
+  "disk_type": "PD_SSD",
+  "region": "europe-west1",
+  "backup_enabled": true,
+  "backup_start_time": "03:00",
+  "backup_retention_days": 7,
+  "databases": [
+    {
+      "name": "test_database",
+      "charset": "UTF8",
+      "collation": "en_US.UTF8"
+    },
+    {
+      "name": "test_database_2",
+      "charset": "UTF8",
+      "collation": "en_US.UTF8"
+    }
+  ],
+  "users": [
+    {
+      "name": "test_user",
+      "password": "test_password_123"
+    },
+    {
+      "name": "test_user_2",
+      "password": "test_password_456"
+    }
+  ],
+  "encryption_key_name": "projects/project/locations/region/keyRings/test-keyring/cryptoKeys/test-key"
+}

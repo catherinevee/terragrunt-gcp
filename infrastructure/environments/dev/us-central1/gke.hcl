@@ -40,8 +40,8 @@ locals {
 }
 
 inputs = {
-  project_id = "${local.environment}-project"
-  name       = "${local.environment}-${local.region}-gke"
+  project_id = "acme-ecommerce-platform-${local.environment}"
+  name       = "acme-customer-api-gke-${local.environment}"
   region     = local.region
   zones      = ["${local.region}-a", "${local.region}-b", "${local.region}-c"]
 
@@ -56,7 +56,7 @@ inputs = {
 
   node_pools = [
     {
-      name               = "default-pool"
+      name               = "acme-customer-api-node-pool"
       machine_type       = "e2-standard-4"
       min_count          = 1
       max_count          = 3

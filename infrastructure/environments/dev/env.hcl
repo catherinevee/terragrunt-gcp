@@ -6,7 +6,7 @@ locals {
   zone        = "us-central1-a"
   
   # Project configuration
-  project_id = "yanka-dev-project"  # Override the default from account.hcl
+  project_id = "acme-ecommerce-platform-dev"  # ACME E-commerce Platform Development Environment
   
   # Network configuration
   network_config = {
@@ -79,14 +79,16 @@ locals {
   
   # DNS configuration
   dns = {
-    zone_name    = "dev-yanka-com"
-    dns_name     = "dev.yanka.com."
+    zone_name    = "acme-ecommerce-dev-com"
+    dns_name     = "dev.acme-ecommerce.com."
     subdomain    = "dev"
   }
   
   # Tagging
   environment_tags = {
     environment  = "development"
+    business_unit = "ecommerce"
+    application  = "ecommerce-platform"
     auto_shutdown = "true"
     cost_center  = "development"
   }

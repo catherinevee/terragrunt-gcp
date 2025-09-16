@@ -1,0 +1,48 @@
+{
+  "name": "test-bucket",
+  "location": "europe-west1",
+  "storage_class": "STANDARD",
+  "versioning_enabled": true,
+  "lifecycle_rules": [
+    {
+      "action": {
+        "type": "Delete"
+      },
+      "condition": {
+        "age": 30
+      }
+    },
+    {
+      "action": {
+        "type": "SetStorageClass",
+        "storage_class": "NEARLINE"
+      },
+      "condition": {
+        "age": 7
+      }
+    }
+  ],
+  "encryption_key_name": "projects/project/locations/region/keyRings/test-keyring/cryptoKeys/test-key",
+  "iam_bindings": [
+    {
+      "role": "roles/storage.objectViewer",
+      "members": [
+        "serviceAccount:test-sa@project.iam.gserviceaccount.com"
+      ]
+    },
+    {
+      "role": "roles/storage.objectCreator",
+      "members": [
+        "serviceAccount:test-sa@project.iam.gserviceaccount.com"
+      ]
+    }
+  ],
+  "cors": [
+    {
+      "origin": ["*"],
+      "method": ["GET", "POST", "PUT", "DELETE"],
+      "response_header": ["*"],
+      "max_age_seconds": 3600
+    }
+  ]
+}

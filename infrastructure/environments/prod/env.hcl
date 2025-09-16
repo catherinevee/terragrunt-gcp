@@ -7,6 +7,7 @@ locals {
   
   # Environment-specific project (optional - can use same project with env prefix)
   project_suffix = "prod"
+  project_id = "acme-ecommerce-platform-prod"  # ACME E-commerce Platform Production Environment
   
   # Networking
   vpc_cidr = "10.20.0.0/16"
@@ -85,6 +86,8 @@ locals {
   # Environment labels
   environment_labels = {
     environment = local.environment
+    business_unit = "ecommerce"
+    application = "ecommerce-platform"
     region = local.region
     cost_center = "production"
     data_classification = "highly-confidential"

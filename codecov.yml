@@ -1,0 +1,71 @@
+# CodeCov Configuration for DriftMgr
+# https://docs.codecov.com/docs/codecov-yaml
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 5%
+        informational: true
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+        informational: true
+
+# Ignore certain files and directories from coverage
+ignore:
+  - "**/*_test.go"
+  - "**/testdata/**"
+  - "**/examples/**"
+  - "**/docs/**"
+  - "**/scripts/**"
+  - "**/cmd/**"
+  - "**/vendor/**"
+  - "**/mocks/**"
+  - "**/*.pb.go"
+  - "**/*.gen.go"
+
+# Comment configuration
+comment:
+  layout: "header,diff,files,footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+# Notifications
+notifications:
+  - type: webhook
+    endpoint: "https://api.codecov.io/notify/github/catherinevee/driftmgr"
+    branches:
+      - main
+      - develop
+
+# Coverage reports
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+# Flags for different test types
+flags:
+  unit:
+    paths:
+      - internal/
+    carryforward: true
+  integration:
+    paths:
+      - tests/integration/
+    carryforward: true
+  e2e:
+    paths:
+      - tests/e2e/
+    carryforward: true
+
+# GitHub integration
+github_checks:
+  annotations: true
+  notify:
+    - "catherinevee"

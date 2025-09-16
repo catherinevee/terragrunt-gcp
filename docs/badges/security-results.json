@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-09-14T15:45:00Z",
+  "summary": {
+    "total_issues": 2,
+    "critical_issues": 0,
+    "high_issues": 0,
+    "medium_issues": 2,
+    "low_issues": 0,
+    "info_issues": 0
+  },
+  "tools": {
+    "checkov": {
+      "status": "completed",
+      "issues_found": 2,
+      "passed": 100,
+      "skipped": 0,
+      "details": [
+        {
+          "check_id": "CKV_SECRET_6",
+          "description": "Base64 High Entropy String",
+          "severity": "medium",
+          "file": "configs/environments.yaml:37-38",
+          "line": 37,
+          "resource": "jwt_secret"
+        },
+        {
+          "check_id": "CKV_SECRET_4",
+          "description": "Basic Auth Credentials",
+          "severity": "medium",
+          "file": "docs/ci-cd-examples/azure-devops/azure-pipelines.yml:334-335",
+          "line": 334,
+          "resource": "DATABASE_URL"
+        }
+      ]
+    },
+    "trivy": {
+      "status": "completed",
+      "issues_found": 0,
+      "vulnerabilities": []
+    },
+    "gosec": {
+      "status": "completed",
+      "issues_found": 0,
+      "issues": []
+    },
+    "semgrep": {
+      "status": "completed",
+      "issues_found": 0,
+      "results": []
+    }
+  },
+  "security_score": 95,
+  "security_grade": "A+",
+  "recommendations": [
+    "📋 Medium priority issues found - address within 1 week",
+    "🔧 Replace hardcoded JWT secret with environment variable",
+    "📝 Update documentation examples to use placeholder credentials"
+  ],
+  "last_scan": "2025-09-14T15:45:00Z",
+  "next_scan": "2025-09-15T04:00:00Z"
+}

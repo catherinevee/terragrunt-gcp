@@ -534,11 +534,11 @@ terragrunt plan -detailed-exitcode
 PLAN_EXIT=$?
 
 if [ $PLAN_EXIT -eq 0 ]; then
-  echo "✅ State recovered successfully - no changes detected"
+  echo "SUCCESS: State recovered successfully - no changes detected"
 elif [ $PLAN_EXIT -eq 2 ]; then
-  echo "⚠️  State recovered but changes detected - review required"
+  echo "WARNING: State recovered but changes detected - review required"
 else
-  echo "❌ State recovery failed - manual intervention required"
+  echo "ERROR: State recovery failed - manual intervention required"
 fi
 
 echo "Recovery completed at: $(date)"
@@ -550,7 +550,7 @@ echo "Recovery completed at: $(date)"
 
 ### Initial Incident Notification
 ```
-🚨 INCIDENT DETECTED
+INCIDENT DETECTED
 
 Severity: [P0/P1/P2]
 Services Affected: [List services]
@@ -566,7 +566,7 @@ Slack Channel: #incident-[number]
 
 ### Recovery Completion
 ```
-✅ INCIDENT RESOLVED
+INCIDENT RESOLVED
 
 Incident Duration: [Duration]
 Root Cause: [Brief description]

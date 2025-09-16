@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terraform Deployment Status Badge</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f6f8fa;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.live {
+            background-color: #28a745;
+        }
+        .badge.partial {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .badge.unalive {
+            background-color: #dc3545;
+        }
+        .badge.unknown {
+            background-color: #6c757d;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .refresh-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .refresh-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Terraform Deployment Status</h1>
+        
+        <div id="badge-container">
+            <span class="badge unknown" id="status-badge">Checking...</span>
+        </div>
+        
+        <div class="status-info" id="status-info" style="display: none;">
+            <h3>Status Details</h3>
+            <p><strong>Project:</strong> <span id="project-id">-</span></p>
+            <p><strong>Region:</strong> <span id="region">-</span></p>
+            <p><strong>Last Checked:</strong> <span id="last-checked">-</span></p>
+            <p><strong>Timestamp:</strong> <span id="timestamp">-</span></p>
+        </div>
+        
+        <button class="refresh-btn" onclick="checkStatus()">🔄 Refresh Status</button>
+        
+        <div style="margin-top: 30px;">
+            <h3>Badge URLs</h3>
+            <p>Use these URLs to embed the status badge in your README:</p>
+            <ul>
+                <li><strong>Live Badge:</strong> <code>https://catherinevee.github.io/terraform-gcp/status/live.svg</code></li>
+                <li><strong>Unalive Badge:</strong> <code>https://catherinevee.github.io/terraform-gcp/status/unalive.svg</code></li>
+                <li><strong>Dynamic Badge:</strong> <code>https://catherinevee.github.io/terraform-gcp/status/badge.svg</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Function to update badge based on status
+        function updateBadge(status, data = null) {
+            const badge = document.getElementById('status-badge');
+            const statusInfo = document.getElementById('status-info');
+            
+            // Remove all status classes
+            badge.classList.remove('live', 'partial', 'unalive', 'unknown');
+            
+            switch(status.toLowerCase()) {
+                case 'live':
+                    badge.textContent = 'LIVE';
+                    badge.classList.add('live');
+                    break;
+                case 'partial':
+                    badge.textContent = 'PARTIAL';
+                    badge.classList.add('partial');
+                    break;
+                case 'unalive':
+                    badge.textContent = 'UNALIVE';
+                    badge.classList.add('unalive');
+                    break;
+                default:
+                    badge.textContent = 'UNKNOWN';
+                    badge.classList.add('unknown');
+            }
+            
+            // Update status info if data is provided
+            if (data) {
+                document.getElementById('project-id').textContent = data.project_id || '-';
+                document.getElementById('region').textContent = data.region || '-';
+                document.getElementById('last-checked').textContent = data.last_checked || '-';
+                document.getElementById('timestamp').textContent = data.timestamp || '-';
+                statusInfo.style.display = 'block';
+            }
+        }
+        
+        // Function to check status
+        async function checkStatus() {
+            try {
+                const response = await fetch('deployment-status.json');
+                const data = await response.json();
+                updateBadge(data.status, data);
+            } catch (error) {
+                console.error('Error fetching status:', error);
+                updateBadge('unknown');
+            }
+        }
+        
+        // Check status on page load
+        checkStatus();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(checkStatus, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

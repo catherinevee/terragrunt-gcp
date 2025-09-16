@@ -1,0 +1,35 @@
+{
+  "coverage_percent": 75.2,
+  "status": "fair",
+  "color": "yellow",
+  "message": "75.2%",
+  "badge_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"20\">...</svg>",
+  "coverage_by_component": {
+    "cli": 73.4,
+    "shared_cache": 90.8,
+    "shared_config": 85.9,
+    "shared_errors": 48.8,
+    "shared_events": 100.0,
+    "shared_logger": 100.0,
+    "shared_metrics": 58.5,
+    "aws_provider": 61.5,
+    "azure_provider": 37.2,
+    "gcp_provider": 30.5,
+    "digitalocean_provider": 79.6,
+    "drift_comparator": 67.3,
+    "drift_detector": 29.7,
+    "state": 59.6,
+    "remediation_strategies": 11.5,
+    "discovery": 11.2
+  },
+  "target_coverage": 80.0,
+  "remaining_to_target": 4.8,
+  "last_updated": "2025-09-14T15:40:00Z",
+  "test_summary": {
+    "total_packages": 16,
+    "packages_above_80": 4,
+    "packages_above_70": 8,
+    "packages_above_60": 10,
+    "packages_below_60": 6
+  }
+}

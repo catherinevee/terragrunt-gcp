@@ -1,12 +1,12 @@
 # Documentation
 
-## 📁 Structure
+## Structure
 
 - **[operations/](operations/)** - Operational procedures and emergency protocols
 - **[guides/](guides/)** - How-to guides and setup instructions
 - **[architecture/](architecture/)** - System design and architectural decisions
 
-## 📚 Quick Links
+## Quick Links
 
 ### Operations
 - [Break Glass Procedures](operations/BREAK-GLASS.md)
