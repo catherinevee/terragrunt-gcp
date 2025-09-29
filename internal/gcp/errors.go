@@ -744,6 +744,99 @@ func isRetryableCode(code ErrorCode) bool {
 	}
 }
 
+// classifyError determines the error code based on the error type
+func classifyError(err error) ErrorCode {
+	if err == nil {
+		return ErrorCodeInternal
+	}
+
+	// Check for Google API errors
+	var apiErr *googleapi.Error
+	if errors.As(err, &apiErr) {
+		switch apiErr.Code {
+		case 400:
+			return ErrorCodeInvalidArgument
+		case 401:
+			return ErrorCodeUnauthenticated
+		case 403:
+			return ErrorCodePermissionDenied
+		case 404:
+			return ErrorCodeNotFound
+		case 409:
+			return ErrorCodeAlreadyExists
+		case 429:
+			return ErrorCodeResourceExhausted
+		case 499:
+			return ErrorCodeCancelled
+		case 500:
+			return ErrorCodeInternal
+		case 501:
+			return ErrorCodeUnimplemented
+		case 503:
+			return ErrorCodeUnavailable
+		case 504:
+			return ErrorCodeDeadlineExceeded
+		}
+	}
+
+	// Check for gRPC status errors
+	if st, ok := status.FromError(err); ok {
+		switch st.Code() {
+		case codes.Canceled:
+			return ErrorCodeCancelled
+		case codes.InvalidArgument:
+			return ErrorCodeInvalidArgument
+		case codes.DeadlineExceeded:
+			return ErrorCodeDeadlineExceeded
+		case codes.NotFound:
+			return ErrorCodeNotFound
+		case codes.AlreadyExists:
+			return ErrorCodeAlreadyExists
+		case codes.PermissionDenied:
+			return ErrorCodePermissionDenied
+		case codes.ResourceExhausted:
+			return ErrorCodeResourceExhausted
+		case codes.FailedPrecondition:
+			return ErrorCodeFailedPrecondition
+		case codes.Aborted:
+			return ErrorCodeAborted
+		case codes.Unimplemented:
+			return ErrorCodeUnimplemented
+		case codes.Unavailable:
+			return ErrorCodeUnavailable
+		case codes.Unauthenticated:
+			return ErrorCodeUnauthenticated
+		default:
+			return ErrorCodeInternal
+		}
+	}
+
+	// Default to internal error
+	return ErrorCodeInternal
+}
+
+// NewGCPError creates a GCP error by classifying the provided error
+func NewGCPError(operation, resource string, err error) *Error {
+	code := classifyError(err)
+
+	// Determine if retryable
+	retryable := false
+	switch code {
+	case ErrorCodeUnavailable, ErrorCodeDeadlineExceeded, ErrorCodeResourceExhausted, ErrorCodeTooManyRequests:
+		retryable = true
+	}
+
+	return &Error{
+		Code:      string(code),
+		Message:   err.Error(),
+		Operation: operation,
+		Resource:  resource,
+		Cause:     err,
+		Timestamp: time.Now(),
+		Retryable: retryable,
+	}
+}
+
 // NewNotFoundError creates a NOT_FOUND error
 func NewNotFoundError(resource string) *Error {
 	return &Error{

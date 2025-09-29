@@ -6,13 +6,13 @@ import (
 	"net"
 	"net/http"
 	"strconv"
-	// "strings"
+	"strings"
 	"testing"
 	"time"
 
 	"google.golang.org/api/googleapi"
-	// "google.golang.org/grpc/codes"
-	// "google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestNewGCPError(t *testing.T) {
@@ -71,7 +71,7 @@ func TestNewGCPError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gcpErr := NewGCPError(tt.operation, tt.resource, tt.err)
 
-			if gcpErr.Code != tt.want {
+			if gcpErr.Code != string(tt.want) {
 				t.Errorf("NewGCPError() Code = %v, want %v", gcpErr.Code, tt.want)
 			}
 
@@ -83,8 +83,8 @@ func TestNewGCPError(t *testing.T) {
 				t.Errorf("NewGCPError() Resource = %v, want %v", gcpErr.Resource, tt.resource)
 			}
 
-			if gcpErr.OriginalError != tt.err {
-				t.Errorf("NewGCPError() OriginalError = %v, want %v", gcpErr.OriginalError, tt.err)
+			if gcpErr.Cause != tt.err {
+				t.Errorf("NewGCPError() Cause = %v, want %v", gcpErr.Cause, tt.err)
 			}
 
 			if gcpErr.Timestamp.IsZero() {
@@ -112,7 +112,7 @@ func TestGCPError_Error(t *testing.T) {
 		t.Error("Error() should contain original error message")
 	}
 
-	if !strings.Contains(errorMsg, gcpErr.Code.String()) {
+	if !strings.Contains(errorMsg, gcpErr.Code) {
 		t.Error("Error() should contain error code")
 	}
 }
