@@ -124,8 +124,8 @@ driftmgr config validate
 
 # Configure AWS provider
 driftmgr config provider aws \
-  --access-key-id AKIAIOSFODNN7EXAMPLE \
-  --secret-access-key wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
+  --access-key-id EXAMPLE_KEY_ID \
+  --secret-access-key EXAMPLE_SECRET_KEY \
   --region us-east-1
 ```
 
