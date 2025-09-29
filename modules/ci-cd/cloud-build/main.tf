@@ -515,7 +515,8 @@ resource "google_cloudbuild_worker_pool" "worker_pools" {
     content {
       peered_network          = network_config.value.peered_network
       peered_network_ip_range = network_config.value.peered_network_ip_range
-      egress_option           = network_config.value.egress_option
+      # egress_option is not supported in this version
+      # egress_option           = network_config.value.egress_option
     }
   }
 
