@@ -1376,11 +1376,11 @@ repos:
 | Decryption implementation | internal/gcp/secrets.go:1298 | ✅ Completed | P2.5 | 2d | KMS API | No |
 | CRC32C checksum | internal/gcp/secrets.go:1345 | ✅ Completed | P2.5 | 2h | None | No |
 | Backup implementation | internal/gcp/secrets.go:1509 | ✅ Completed | P2.5 | 1d | Storage API | No |
-| Compliance checks | internal/gcp/secrets.go:1510 | ❌ Not Started | P2.5 | 1d | None | No |
-| Rotation helpers | internal/gcp/secrets.go:1555-1578 | ❌ Not Started | P2.5 | 2d | None | No |
+| Compliance checks | internal/gcp/secrets.go:1718 | ✅ Completed | P2.5 | 1d | None | No |
+| Rotation helpers | internal/gcp/secrets.go:1937-2185 | ✅ Completed | P2.5 | 2d | None | No |
 | **Go Code - Auth** |
-| Executable credentials | internal/gcp/auth.go:518 | ❌ Not Started | P2.5 | 1d | None | No |
-| Environment credentials | internal/gcp/auth.go:526 | ❌ Not Started | P2.5 | 1d | None | No |
+| Executable credentials | internal/gcp/auth.go:518 | ✅ Completed | P2.5 | 1d | None | No |
+| Environment credentials | internal/gcp/auth.go:593 | ✅ Completed | P2.5 | 1d | None | No |
 | **Go Code - Cost** |
 | Cost calculator | internal/analysis/cost/cost.go:20 | ❌ Not Started | P2.5 | 3d | Billing API | No |
 | **Go Code - Utils** |
