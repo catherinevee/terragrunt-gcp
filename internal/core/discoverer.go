@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/terragrunt-gcp/terragrunt-gcp/internal/providers"
 )
 
 type Discoverer struct {
-	provider providers.Provider
+	provider Provider
 	logger   *logrus.Logger
 	options  DiscoveryOptions
 	mutex    sync.RWMutex

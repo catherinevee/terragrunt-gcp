@@ -11,11 +11,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/terragrunt-gcp/terragrunt-gcp/internal/providers"
 )
 
 type Reporter struct {
-	provider providers.Provider
+	provider Provider
 	logger   *logrus.Logger
 	config   ReporterConfig
 }

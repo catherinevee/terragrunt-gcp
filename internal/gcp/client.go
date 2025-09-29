@@ -13,7 +13,7 @@ import (
 	"cloud.google.com/go/compute/apiv1/computepb"
 	"cloud.google.com/go/container/apiv1"
 	"cloud.google.com/go/container/apiv1/containerpb"
-	"cloud.google.com/go/iam"
+	iamadmin "cloud.google.com/go/iam/admin/apiv1"
 	"cloud.google.com/go/kms/apiv1"
 	"cloud.google.com/go/kms/apiv1/kmspb"
 	"cloud.google.com/go/logging/apiv2"
@@ -62,7 +62,7 @@ type Client struct {
 	computeClient    *compute.InstancesClient
 	storageClient    *storage.Client
 	containerClient  *container.ClusterManagerClient
-	iamClient        *iam.IamClient
+	iamClient        *iamadmin.IamClient
 	kmsClient        *kms.KeyManagementClient
 	loggingClient    *logging.ConfigClient
 	monitoringClient *monitoring.MetricClient

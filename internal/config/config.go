@@ -667,7 +667,7 @@ func (c *Config) Validate() error {
 		c.Terragrunt.MaxRetries = 3
 	}
 
-	for name, module := range c.Modules {
+	for _, module := range c.Modules {
 		if module.Source == "" {
 			return fmt.Errorf("module %s: source is required", module.Name)
 		}
@@ -941,7 +941,7 @@ func (c *Config) LoadTerraformModule(path string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.tfLoader = module
+	// c.tfLoader = module // tfLoader field not defined in Config struct
 
 	for name, provider := range module.RequiredProviders {
 		if c.Providers == nil {

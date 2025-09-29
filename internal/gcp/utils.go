@@ -190,7 +190,7 @@ type CostRecommendation struct {
 	Priority    int               `json:"priority"`
 }
 
-type TimeRange struct {
+type UtilsTimeRange struct {
 	Start time.Time `json:"start"`
 	End   time.Time `json:"end"`
 }
@@ -312,7 +312,7 @@ type AuthRequirement struct {
 	Audiences   string `json:"audiences,omitempty"`
 }
 
-type AuthProvider struct {
+type UtilsAuthProvider struct {
 	Id                string `json:"id"`
 	Issuer            string `json:"issuer"`
 	JwksUri           string `json:"jwks_uri,omitempty"`
@@ -492,7 +492,7 @@ type MonitoringDestination struct {
 	Metrics           []string `json:"metrics,omitempty"`
 }
 
-type MetricDescriptor struct {
+type UtilsMetricDescriptor struct {
 	Name         string        `json:"name"`
 	Type         string        `json:"type"`
 	Labels       []LabelDescriptor `json:"labels,omitempty"`
@@ -506,7 +506,7 @@ type MetricDescriptor struct {
 	MonitoredResourceTypes []string `json:"monitored_resource_types,omitempty"`
 }
 
-type LabelDescriptor struct {
+type UtilsLabelDescriptor struct {
 	Key         string `json:"key"`
 	ValueType   string `json:"value_type"`
 	Description string `json:"description,omitempty"`

@@ -124,9 +124,10 @@ func (r *EnvResolver) initFunctions() {
 		"sort":            stdlib.SortFunc,
 		"values":          stdlib.ValuesFunc,
 		"zipmap":          stdlib.ZipmapFunc,
-		"base64decode":    stdlib.Base64DecodeFunc,
-		"base64encode":    stdlib.Base64EncodeFunc,
-		"base64gzip":      stdlib.Base64GzipFunc,
+		// These functions are not available in the current stdlib version
+		// "base64decode":    stdlib.Base64DecodeFunc,
+		// "base64encode":    stdlib.Base64EncodeFunc,
+		// "base64gzip":      stdlib.Base64GzipFunc,
 		"csvdecode":       stdlib.CSVDecodeFunc,
 		"jsondecode":      stdlib.JSONDecodeFunc,
 		"jsonencode":      stdlib.JSONEncodeFunc,

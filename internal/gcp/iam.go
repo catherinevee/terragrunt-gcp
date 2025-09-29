@@ -227,8 +227,8 @@ type IAMRateLimiter struct {
 	adminQuota     int
 }
 
-// ServiceAccountConfig represents service account configuration
-type ServiceAccountConfig struct {
+// IAMServiceAccountConfig represents service account configuration for IAM operations
+type IAMServiceAccountConfig struct {
 	AccountID    string
 	DisplayName  string
 	Description  string

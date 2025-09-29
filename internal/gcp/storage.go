@@ -109,7 +109,7 @@ type LifecycleManager struct {
 }
 
 // EncryptionManager manages encryption keys
-type EncryptionManager struct {
+type StorageEncryptionManager struct {
 	defaultKMSKey      string
 	customerKeys       map[string][]byte
 	keyRotationPeriod  time.Duration
