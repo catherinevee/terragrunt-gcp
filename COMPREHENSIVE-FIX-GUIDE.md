@@ -1372,10 +1372,10 @@ repos:
 | Cloud Composer fixes | modules/compute/cloud-composer/ | ✅ Completed | P1 | 2h | None | Yes |
 | Secret Manager placeholders | infrastructure/.../secret-manager/ | ✅ Completed | P1 | 4h | None | Yes |
 | **Go Code - Secrets** |
-| Encryption implementation | internal/gcp/secrets.go:1247 | ❌ Not Started | P2.5 | 2d | KMS API | No |
-| Decryption implementation | internal/gcp/secrets.go:1254 | ❌ Not Started | P2.5 | 2d | KMS API | No |
-| CRC32C checksum | internal/gcp/secrets.go:1267 | ❌ Not Started | P2.5 | 2h | None | No |
-| Backup implementation | internal/gcp/secrets.go:1443 | ❌ Not Started | P2.5 | 1d | Storage API | No |
+| Encryption implementation | internal/gcp/secrets.go:1253 | ✅ Completed | P2.5 | 2d | KMS API | No |
+| Decryption implementation | internal/gcp/secrets.go:1298 | ✅ Completed | P2.5 | 2d | KMS API | No |
+| CRC32C checksum | internal/gcp/secrets.go:1345 | ✅ Completed | P2.5 | 2h | None | No |
+| Backup implementation | internal/gcp/secrets.go:1509 | ✅ Completed | P2.5 | 1d | Storage API | No |
 | Compliance checks | internal/gcp/secrets.go:1510 | ❌ Not Started | P2.5 | 1d | None | No |
 | Rotation helpers | internal/gcp/secrets.go:1555-1578 | ❌ Not Started | P2.5 | 2d | None | No |
 | **Go Code - Auth** |

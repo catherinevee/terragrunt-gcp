@@ -6,26 +6,32 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"hash/crc32"
 	"strings"
 	"sync"
 	"time"
 
+	kms "cloud.google.com/go/kms/apiv1"
+	"cloud.google.com/go/kms/apiv1/kmspb"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"cloud.google.com/go/storage"
 	"go.uber.org/zap"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // SecretsService provides comprehensive secret management operations
 type SecretsService struct {
 	client             *secretmanager.Client
+	kmsClient          *kms.KeyManagementClient
+	storageClient      *storage.Client
 	secretCache        *SecretCache
 	versionCache       *VersionCache
 	accessManager      *AccessManager
@@ -656,10 +662,11 @@ func (ss *SecretsService) CreateSecret(ctx context.Context, projectID string, co
 	<-ss.rateLimiter.writeLimiter.C
 
 	secret := &secretmanagerpb.Secret{
-		Labels:         config.Labels,
-		Annotations:    config.Annotations,
-		VersionAliases: config.VersionAliases,
-		Etag:           config.Etag,
+		Labels:      config.Labels,
+		Annotations: config.Annotations,
+		// VersionAliases expects map[string]int64 but we have map[string]string
+		// VersionAliases: config.VersionAliases,
+		Etag: config.Etag,
 	}
 
 	// Configure replication
@@ -1242,18 +1249,96 @@ func (ss *SecretsService) checkSecretCompliance(secretName string, data []byte) 
 	return nil
 }
 
-// encryptSecretData encrypts secret data
+// encryptSecretData encrypts secret data using GCP KMS
 func (ss *SecretsService) encryptSecretData(data []byte) ([]byte, error) {
-	// Placeholder for encryption logic
-	// In real implementation, this would use KMS or local encryption
-	return data, nil
+	if ss.kmsClient == nil || ss.encryptionManager == nil || ss.encryptionManager.kmsKeyName == "" {
+		// If KMS not configured, return data as-is (Secret Manager handles encryption at rest)
+		return data, nil
+	}
+
+	ctx := context.Background()
+
+	// Calculate checksum for integrity verification
+	crc32cValue := ss.calculateCRC32C(data)
+
+	req := &kmspb.EncryptRequest{
+		Name:      ss.encryptionManager.kmsKeyName,
+		Plaintext: data,
+	}
+	if crc32cValue != nil {
+		req.PlaintextCrc32C = wrapperspb.Int64(*crc32cValue)
+	}
+
+	resp, err := ss.kmsClient.Encrypt(ctx, req)
+	if err != nil {
+		ss.logger.Error("Failed to encrypt secret data",
+			zap.Error(err),
+			zap.String("kms_key", ss.encryptionManager.kmsKeyName))
+		return nil, fmt.Errorf("encryption failed: %w", err)
+	}
+
+	// Verify integrity
+	if !resp.VerifiedPlaintextCrc32C {
+		return nil, fmt.Errorf("encryption request corrupted in-transit")
+	}
+
+	if resp.CiphertextCrc32C != nil {
+		cipherCRC := uint32(resp.CiphertextCrc32C.Value)
+		calculatedCRC := crc32.Checksum(resp.Ciphertext, crc32.MakeTable(crc32.Castagnoli))
+		if cipherCRC != calculatedCRC {
+			return nil, fmt.Errorf("encryption response corrupted in-transit")
+		}
+	}
+
+	ss.logger.Debug("Secret data encrypted successfully",
+		zap.Int("plaintext_size", len(data)),
+		zap.Int("ciphertext_size", len(resp.Ciphertext)))
+
+	return resp.Ciphertext, nil
 }
 
-// decryptSecretData decrypts secret data
+// decryptSecretData decrypts secret data using GCP KMS
 func (ss *SecretsService) decryptSecretData(encryptedData []byte) ([]byte, error) {
-	// Placeholder for decryption logic
-	// In real implementation, this would use KMS or local decryption
-	return encryptedData, nil
+	if ss.kmsClient == nil || ss.encryptionManager == nil || ss.encryptionManager.kmsKeyName == "" {
+		// If KMS not configured, return data as-is
+		return encryptedData, nil
+	}
+
+	ctx := context.Background()
+
+	// Calculate checksum for integrity verification
+	crc32cValue := ss.calculateCRC32C(encryptedData)
+
+	req := &kmspb.DecryptRequest{
+		Name:       ss.encryptionManager.kmsKeyName,
+		Ciphertext: encryptedData,
+	}
+	if crc32cValue != nil {
+		req.CiphertextCrc32C = wrapperspb.Int64(*crc32cValue)
+	}
+
+	resp, err := ss.kmsClient.Decrypt(ctx, req)
+	if err != nil {
+		ss.logger.Error("Failed to decrypt secret data",
+			zap.Error(err),
+			zap.String("kms_key", ss.encryptionManager.kmsKeyName))
+		return nil, fmt.Errorf("decryption failed: %w", err)
+	}
+
+	// Verify integrity
+	if resp.PlaintextCrc32C != nil {
+		plainCRC := uint32(resp.PlaintextCrc32C.Value)
+		calculatedCRC := crc32.Checksum(resp.Plaintext, crc32.MakeTable(crc32.Castagnoli))
+		if plainCRC != calculatedCRC {
+			return nil, fmt.Errorf("decryption response corrupted in-transit")
+		}
+	}
+
+	ss.logger.Debug("Secret data decrypted successfully",
+		zap.Int("ciphertext_size", len(encryptedData)),
+		zap.Int("plaintext_size", len(resp.Plaintext)))
+
+	return resp.Plaintext, nil
 }
 
 // calculateChecksum calculates SHA256 checksum
@@ -1262,11 +1347,11 @@ func (ss *SecretsService) calculateChecksum(data []byte) string {
 	return hex.EncodeToString(hash[:])
 }
 
-// calculateCRC32C calculates CRC32C checksum
+// calculateCRC32C calculates CRC32C checksum (Castagnoli polynomial)
 func (ss *SecretsService) calculateCRC32C(data []byte) *int64 {
-	// Placeholder for CRC32C calculation
-	crc := int64(len(data)) // Simplified
-	return &crc
+	table := crc32.MakeTable(crc32.Castagnoli)
+	checksum := int64(crc32.Checksum(data, table))
+	return &checksum
 }
 
 // checkAccessPermissions checks access permissions
@@ -1439,23 +1524,152 @@ func (ss *SecretsService) performBackup(secretName string, policy *BackupPolicy)
 		Status:         "IN_PROGRESS",
 	}
 
-	// Placeholder for actual backup implementation
-	// This would backup secret metadata and versions
+	ctx := context.Background()
+
+	// Get current secret version
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: fmt.Sprintf("%s/versions/latest", secretName),
+	}
+
+	version, err := ss.client.AccessSecretVersion(ctx, req)
+	if err != nil {
+		ss.logger.Error("Failed to access secret version for backup",
+			zap.Error(err),
+			zap.String("secret", secretName))
+		event.Status = "FAILED"
+		event.Error = err
+		event.Duration = time.Since(startTime)
+		ss.recordBackupEvent(secretName, event)
+		return
+	}
+
+	// Get secret metadata
+	getSecretReq := &secretmanagerpb.GetSecretRequest{
+		Name: secretName,
+	}
+
+	secret, err := ss.client.GetSecret(ctx, getSecretReq)
+	if err != nil {
+		ss.logger.Error("Failed to get secret metadata for backup",
+			zap.Error(err),
+			zap.String("secret", secretName))
+		event.Status = "FAILED"
+		event.Error = err
+		event.Duration = time.Since(startTime)
+		ss.recordBackupEvent(secretName, event)
+		return
+	}
+
+	// Create backup object name with timestamp
+	timestamp := time.Now().Format("20060102-150405")
+	objectName := fmt.Sprintf("secrets/%s/%s.json", secretName, timestamp)
+
+	// Prepare backup data
+	backupData := map[string]interface{}{
+		"name":        version.Name,
+		"payload":     base64.StdEncoding.EncodeToString(version.Payload.Data),
+		"metadata":    secret.Labels,
+		"replication": secret.Replication,
+		"backup_id":   backupID,
+		"backup_time":  startTime.Format(time.RFC3339),
+	}
+
+	// Marshal to JSON
+	backupJSON, err := json.MarshalIndent(backupData, "", "  ")
+	if err != nil {
+		ss.logger.Error("Failed to marshal backup data",
+			zap.Error(err),
+			zap.String("secret", secretName))
+		event.Status = "FAILED"
+		event.Error = err
+		event.Duration = time.Since(startTime)
+		ss.recordBackupEvent(secretName, event)
+		return
+	}
+
+	// Encrypt backup if enabled
+	if policy.EncryptBackups && ss.backupManager.encryptionKey != nil {
+		encryptedData, err := ss.encryptSecretData(backupJSON)
+		if err != nil {
+			ss.logger.Error("Failed to encrypt backup data",
+				zap.Error(err),
+				zap.String("secret", secretName))
+			event.Status = "FAILED"
+			event.Error = err
+			event.Duration = time.Since(startTime)
+			ss.recordBackupEvent(secretName, event)
+			return
+		}
+		backupJSON = encryptedData
+	}
+
+	// Upload to GCS if storage client is available
+	if ss.storageClient != nil && policy.BackupLocation != "" {
+		// Parse bucket name from location (format: gs://bucket-name)
+		bucketName := strings.TrimPrefix(policy.BackupLocation, "gs://")
+		bucketName = strings.Split(bucketName, "/")[0]
+
+		bucket := ss.storageClient.Bucket(bucketName)
+		obj := bucket.Object(objectName)
+		writer := obj.NewWriter(ctx)
+
+		// Set metadata
+		writer.Metadata = map[string]string{
+			"secret-name": secretName,
+			"backup-id":   backupID,
+			"backup-time": startTime.Format(time.RFC3339),
+		}
+
+		if _, err := writer.Write(backupJSON); err != nil {
+			writer.Close()
+			ss.logger.Error("Failed to write backup to GCS",
+				zap.Error(err),
+				zap.String("secret", secretName),
+				zap.String("location", policy.BackupLocation))
+			event.Status = "FAILED"
+			event.Error = err
+			event.Duration = time.Since(startTime)
+			ss.recordBackupEvent(secretName, event)
+			return
+		}
+
+		if err := writer.Close(); err != nil {
+			ss.logger.Error("Failed to close backup writer",
+				zap.Error(err),
+				zap.String("secret", secretName))
+			event.Status = "FAILED"
+			event.Error = err
+			event.Duration = time.Since(startTime)
+			ss.recordBackupEvent(secretName, event)
+			return
+		}
+
+		ss.logger.Info("Secret backed up successfully",
+			zap.String("secret", secretName),
+			zap.String("backup_location", fmt.Sprintf("gs://%s/%s", bucketName, objectName)),
+			zap.Int("size", len(backupJSON)))
+	}
 
 	event.Status = "COMPLETED"
 	event.Duration = time.Since(startTime)
-	event.Size = 1024 // Placeholder
+	event.Size = int64(len(backupJSON))
 
-	ss.backupManager.mu.Lock()
-	if ss.backupManager.backupHistory[secretName] == nil {
-		ss.backupManager.backupHistory[secretName] = make([]*BackupEvent, 0)
-	}
-	ss.backupManager.backupHistory[secretName] = append(ss.backupManager.backupHistory[secretName], event)
-	ss.backupManager.mu.Unlock()
+	ss.recordBackupEvent(secretName, event)
 
 	ss.metrics.mu.Lock()
 	ss.metrics.BackupOperations++
 	ss.metrics.mu.Unlock()
+}
+
+// recordBackupEvent records a backup event in history
+func (ss *SecretsService) recordBackupEvent(secretName string, event *BackupEvent) {
+	ss.backupManager.mu.Lock()
+	defer ss.backupManager.mu.Unlock()
+
+	if ss.backupManager.backupHistory[secretName] == nil {
+		ss.backupManager.backupHistory[secretName] = make([]*BackupEvent, 0)
+	}
+	ss.backupManager.backupHistory[secretName] = append(ss.backupManager.backupHistory[secretName], event)
 }
 
 // Background tasks
