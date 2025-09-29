@@ -131,7 +131,7 @@ locals {
         v1 = {
           secret_data = jsonencode({
             username = "dbadmin"
-            password = "PLACEHOLDER_WILL_BE_REPLACED"
+            password = get_env("DB_PASSWORD", "")
             host     = "10.0.3.10"
             port     = 5432
             database = "production"
@@ -183,13 +183,13 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            stripe_key = "sk_live_PLACEHOLDER"
-            sendgrid_key = "SG.PLACEHOLDER"
-            twilio_key = "PLACEHOLDER"
-            datadog_api_key = "PLACEHOLDER"
-            datadog_app_key = "PLACEHOLDER"
-            pagerduty_key = "PLACEHOLDER"
-            slack_webhook = "https://hooks.slack.com/PLACEHOLDER"
+            stripe_key = get_env("STRIPE_API_KEY", "")
+            sendgrid_key = get_env("SENDGRID_API_KEY", "")
+            twilio_key = get_env("TWILIO_API_KEY", "")
+            datadog_api_key = get_env("DATADOG_API_KEY", "")
+            datadog_app_key = get_env("DATADOG_APP_KEY", "")
+            pagerduty_key = get_env("PAGERDUTY_API_KEY", "")
+            slack_webhook = get_env("SLACK_WEBHOOK_URL", "")
           })
           enabled = true
         }
@@ -224,8 +224,8 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            client_id = "PLACEHOLDER.apps.googleusercontent.com"
-            client_secret = "PLACEHOLDER"
+            client_id = get_env("OAUTH_CLIENT_ID", "")
+            client_secret = get_env("OAUTH_CLIENT_SECRET", "")
             redirect_uris = [
               "https://app.example.com/oauth/callback",
               "https://api.example.com/oauth/callback"
@@ -264,9 +264,9 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            cert = "-----BEGIN CERTIFICATE-----\nPLACEHOLDER\n-----END CERTIFICATE-----"
-            key = "-----BEGIN PRIVATE KEY-----\nPLACEHOLDER\n-----END PRIVATE KEY-----"
-            chain = "-----BEGIN CERTIFICATE-----\nPLACEHOLDER\n-----END CERTIFICATE-----"
+            cert = get_env("TLS_CERT", "")
+            key = get_env("TLS_KEY", "")
+            chain = get_env("TLS_CERT", "")
             expiry = "2025-01-01T00:00:00Z"
           })
           enabled = true
@@ -305,10 +305,10 @@ locals {
           secret_data = jsonencode({
             type = "service_account"
             project_id = var.project_id
-            private_key_id = "PLACEHOLDER"
-            private_key = "-----BEGIN RSA PRIVATE KEY-----\nPLACEHOLDER\n-----END RSA PRIVATE KEY-----"
+            private_key_id = get_env("GCP_SERVICE_ACCOUNT_ID", "")
+            private_key = get_env("GCP_SERVICE_ACCOUNT_KEY", "")
             client_email = "service-account@${var.project_id}.iam.gserviceaccount.com"
-            client_id = "PLACEHOLDER"
+            client_id = get_env("GCP_CLIENT_ID", "")
             auth_uri = "https://accounts.google.com/o/oauth2/auth"
             token_uri = "https://oauth2.googleapis.com/token"
             auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
@@ -345,10 +345,10 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            master_key = base64encode("PLACEHOLDER_32_BYTE_KEY_HERE_...")
-            data_key = base64encode("PLACEHOLDER_32_BYTE_KEY_HERE_...")
-            token_key = base64encode("PLACEHOLDER_32_BYTE_KEY_HERE_...")
-            session_key = base64encode("PLACEHOLDER_32_BYTE_KEY_HERE_...")
+            master_key = get_env("MASTER_ENCRYPTION_KEY", "")
+            data_key = get_env("DATA_ENCRYPTION_KEY", "")
+            token_key = get_env("TOKEN_SIGNING_KEY", "")
+            session_key = get_env("SESSION_ENCRYPTION_KEY", "")
           })
           enabled = true
         }
@@ -383,8 +383,8 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            private_key = "-----BEGIN RSA PRIVATE KEY-----\nPLACEHOLDER\n-----END RSA PRIVATE KEY-----"
-            public_key = "-----BEGIN PUBLIC KEY-----\nPLACEHOLDER\n-----END PUBLIC KEY-----"
+            private_key = get_env("GCP_SERVICE_ACCOUNT_KEY", "")
+            public_key = get_env("JWT_PUBLIC_KEY", "")
             kid = "2024-01-01"
             algorithm = "RS256"
             issued_at = timestamp()
@@ -417,9 +417,9 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            private_key = "-----BEGIN OPENSSH PRIVATE KEY-----\nPLACEHOLDER\n-----END OPENSSH PRIVATE KEY-----"
-            public_key = "ssh-rsa PLACEHOLDER"
-            fingerprint = "SHA256:PLACEHOLDER"
+            private_key = get_env("SSH_PRIVATE_KEY", "")
+            public_key = get_env("SSH_PUBLIC_KEY", "")
+            fingerprint = get_env("SSH_FINGERPRINT", "")
             comment = "admin@${local.env_config.environment}"
           })
           enabled = true
@@ -454,7 +454,7 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            preshared_key = base64encode("PLACEHOLDER_PSK_HERE")
+            preshared_key = get_env("VPN_PSK", "")
             peer_ip = "203.0.113.1"
             peer_id = "vpn-peer-prod"
             local_id = "vpn-local-prod"
@@ -498,12 +498,12 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            personal_access_token = "ghp_PLACEHOLDER"
+            personal_access_token = get_env("GITHUB_PERSONAL_ACCESS_TOKEN", "")
             app_id = "123456"
-            app_private_key = "-----BEGIN RSA PRIVATE KEY-----\nPLACEHOLDER\n-----END RSA PRIVATE KEY-----"
-            webhook_secret = "PLACEHOLDER"
-            oauth_client_id = "PLACEHOLDER"
-            oauth_client_secret = "PLACEHOLDER"
+            app_private_key = get_env("GCP_SERVICE_ACCOUNT_KEY", "")
+            webhook_secret = get_env("GITHUB_WEBHOOK_SECRET", "")
+            oauth_client_id = get_env("GCP_CLIENT_ID", "")
+            oauth_client_secret = get_env("OAUTH_CLIENT_SECRET", "")
           })
           enabled = true
         }
@@ -542,10 +542,10 @@ locals {
             password = jsonencode({
               type = "service_account"
               project_id = var.project_id
-              private_key_id = "PLACEHOLDER"
-              private_key = "-----BEGIN RSA PRIVATE KEY-----\nPLACEHOLDER\n-----END RSA PRIVATE KEY-----"
+              private_key_id = get_env("GCP_SERVICE_ACCOUNT_ID", "")
+              private_key = get_env("GCP_SERVICE_ACCOUNT_KEY", "")
               client_email = "gcr-service@${var.project_id}.iam.gserviceaccount.com"
-              client_id = "PLACEHOLDER"
+              client_id = get_env("GCP_CLIENT_ID", "")
             })
             email = "gcr-service@${var.project_id}.iam.gserviceaccount.com"
           })
@@ -581,16 +581,16 @@ locals {
       versions = {
         v1 = {
           secret_data = jsonencode({
-            datadog_api_key = "PLACEHOLDER"
-            datadog_app_key = "PLACEHOLDER"
-            new_relic_license_key = "PLACEHOLDER"
-            new_relic_api_key = "PLACEHOLDER"
+            datadog_api_key = get_env("DATADOG_API_KEY", "")
+            datadog_app_key = get_env("DATADOG_APP_KEY", "")
+            new_relic_license_key = get_env("NEW_RELIC_LICENSE_KEY", "")
+            new_relic_api_key = get_env("NEW_RELIC_API_KEY", "")
             prometheus_remote_write_url = "https://prometheus.example.com/api/v1/write"
-            prometheus_remote_write_username = "PLACEHOLDER"
-            prometheus_remote_write_password = "PLACEHOLDER"
-            grafana_api_key = "PLACEHOLDER"
-            elastic_cloud_id = "PLACEHOLDER"
-            elastic_api_key = "PLACEHOLDER"
+            prometheus_remote_write_username = get_env("PROMETHEUS_REMOTE_WRITE_USERNAME", "")
+            prometheus_remote_write_password = get_env("PROMETHEUS_REMOTE_WRITE_PASSWORD", "")
+            grafana_api_key = get_env("GRAFANA_API_KEY", "")
+            elastic_cloud_id = get_env("ELASTIC_CLOUD_ID", "")
+            elastic_api_key = get_env("ELASTIC_API_KEY", "")
           })
           enabled = true
         }

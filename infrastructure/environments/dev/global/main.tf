@@ -19,14 +19,14 @@ provider "google" {
 
 # Local values for consistent naming
 locals {
-  project_id     = var.project_id
-  environment    = var.environment
-  primary_region = var.primary_region
+  project_id       = var.project_id
+  environment      = var.environment
+  primary_region   = var.primary_region
   secondary_region = var.secondary_region
-  
+
   # Global resource naming
   global_prefix = "acme-ecommerce-platform-${local.environment}"
-  
+
   # IAM bindings disabled by default to handle permission issues
   enable_iam_bindings = false
 }
@@ -35,16 +35,16 @@ locals {
 module "vpc" {
   source = "../../../modules/networking/vpc"
 
-  project_id    = local.project_id
-  environment   = local.environment
-  network_name  = "${local.global_prefix}-vpc"
-  description   = "Global VPC network for ${local.environment} environment"
-  
+  project_id   = local.project_id
+  environment  = local.environment
+  network_name = "${local.global_prefix}-vpc"
+  description  = "Global VPC network for ${local.environment} environment"
+
   # Global VPC settings
-  auto_create_subnetworks = false
-  routing_mode           = "GLOBAL"
-  enable_service_networking = false  # Disable service networking to handle permission issues
-  
+  auto_create_subnetworks   = false
+  routing_mode              = "GLOBAL"
+  enable_service_networking = false # Disable service networking to handle permission issues
+
   tags = {
     environment = local.environment
     purpose     = "global-networking"
@@ -56,19 +56,19 @@ module "vpc" {
 module "load_balancer" {
   source = "../../../modules/networking/load-balancer"
 
-  project_id = local.project_id
+  project_id  = local.project_id
   environment = local.environment
-  
+
   # Global load balancer configuration
-  global_ip_name = "${local.global_prefix}-lb-ip"
-  health_check_name = "${local.global_prefix}-lb-health-check"
+  global_ip_name       = "${local.global_prefix}-lb-ip"
+  health_check_name    = "${local.global_prefix}-lb-health-check"
   backend_service_name = "${local.global_prefix}-lb-backend"
-  url_map_name = "${local.global_prefix}-lb-url-map"
+  url_map_name         = "${local.global_prefix}-lb-url-map"
   forwarding_rule_name = "${local.global_prefix}-lb-forwarding-rule"
-  
+
   # Backend regions
   backend_regions = [local.primary_region, local.secondary_region]
-  
+
   # Health check configuration
   health_check_config = {
     check_interval_sec  = var.load_balancer_health_check_interval
@@ -84,16 +84,16 @@ module "load_balancer" {
 module "dns" {
   source = "../../../modules/networking/dns"
 
-  project_id = local.project_id
+  project_id  = local.project_id
   environment = local.environment
-  
+
   # DNS zone configuration
   zone_name = var.dns_zone_name
   dns_name  = var.dns_name
-  
+
   # Load balancer IP
   load_balancer_ip = module.load_balancer.global_ip_address
-  
+
   # Records
   records = {
     "api" = {
@@ -113,10 +113,10 @@ module "dns" {
 module "iam" {
   source = "../../../modules/security/iam"
 
-  project_id = local.project_id
-  environment = local.environment
+  project_id          = local.project_id
+  environment         = local.environment
   enable_iam_bindings = local.enable_iam_bindings
-  
+
   # Service accounts for global resources
   service_accounts = {
     "acme-ecommerce-terraform-sa" = {
@@ -135,7 +135,7 @@ module "iam" {
       description  = "Service account for customer API in GKE"
     }
   }
-  
+
   # Custom roles
   custom_roles = {
     "terraform-custom-role" = {
@@ -164,23 +164,23 @@ module "iam" {
       ]
     }
   }
-  
+
   # Service account roles - Only pass when IAM bindings are enabled
   service_account_roles = local.enable_iam_bindings ? {
     "terraform-editor" = {
-      role = "roles/editor"
+      role                = "roles/editor"
       service_account_key = "acme-ecommerce-terraform-sa"
     }
     "app-storage-admin" = {
-      role = "roles/storage.admin"
+      role                = "roles/storage.admin"
       service_account_key = "acme-orders-service-sa"
     }
     "gke-cluster-admin" = {
-      role = "roles/container.clusterAdmin"
+      role                = "roles/container.clusterAdmin"
       service_account_key = "acme-customer-api-gke-sa"
     }
   } : {}
-  
+
   # Project IAM bindings - Only pass when IAM bindings are enabled
   project_iam_bindings = local.enable_iam_bindings ? {
     "terraform-sa-editor" = {
@@ -188,18 +188,18 @@ module "iam" {
       member = "serviceAccount:acme-ecommerce-terraform-sa@${local.project_id}.iam.gserviceaccount.com"
     }
   } : {}
-  
+
   # Workload Identity Pool for GitHub Actions
-  enable_workload_identity = true
-  workload_identity_pool_id = "github-actions"
+  enable_workload_identity       = true
+  workload_identity_pool_id      = "github-actions"
   workload_identity_display_name = "GitHub Actions Workload Identity Pool"
-  workload_identity_description = "Workload Identity Pool for GitHub Actions CI/CD"
-  
-  workload_identity_pool_provider_id = "github-actions-provider"
+  workload_identity_description  = "Workload Identity Pool for GitHub Actions CI/CD"
+
+  workload_identity_pool_provider_id      = "github-actions-provider"
   workload_identity_provider_display_name = "GitHub Actions Provider"
-  workload_identity_provider_description = "Workload Identity Provider for GitHub Actions"
-  
-  oidc_issuer_uri = "https://token.actions.githubusercontent.com"
+  workload_identity_provider_description  = "Workload Identity Provider for GitHub Actions"
+
+  oidc_issuer_uri        = "https://token.actions.githubusercontent.com"
   oidc_allowed_audiences = ["https://github.com/catherinevee"]
 }
 
@@ -207,25 +207,25 @@ module "iam" {
 module "kms" {
   source = "../../../modules/security/kms"
 
-  project_id = local.project_id
-  key_ring_name = "${local.global_prefix}-keyring"
-  location = local.primary_region
+  project_id          = local.project_id
+  key_ring_name       = "${local.global_prefix}-keyring"
+  location            = local.primary_region
   enable_iam_bindings = local.enable_iam_bindings
-  
+
   crypto_keys = {
     "acme-ecommerce-data-encryption-key" = {
-      name     = "acme-ecommerce-data-encryption-key"
-      purpose  = "ENCRYPT_DECRYPT"
-      algorithm = "GOOGLE_SYMMETRIC_ENCRYPTION"
+      name            = "acme-ecommerce-data-encryption-key"
+      purpose         = "ENCRYPT_DECRYPT"
+      algorithm       = "GOOGLE_SYMMETRIC_ENCRYPTION"
       rotation_period = "7776000s" # 90 days
     }
     "acme-ecommerce-signing-key" = {
-      name     = "acme-ecommerce-signing-key"
-      purpose  = "ASYMMETRIC_SIGN"
+      name      = "acme-ecommerce-signing-key"
+      purpose   = "ASYMMETRIC_SIGN"
       algorithm = "EC_SIGN_P256_SHA256"
     }
   }
-  
+
   # IAM bindings for crypto keys - Only pass when IAM bindings are enabled
   crypto_key_iam_bindings = local.enable_iam_bindings ? {
     "encryption-key-encrypt-decrypt" = {
@@ -250,10 +250,10 @@ module "kms" {
 module "secret_manager" {
   source = "../../../modules/security/secret-manager"
 
-  project_id = local.project_id
-  environment = local.environment
+  project_id          = local.project_id
+  environment         = local.environment
   enable_iam_bindings = local.enable_iam_bindings
-  
+
   secrets = {
     "database-password" = {
       secret_id = "cataziza-orders-database-password"
@@ -268,29 +268,29 @@ module "secret_manager" {
       }
     }
   }
-  
+
   secret_versions = {
     "database-password-version" = {
-      secret_key = "database-password"
+      secret_key  = "database-password"
       secret_data = "your-database-password-here"
     }
     "vpn-shared-secret-version" = {
-      secret_key = "vpn-shared-secret"
+      secret_key  = "vpn-shared-secret"
       secret_data = "your-vpn-shared-secret-here"
     }
   }
-  
+
   secret_iam_bindings = local.enable_iam_bindings ? {
     "database-password-access" = {
       secret_key = "database-password"
-      role = "roles/secretmanager.secretAccessor"
+      role       = "roles/secretmanager.secretAccessor"
       members = [
         "serviceAccount:acme-orders-service-sa@${local.project_id}.iam.gserviceaccount.com"
       ]
     }
     "vpn-shared-secret-access" = {
       secret_key = "vpn-shared-secret"
-      role = "roles/secretmanager.secretAccessor"
+      role       = "roles/secretmanager.secretAccessor"
       members = [
         "serviceAccount:acme-ecommerce-terraform-sa@${local.project_id}.iam.gserviceaccount.com"
       ]
@@ -302,11 +302,11 @@ module "secret_manager" {
 module "container_registry" {
   source = "../../../modules/storage/container-registry"
 
-  project_id = local.project_id
-  environment = local.environment
-  region     = local.primary_region
+  project_id          = local.project_id
+  environment         = local.environment
+  region              = local.primary_region
   enable_iam_bindings = local.enable_iam_bindings
-  
+
   repositories = {
     "app-images" = {
       repository_id = "${local.global_prefix}-application-images"
@@ -319,12 +319,12 @@ module "container_registry" {
       format        = "DOCKER"
     }
   }
-  
+
   # IAM bindings for repositories - Only pass when IAM bindings are enabled
   repository_iam_bindings = local.enable_iam_bindings ? {
     "app-images-access" = {
       repository_key = "app-images"
-      role = "roles/artifactregistry.reader"
+      role           = "roles/artifactregistry.reader"
       members = [
         "serviceAccount:acme-customer-api-gke-sa@${local.project_id}.iam.gserviceaccount.com",
         "serviceAccount:acme-orders-service-sa@${local.project_id}.iam.gserviceaccount.com"
@@ -332,7 +332,7 @@ module "container_registry" {
     }
     "base-images-access" = {
       repository_key = "base-images"
-      role = "roles/artifactregistry.reader"
+      role           = "roles/artifactregistry.reader"
       members = [
         "serviceAccount:acme-customer-api-gke-sa@${local.project_id}.iam.gserviceaccount.com",
         "serviceAccount:acme-orders-service-sa@${local.project_id}.iam.gserviceaccount.com"
@@ -345,26 +345,26 @@ module "container_registry" {
 module "monitoring" {
   source = "../../../modules/monitoring/cloud-monitoring"
 
-  project_id = local.project_id
+  project_id  = local.project_id
   environment = local.environment
-  
+
   # Alert policies for global resources
   alert_policies = {
     "high-cpu-usage" = {
       display_name = "ACME E-commerce Platform High CPU Usage Alert"
       documentation = {
-        content = "This alert fires when CPU usage is high across all regions"
+        content   = "This alert fires when CPU usage is high across all regions"
         mime_type = "text/markdown"
       }
       conditions = [{
         display_name = "CPU usage is high"
         condition_threshold = {
-          filter = "resource.type=\"gce_instance\""
-          comparison = "COMPARISON_GT"
+          filter          = "resource.type=\"gce_instance\""
+          comparison      = "COMPARISON_GT"
           threshold_value = var.monitoring_cpu_threshold_percent
-          duration = "300s"
+          duration        = "300s"
           aggregations = [{
-            alignment_period = "300s"
+            alignment_period   = "300s"
             per_series_aligner = "ALIGN_MEAN"
           }]
         }
@@ -374,18 +374,18 @@ module "monitoring" {
     "high-memory-usage" = {
       display_name = "ACME E-commerce Platform High Memory Usage Alert"
       documentation = {
-        content = "This alert fires when memory usage is high across all regions"
+        content   = "This alert fires when memory usage is high across all regions"
         mime_type = "text/markdown"
       }
       conditions = [{
         display_name = "Memory usage is high"
         condition_threshold = {
-          filter = "resource.type=\"gce_instance\""
-          comparison = "COMPARISON_GT"
+          filter          = "resource.type=\"gce_instance\""
+          comparison      = "COMPARISON_GT"
           threshold_value = var.monitoring_memory_threshold_percent
-          duration = "300s"
+          duration        = "300s"
           aggregations = [{
-            alignment_period = "300s"
+            alignment_period   = "300s"
             per_series_aligner = "ALIGN_MEAN"
           }]
         }
@@ -395,18 +395,18 @@ module "monitoring" {
     "disk-space-low" = {
       display_name = "ACME E-commerce Platform Low Disk Space Alert"
       documentation = {
-        content = "This alert fires when disk space is low across all regions"
+        content   = "This alert fires when disk space is low across all regions"
         mime_type = "text/markdown"
       }
       conditions = [{
         display_name = "Disk space is low"
         condition_threshold = {
-          filter = "resource.type=\"gce_instance\""
-          comparison = "COMPARISON_LT"
+          filter          = "resource.type=\"gce_instance\""
+          comparison      = "COMPARISON_LT"
           threshold_value = var.monitoring_disk_threshold_percent
-          duration = "300s"
+          duration        = "300s"
           aggregations = [{
-            alignment_period = "300s"
+            alignment_period   = "300s"
             per_series_aligner = "ALIGN_MEAN"
           }]
         }
@@ -414,7 +414,7 @@ module "monitoring" {
       notification_channels = []
     }
   }
-  
+
   # Monitoring services for global resources
   monitoring_services = {
     "load-balancer" = {
@@ -425,18 +425,18 @@ module "monitoring" {
       }
     }
   }
-  
+
   # SLOs for global services
   slos = {
     "load-balancer-availability" = {
       display_name = "ACME E-commerce Platform Load Balancer Availability SLO"
-      goal = var.slo_availability_goal
-      service = "load-balancer"
+      goal         = var.slo_availability_goal
+      service      = "load-balancer"
       sli = {
         request_based = {
           good_total_ratio = {
             total_service_filter = "resource.type=\"http_load_balancer\""
-            good_service_filter = "resource.type=\"http_load_balancer\" AND http_response_code_class=\"2xx\""
+            good_service_filter  = "resource.type=\"http_load_balancer\" AND http_response_code_class=\"2xx\""
           }
         }
       }
@@ -449,39 +449,39 @@ module "monitoring" {
 module "logging" {
   source = "../../../modules/monitoring/cloud-logging"
 
-  project_id = local.project_id
+  project_id  = local.project_id
   environment = local.environment
-  
+
   # Log sinks for global resources
   log_sinks = {
     "application-logs" = {
-      name = "${local.global_prefix}-application-logs-sink"
+      name        = "${local.global_prefix}-application-logs-sink"
       destination = "bigquery.googleapis.com/projects/${local.project_id}/datasets/application_logs"
-      filter = "resource.type=\"http_load_balancer\" OR resource.type=\"cloud_run_revision\""
+      filter      = "resource.type=\"http_load_balancer\" OR resource.type=\"cloud_run_revision\""
     }
     "audit-logs" = {
-      name = "${local.global_prefix}-audit-logs-sink"
+      name        = "${local.global_prefix}-audit-logs-sink"
       destination = "storage.googleapis.com/${local.global_prefix}-logs"
-      filter = "protoPayload.serviceName=\"cloudsql.googleapis.com\" OR protoPayload.serviceName=\"redis.googleapis.com\""
+      filter      = "protoPayload.serviceName=\"cloudsql.googleapis.com\" OR protoPayload.serviceName=\"redis.googleapis.com\""
     }
     "security-logs" = {
-      name = "security-logs-sink"
+      name        = "security-logs-sink"
       destination = "bigquery.googleapis.com/projects/${local.project_id}/datasets/security_logs"
-      filter = "severity>=ERROR AND resource.type=\"gce_instance\""
+      filter      = "severity>=ERROR AND resource.type=\"gce_instance\""
     }
   }
-  
+
   # Log exclusions for global resources
   log_exclusions = {
     "debug-logs" = {
-      name = "${local.global_prefix}-debug-logs-exclusion"
+      name        = "${local.global_prefix}-debug-logs-exclusion"
       description = "Exclude debug level logs"
-      filter = "severity=\"DEBUG\""
+      filter      = "severity=\"DEBUG\""
     }
     "health-check-logs" = {
-      name = "${local.global_prefix}-health-check-logs-exclusion"
+      name        = "${local.global_prefix}-health-check-logs-exclusion"
       description = "Exclude health check logs"
-      filter = "resource.type=\"http_load_balancer\" AND httpRequest.requestUrl=\"/health\""
+      filter      = "resource.type=\"http_load_balancer\" AND httpRequest.requestUrl=\"/health\""
     }
   }
 }
