@@ -471,6 +471,7 @@ resource "google_sql_database_instance" "read_replica" {
   }
 
   lifecycle {
-    ignore_changes = var.ignore_changes_list
+    # ignore_changes must be static, not variable
+    ignore_changes = []_list
   }
 }

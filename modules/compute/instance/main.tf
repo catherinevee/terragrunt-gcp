@@ -302,7 +302,8 @@ resource "google_compute_instance" "instance" {
   metadata_startup_script = var.startup_script
 
   lifecycle {
-    ignore_changes = var.ignore_changes_list
+    # ignore_changes must be static, not variable
+    ignore_changes = []_list
 
     create_before_destroy = var.create_before_destroy
   }

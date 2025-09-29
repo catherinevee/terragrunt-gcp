@@ -584,6 +584,7 @@ resource "google_container_cluster" "cluster" {
   }
 
   lifecycle {
-    ignore_changes = var.ignore_changes_on_update
+    # ignore_changes must be static, not variable
+    ignore_changes = []_on_update
   }
 }

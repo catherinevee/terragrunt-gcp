@@ -74,7 +74,10 @@
       "Bash(gcloud storage buckets update:*)",
       "Bash(gcloud storage buckets create:*)",
       "Bash(do terraform fmt -check \"$dir\")",
-      "Bash(go list:*)"
+      "Bash(go list:*)",
+      "Bash(do)",
+      "Bash(if [ -f \"$file\" ])",
+      "Bash(then)"
     ],
     "deny": [],
     "ask": []

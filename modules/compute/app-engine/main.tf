@@ -192,7 +192,8 @@ resource "google_app_engine_standard_app_version" "standard" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes        = var.ignore_changes
+    # ignore_changes must be a static list, cannot use variables
+    ignore_changes        = [automatic_scaling, deployment]
   }
 }
 
@@ -377,7 +378,8 @@ resource "google_app_engine_flexible_app_version" "flexible" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes        = var.ignore_changes
+    # ignore_changes must be a static list, cannot use variables
+    ignore_changes        = [automatic_scaling, deployment]
   }
 }
 

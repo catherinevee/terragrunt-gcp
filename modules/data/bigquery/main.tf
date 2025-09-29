@@ -139,7 +139,8 @@ resource "google_bigquery_dataset" "dataset" {
   delete_contents_on_destroy = var.delete_contents_on_destroy
 
   lifecycle {
-    ignore_changes = var.ignore_changes_on_dataset
+    # ignore_changes must be static, not variable
+    ignore_changes = []_on_dataset
   }
 }
 
@@ -323,7 +324,8 @@ resource "google_bigquery_table" "tables" {
   require_partition_filter = lookup(each.value, "require_partition_filter", false)
 
   lifecycle {
-    ignore_changes = var.ignore_changes_on_tables
+    # ignore_changes must be static, not variable
+    ignore_changes = []_on_tables
   }
 
   depends_on = [google_bigquery_dataset.dataset]
