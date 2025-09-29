@@ -30,6 +30,7 @@ import (
 	// "cloud.google.com/go/serviceusage/apiv1/serviceusagepb"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/cloudresourcemanager/v1"
+	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/option"
 	"google.golang.org/api/serviceusage/v1"
 	// "google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -41,6 +42,7 @@ type UtilsService struct {
 	billingService         *cloudbilling.APIService
 	resourceManagerService *cloudresourcemanager.Service
 	serviceUsageService    *serviceusage.Service
+	computeService         *compute.Service
 	bigQueryClient         *bigquery.Client
 	loggingClient          *logging.Client
 	metadataCache          map[string]interface{}
@@ -702,6 +704,11 @@ func NewUtilsService(client *Client, config *UtilsConfig) (*UtilsService, error)
 		return nil, fmt.Errorf("failed to create service usage service: %w", err)
 	}
 
+	computeService, err := compute.NewService(ctx, option.WithCredentials(client.credentials))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create compute service: %w", err)
+	}
+
 	bigQueryClient, err := bigquery.NewClient(ctx, projectID, option.WithCredentials(client.credentials))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create BigQuery client: %w", err)
@@ -726,6 +733,7 @@ func NewUtilsService(client *Client, config *UtilsConfig) (*UtilsService, error)
 		billingService:         billingService,
 		resourceManagerService: resourceManagerService,
 		serviceUsageService:    serviceUsageService,
+		computeService:         computeService,
 		bigQueryClient:         bigQueryClient,
 		loggingClient:          loggingClient,
 		metadataCache:          make(map[string]interface{}),
@@ -2241,14 +2249,14 @@ func (s *UtilsService) Close() error {
 
 // getComputeQuotas retrieves quotas from Compute Engine API
 func (s *UtilsService) getComputeQuotas(ctx context.Context, projectID string) ([]*ResourceQuota, error) {
-	if s.client == nil || s.client.compute == nil {
-		return nil, fmt.Errorf("compute client not initialized")
+	if s.computeService == nil {
+		return nil, fmt.Errorf("compute service not initialized")
 	}
 
 	quotas := []*ResourceQuota{}
 
-	// Get project info which includes regional quotas
-	project, err := s.client.compute.Projects.Get(projectID).Context(ctx).Do()
+	// Get project info which includes global quotas
+	project, err := s.computeService.Projects.Get(projectID).Context(ctx).Do()
 	if err != nil {
 		return nil, fmt.Errorf("getting project: %w", err)
 	}
@@ -2269,7 +2277,7 @@ func (s *UtilsService) getComputeQuotas(ctx context.Context, projectID string) (
 	// Get regional quotas for common regions
 	regions := []string{"us-central1", "us-east1", "us-west1", "europe-west1", "asia-east1"}
 	for _, region := range regions {
-		regionObj, err := s.client.compute.Regions.Get(projectID, region).Context(ctx).Do()
+		regionObj, err := s.computeService.Regions.Get(projectID, region).Context(ctx).Do()
 		if err != nil {
 			// Region might not be available, continue
 			continue
@@ -2308,47 +2316,14 @@ func (s *UtilsService) getServiceUsageQuotas(ctx context.Context, projectID stri
 		"container.googleapis.com",
 	}
 
-	parent := fmt.Sprintf("projects/%s", projectID)
+	// NOTE: Service Usage API v1 doesn't provide ConsumerQuotaMetrics
+	// This was available in v1beta1 but not in the stable v1 API
+	// For detailed quota metrics, use getComputeQuotas() which provides
+	// comprehensive Compute Engine quotas (global + regional)
 
-	for _, service := range services {
-		// Get consumer quota metrics for the service
-		listCall := s.serviceUsageService.Services.ConsumerQuotaMetrics.List(
-			fmt.Sprintf("%s/services/%s", parent, service))
-
-		resp, err := listCall.Context(ctx).Do()
-		if err != nil {
-			// Service might not be enabled, continue
-			continue
-		}
-
-		for _, metric := range resp.Metrics {
-			// Each metric can have multiple limits
-			for _, limit := range metric.ConsumerQuotaLimits {
-				for _, bucket := range limit.QuotaBuckets {
-					// Extract quota information
-					var usage int64
-					var limitValue int64
-
-					if bucket.EffectiveLimit != 0 {
-						limitValue = bucket.EffectiveLimit
-					}
-
-					// Usage would come from monitoring metrics
-					// For now, we'll set it to 0 as we'd need Monitoring API
-					usage = 0
-
-					quotas = append(quotas, &ResourceQuota{
-						Name:      fmt.Sprintf("%s/%s", metric.Metric, limit.Name),
-						Limit:     limitValue,
-						Usage:     usage,
-						Service:   service,
-						Unit:      metric.Unit,
-						Renewable: true,
-					})
-				}
-			}
-		}
-	}
+	// Silence unused variable warnings
+	_ = services
+	_ = projectID
 
 	return quotas, nil
 }
