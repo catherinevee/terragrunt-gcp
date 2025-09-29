@@ -1,0 +1,359 @@
+# Terraform CI/CD Pipeline for Terragrunt-GCP
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+    types: [opened, synchronize, reopened]
+
+env:
+  TERRAFORM_VERSION: "1.6.0"
+  TERRAGRUNT_VERSION: "0.53.0"
+  GO_VERSION: "1.21"
+
+jobs:
+  validate:
+    name: Validate Terraform Modules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget -q -O /tmp/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64"
+          chmod +x /tmp/terragrunt
+          sudo mv /tmp/terragrunt /usr/local/bin/
+
+      - name: Terraform Format Check
+        run: |
+          terraform fmt -check -recursive modules/
+
+      - name: Validate All Modules
+        run: |
+          for dir in modules/*/*/; do
+            echo "Validating $dir"
+            terraform -chdir=$dir init -backend=false
+            terraform -chdir=$dir validate
+          done
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Security Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov.sarif
+
+      - name: Upload Checkov results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov.sarif
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint --recursive
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Run integration tests
+        run: |
+          cd tests/integration
+          go test -v -timeout 30m
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+  documentation:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate terraform-docs
+        uses: terraform-docs/gh-actions@v1
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          recursive: true
+          recursive-path: modules
+
+      - name: Commit documentation
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          if git diff --staged --quiet; then
+            echo "No documentation changes"
+          else
+            git commit -m "docs: auto-update documentation [skip ci]"
+            git push
+          fi
+
+  cost-estimation:
+    name: Cost Estimation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Infracost
+        uses: infracost/setup-infracost@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Generate Infracost JSON
+        run: |
+          infracost breakdown --path . \
+            --format json \
+            --out-file /tmp/infracost.json
+
+      - name: Post Infracost comment
+        uses: infracost/actions@v2
+        with:
+          path: /tmp/infracost.json
+          show-skipped: false
+          behavior: update
+
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [validate, security-scan, tflint, test-unit]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    environment:
+      name: development
+      url: https://dev.acme-corp.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget -q -O /tmp/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64"
+          chmod +x /tmp/terragrunt
+          sudo mv /tmp/terragrunt /usr/local/bin/
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_DEV }}
+
+      - name: Deploy to Development
+        run: |
+          cd infrastructure/environments/dev
+          terragrunt run-all init
+          terragrunt run-all plan -out=tfplan
+          terragrunt run-all apply tfplan
+        env:
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID_DEV }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [validate, security-scan, tflint, test-unit, test-integration]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: staging
+      url: https://staging.acme-corp.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget -q -O /tmp/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64"
+          chmod +x /tmp/terragrunt
+          sudo mv /tmp/terragrunt /usr/local/bin/
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_STAGING }}
+
+      - name: Deploy to Staging
+        run: |
+          cd infrastructure/environments/staging
+          terragrunt run-all init
+          terragrunt run-all plan -out=tfplan
+          terragrunt run-all apply tfplan
+        env:
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID_STAGING }}
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: production
+      url: https://www.acme-corp.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          wget -q -O /tmp/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64"
+          chmod +x /tmp/terragrunt
+          sudo mv /tmp/terragrunt /usr/local/bin/
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_PROD }}
+
+      - name: Create deployment plan
+        run: |
+          cd infrastructure/environments/prod
+          terragrunt run-all init
+          terragrunt run-all plan -out=tfplan
+
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-plan
+          path: infrastructure/environments/prod/**/tfplan
+
+      - name: Apply to Production
+        run: |
+          cd infrastructure/environments/prod
+          terragrunt run-all apply tfplan
+        env:
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID_PROD }}

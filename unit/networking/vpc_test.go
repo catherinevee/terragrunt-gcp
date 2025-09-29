@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"../../testhelpers"
+	"github.com/terragrunt-gcp/terragrunt-gcp/testhelpers"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"

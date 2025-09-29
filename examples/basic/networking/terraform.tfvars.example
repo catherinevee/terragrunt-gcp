@@ -1,0 +1,5 @@
+# Example variable values for basic networking
+
+project_id  = "my-gcp-project"
+region      = "us-central1"
+environment = "dev"

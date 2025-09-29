@@ -40,6 +40,44 @@ variable "backend_regions" {
   default     = []
 }
 
+variable "backend_instance_groups" {
+  description = "Map of region to instance group URLs or names"
+  type        = map(string)
+  default     = {}
+
+  validation {
+    condition = alltrue([
+      for group_ref in values(var.backend_instance_groups) :
+      can(regex("^(projects/.+/regions/.+/instanceGroups/.+|[a-z0-9-]+)$", group_ref))
+    ])
+    error_message = "Instance group references must be either full URLs (projects/{project}/regions/{region}/instanceGroups/{name}) or simple names."
+  }
+}
+
+variable "auto_create_instance_groups" {
+  description = "Whether to automatically create managed instance groups for backend regions"
+  type        = bool
+  default     = false
+}
+
+variable "instance_group_config" {
+  description = "Configuration for auto-created instance groups"
+  type = object({
+    base_instance_name = string
+    instance_template  = string
+    target_size        = number
+    zone_distribution_policy = optional(object({
+      zones        = list(string)
+      target_shape = optional(string, "EVEN")
+    }))
+  })
+  default = {
+    base_instance_name = "backend-instance"
+    instance_template  = ""
+    target_size        = 1
+  }
+}
+
 variable "health_check_config" {
   description = "Health check configuration"
   type = object({
