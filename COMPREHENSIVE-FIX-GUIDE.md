@@ -1395,8 +1395,8 @@ repos:
 | Environment docs | infrastructure/environments/ | ✅ Completed | P2 | 4h | None | No |
 | Secret management guide | docs/ | ✅ Completed | P2 | 4h | None | No |
 | **Testing** |
-| GCP client mocks | test/testhelpers/ | ❌ Not Started | P3 | 1d | None | No |
-| Fix skipped tests | tests/ | ❌ Not Started | P3 | 2d | Mocks | No |
+| GCP client mocks | test/testhelpers/ | 🟡 In Progress | P3 | 1d | None | No |
+| Fix skipped tests | tests/ | 🟡 In Progress | P3 | 2d | Mocks | No |
 | Terraform validation tests | test/ | ❌ Not Started | P4 | 1d | Terratest | No |
 | **Quality** |
 | Pre-commit hooks | .pre-commit-config.yaml | ❌ Not Started | P4 | 2h | None | No |
