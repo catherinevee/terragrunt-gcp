@@ -411,11 +411,13 @@ resource "google_app_engine_firewall_rule" "rules" {
 }
 
 # App Engine Service IAM
-resource "google_app_engine_service_iam_member" "members" {
-  for_each = var.service_iam_members
-
-  project = var.project_id
-  service = each.value.service
-  role    = each.value.role
-  member  = each.value.member
-}
+# Note: App Engine doesn't support service-level IAM bindings
+# Use project-level IAM bindings instead
+# resource "google_app_engine_service_iam_member" "members" {
+#   for_each = var.service_iam_members
+#
+#   project = var.project_id
+#   service = each.value.service
+#   role    = each.value.role
+#   member  = each.value.member
+# }
