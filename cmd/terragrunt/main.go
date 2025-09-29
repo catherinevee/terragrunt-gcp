@@ -1,10 +1,12 @@
 package main
 
 import (
+	"archive/zip"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -31,60 +33,60 @@ var (
 )
 
 type TerragruntConfig struct {
-	TerraformPath      string                 `json:"terraform_path" mapstructure:"terraform_path"`
-	WorkingDir         string                 `json:"working_dir" mapstructure:"working_dir"`
-	ConfigFile         string                 `json:"config_file" mapstructure:"config_file"`
-	AutoInit           bool                   `json:"auto_init" mapstructure:"auto_init"`
-	AutoPlan           bool                   `json:"auto_plan" mapstructure:"auto_plan"`
-	NonInteractive     bool                   `json:"non_interactive" mapstructure:"non_interactive"`
-	Parallelism        int                    `json:"parallelism" mapstructure:"parallelism"`
-	RetryAttempts      int                    `json:"retry_attempts" mapstructure:"retry_attempts"`
-	RetryDelay         time.Duration          `json:"retry_delay" mapstructure:"retry_delay"`
-	LogLevel           string                 `json:"log_level" mapstructure:"log_level"`
-	DownloadDir        string                 `json:"download_dir" mapstructure:"download_dir"`
-	IamRole            string                 `json:"iam_role" mapstructure:"iam_role"`
-	IncludeDirs        []string               `json:"include_dirs" mapstructure:"include_dirs"`
-	ExcludeDirs        []string               `json:"exclude_dirs" mapstructure:"exclude_dirs"`
-	GCP                GCPConfig              `json:"gcp" mapstructure:"gcp"`
-	Backend            BackendConfig          `json:"backend" mapstructure:"backend"`
-	Dependencies       []DependencyConfig     `json:"dependencies" mapstructure:"dependencies"`
-	Hooks              HooksConfig            `json:"hooks" mapstructure:"hooks"`
-	Cache              CacheConfig            `json:"cache" mapstructure:"cache"`
-	Variables          map[string]interface{} `json:"variables" mapstructure:"variables"`
-	Environment        map[string]string      `json:"environment" mapstructure:"environment"`
-	RemoteState        RemoteStateConfig      `json:"remote_state" mapstructure:"remote_state"`
-	TerraformBinary    TerraformBinaryConfig  `json:"terraform_binary" mapstructure:"terraform_binary"`
-	ErrorHandling      ErrorHandlingConfig    `json:"error_handling" mapstructure:"error_handling"`
+	TerraformPath   string                 `json:"terraform_path" mapstructure:"terraform_path"`
+	WorkingDir      string                 `json:"working_dir" mapstructure:"working_dir"`
+	ConfigFile      string                 `json:"config_file" mapstructure:"config_file"`
+	AutoInit        bool                   `json:"auto_init" mapstructure:"auto_init"`
+	AutoPlan        bool                   `json:"auto_plan" mapstructure:"auto_plan"`
+	NonInteractive  bool                   `json:"non_interactive" mapstructure:"non_interactive"`
+	Parallelism     int                    `json:"parallelism" mapstructure:"parallelism"`
+	RetryAttempts   int                    `json:"retry_attempts" mapstructure:"retry_attempts"`
+	RetryDelay      time.Duration          `json:"retry_delay" mapstructure:"retry_delay"`
+	LogLevel        string                 `json:"log_level" mapstructure:"log_level"`
+	DownloadDir     string                 `json:"download_dir" mapstructure:"download_dir"`
+	IamRole         string                 `json:"iam_role" mapstructure:"iam_role"`
+	IncludeDirs     []string               `json:"include_dirs" mapstructure:"include_dirs"`
+	ExcludeDirs     []string               `json:"exclude_dirs" mapstructure:"exclude_dirs"`
+	GCP             GCPConfig              `json:"gcp" mapstructure:"gcp"`
+	Backend         BackendConfig          `json:"backend" mapstructure:"backend"`
+	Dependencies    []DependencyConfig     `json:"dependencies" mapstructure:"dependencies"`
+	Hooks           HooksConfig            `json:"hooks" mapstructure:"hooks"`
+	Cache           CacheConfig            `json:"cache" mapstructure:"cache"`
+	Variables       map[string]interface{} `json:"variables" mapstructure:"variables"`
+	Environment     map[string]string      `json:"environment" mapstructure:"environment"`
+	RemoteState     RemoteStateConfig      `json:"remote_state" mapstructure:"remote_state"`
+	TerraformBinary TerraformBinaryConfig  `json:"terraform_binary" mapstructure:"terraform_binary"`
+	ErrorHandling   ErrorHandlingConfig    `json:"error_handling" mapstructure:"error_handling"`
 }
 
 type GCPConfig struct {
-	Project             string   `json:"project" mapstructure:"project"`
-	Region              string   `json:"region" mapstructure:"region"`
-	Zone                string   `json:"zone" mapstructure:"zone"`
-	Credentials         string   `json:"credentials" mapstructure:"credentials"`
-	ImpersonateServiceAccount string `json:"impersonate_service_account" mapstructure:"impersonate_service_account"`
-	ServiceAccounts     []string `json:"service_accounts" mapstructure:"service_accounts"`
-	EnableAPIs          []string `json:"enable_apis" mapstructure:"enable_apis"`
-	Labels              map[string]string `json:"labels" mapstructure:"labels"`
+	Project                   string            `json:"project" mapstructure:"project"`
+	Region                    string            `json:"region" mapstructure:"region"`
+	Zone                      string            `json:"zone" mapstructure:"zone"`
+	Credentials               string            `json:"credentials" mapstructure:"credentials"`
+	ImpersonateServiceAccount string            `json:"impersonate_service_account" mapstructure:"impersonate_service_account"`
+	ServiceAccounts           []string          `json:"service_accounts" mapstructure:"service_accounts"`
+	EnableAPIs                []string          `json:"enable_apis" mapstructure:"enable_apis"`
+	Labels                    map[string]string `json:"labels" mapstructure:"labels"`
 }
 
 type BackendConfig struct {
-	Type           string                 `json:"type" mapstructure:"type"`
-	Bucket         string                 `json:"bucket" mapstructure:"bucket"`
-	Prefix         string                 `json:"prefix" mapstructure:"prefix"`
-	EncryptionKey  string                 `json:"encryption_key" mapstructure:"encryption_key"`
-	DynamoDBTable  string                 `json:"dynamodb_table" mapstructure:"dynamodb_table"`
-	StateFileID    string                 `json:"state_file_id" mapstructure:"state_file_id"`
-	CustomConfig   map[string]interface{} `json:"custom_config" mapstructure:"custom_config"`
+	Type          string                 `json:"type" mapstructure:"type"`
+	Bucket        string                 `json:"bucket" mapstructure:"bucket"`
+	Prefix        string                 `json:"prefix" mapstructure:"prefix"`
+	EncryptionKey string                 `json:"encryption_key" mapstructure:"encryption_key"`
+	DynamoDBTable string                 `json:"dynamodb_table" mapstructure:"dynamodb_table"`
+	StateFileID   string                 `json:"state_file_id" mapstructure:"state_file_id"`
+	CustomConfig  map[string]interface{} `json:"custom_config" mapstructure:"custom_config"`
 }
 
 type DependencyConfig struct {
-	Name          string                 `json:"name" mapstructure:"name"`
-	Path          string                 `json:"path" mapstructure:"path"`
-	ConfigPath    string                 `json:"config_path" mapstructure:"config_path"`
-	SkipOutputs   bool                   `json:"skip_outputs" mapstructure:"skip_outputs"`
-	MockOutputs   map[string]interface{} `json:"mock_outputs" mapstructure:"mock_outputs"`
-	Enabled       bool                   `json:"enabled" mapstructure:"enabled"`
+	Name        string                 `json:"name" mapstructure:"name"`
+	Path        string                 `json:"path" mapstructure:"path"`
+	ConfigPath  string                 `json:"config_path" mapstructure:"config_path"`
+	SkipOutputs bool                   `json:"skip_outputs" mapstructure:"skip_outputs"`
+	MockOutputs map[string]interface{} `json:"mock_outputs" mapstructure:"mock_outputs"`
+	Enabled     bool                   `json:"enabled" mapstructure:"enabled"`
 }
 
 type HooksConfig struct {
@@ -94,11 +96,11 @@ type HooksConfig struct {
 }
 
 type HookConfig struct {
-	Name        string   `json:"name" mapstructure:"name"`
-	Commands    []string `json:"commands" mapstructure:"commands"`
-	Execute     []string `json:"execute" mapstructure:"execute"`
-	RunOnError  bool     `json:"run_on_error" mapstructure:"run_on_error"`
-	WorkingDir  string   `json:"working_dir" mapstructure:"working_dir"`
+	Name       string   `json:"name" mapstructure:"name"`
+	Commands   []string `json:"commands" mapstructure:"commands"`
+	Execute    []string `json:"execute" mapstructure:"execute"`
+	RunOnError bool     `json:"run_on_error" mapstructure:"run_on_error"`
+	WorkingDir string   `json:"working_dir" mapstructure:"working_dir"`
 }
 
 type CacheConfig struct {
@@ -110,19 +112,19 @@ type CacheConfig struct {
 }
 
 type RemoteStateConfig struct {
-	Backend         string                 `json:"backend" mapstructure:"backend"`
-	DisableDependencyOptimization bool    `json:"disable_dependency_optimization" mapstructure:"disable_dependency_optimization"`
-	DisableInit     bool                   `json:"disable_init" mapstructure:"disable_init"`
-	Generate        map[string]interface{} `json:"generate" mapstructure:"generate"`
-	Config          map[string]interface{} `json:"config" mapstructure:"config"`
+	Backend                       string                 `json:"backend" mapstructure:"backend"`
+	DisableDependencyOptimization bool                   `json:"disable_dependency_optimization" mapstructure:"disable_dependency_optimization"`
+	DisableInit                   bool                   `json:"disable_init" mapstructure:"disable_init"`
+	Generate                      map[string]interface{} `json:"generate" mapstructure:"generate"`
+	Config                        map[string]interface{} `json:"config" mapstructure:"config"`
 }
 
 type TerraformBinaryConfig struct {
-	Path            string            `json:"path" mapstructure:"path"`
-	Version         string            `json:"version" mapstructure:"version"`
-	DownloadURL     string            `json:"download_url" mapstructure:"download_url"`
-	AutoDownload    bool              `json:"auto_download" mapstructure:"auto_download"`
-	Checksums       map[string]string `json:"checksums" mapstructure:"checksums"`
+	Path         string            `json:"path" mapstructure:"path"`
+	Version      string            `json:"version" mapstructure:"version"`
+	DownloadURL  string            `json:"download_url" mapstructure:"download_url"`
+	AutoDownload bool              `json:"auto_download" mapstructure:"auto_download"`
+	Checksums    map[string]string `json:"checksums" mapstructure:"checksums"`
 }
 
 type ErrorHandlingConfig struct {
@@ -1583,8 +1585,224 @@ func generateMermaidGraph(graph map[string][]string) string {
 }
 
 func downloadTerraform(ctx *ExecutionContext) error {
-	// Implementation would download terraform binary
-	return fmt.Errorf("terraform auto-download not implemented")
+	ctx.Logger.Info("Downloading Terraform binary")
+
+	// Determine required version from config or use latest
+	version := "latest"
+	if ctx.Config != nil && ctx.Config.TerraformVersion != "" {
+		version = ctx.Config.TerraformVersion
+	}
+
+	// Detect OS and architecture
+	goos := runtime.GOOS
+	goarch := runtime.GOARCH
+
+	// Map architecture names to Terraform's naming
+	arch := goarch
+	if goarch == "amd64" {
+		arch = "amd64"
+	} else if goarch == "arm64" {
+		arch = "arm64"
+	} else if goarch == "386" {
+		arch = "386"
+	}
+
+	// If version is "latest", fetch it from HashiCorp releases API
+	if version == "latest" {
+		latestVersion, err := getLatestTerraformVersion()
+		if err != nil {
+			return fmt.Errorf("failed to get latest terraform version: %w", err)
+		}
+		version = latestVersion
+	}
+
+	// Construct download URL
+	filename := fmt.Sprintf("terraform_%s_%s_%s.zip", version, goos, arch)
+	downloadURL := fmt.Sprintf("https://releases.hashicorp.com/terraform/%s/%s", version, filename)
+
+	ctx.Logger.Infof("Downloading Terraform %s for %s/%s", version, goos, arch)
+
+	// Create temporary directory for download
+	tmpDir, err := os.MkdirTemp("", "terraform-download-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temp directory: %w", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Download the zip file
+	zipPath := filepath.Join(tmpDir, filename)
+	if err := downloadFile(downloadURL, zipPath); err != nil {
+		return fmt.Errorf("failed to download terraform: %w", err)
+	}
+
+	ctx.Logger.Info("Extracting Terraform binary")
+
+	// Extract the binary
+	if err := extractZip(zipPath, tmpDir); err != nil {
+		return fmt.Errorf("failed to extract terraform: %w", err)
+	}
+
+	// Determine installation directory
+	installDir := filepath.Join(os.Getenv("HOME"), ".terragrunt", "terraform", version)
+	if err := os.MkdirAll(installDir, 0755); err != nil {
+		return fmt.Errorf("failed to create install directory: %w", err)
+	}
+
+	// Move binary to installation directory
+	srcBinary := filepath.Join(tmpDir, "terraform")
+	if runtime.GOOS == "windows" {
+		srcBinary += ".exe"
+	}
+
+	dstBinary := filepath.Join(installDir, filepath.Base(srcBinary))
+	if err := os.Rename(srcBinary, dstBinary); err != nil {
+		// Try copying if rename fails (cross-device link)
+		if err := copyFile(srcBinary, dstBinary); err != nil {
+			return fmt.Errorf("failed to install terraform: %w", err)
+		}
+	}
+
+	// Make binary executable
+	if err := os.Chmod(dstBinary, 0755); err != nil {
+		return fmt.Errorf("failed to make terraform executable: %w", err)
+	}
+
+	ctx.Logger.Infof("Terraform %s installed successfully to %s", version, dstBinary)
+
+	// Update PATH in context if needed
+	if ctx.Environment == nil {
+		ctx.Environment = make(map[string]string)
+	}
+	ctx.Environment["PATH"] = fmt.Sprintf("%s%c%s", installDir, os.PathListSeparator, os.Getenv("PATH"))
+
+	return nil
+}
+
+// getLatestTerraformVersion fetches the latest Terraform version from HashiCorp's API
+func getLatestTerraformVersion() (string, error) {
+	resp, err := http.Get("https://checkpoint-api.hashicorp.com/v1/check/terraform")
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch version info: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var result struct {
+		CurrentVersion string `json:"current_version"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("failed to parse version info: %w", err)
+	}
+
+	return result.CurrentVersion, nil
+}
+
+// downloadFile downloads a file from URL to destination
+func downloadFile(url string, dest string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("failed to download: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("download failed with status: %d", resp.StatusCode)
+	}
+
+	out, err := os.Create(dest)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		return fmt.Errorf("failed to write file: %w", err)
+	}
+
+	return nil
+}
+
+// extractZip extracts a zip file to destination directory
+func extractZip(src string, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return fmt.Errorf("failed to open zip: %w", err)
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		fpath := filepath.Join(dest, f.Name)
+
+		// Check for ZipSlip vulnerability
+		if !strings.HasPrefix(fpath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", fpath)
+		}
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(fpath, os.ModePerm)
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+			return fmt.Errorf("failed to create directory: %w", err)
+		}
+
+		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return fmt.Errorf("failed to create file: %w", err)
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			outFile.Close()
+			return fmt.Errorf("failed to open zip entry: %w", err)
+		}
+
+		if _, err := io.Copy(outFile, rc); err != nil {
+			outFile.Close()
+			rc.Close()
+			return fmt.Errorf("failed to extract file: %w", err)
+		}
+
+		outFile.Close()
+		rc.Close()
+	}
+
+	return nil
+}
+
+// copyFile copies a file from src to dst
+func copyFile(src string, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("failed to open source: %w", err)
+	}
+	defer sourceFile.Close()
+
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("failed to create destination: %w", err)
+	}
+	defer destFile.Close()
+
+	if _, err := io.Copy(destFile, sourceFile); err != nil {
+		return fmt.Errorf("failed to copy: %w", err)
+	}
+
+	// Copy file permissions
+	sourceInfo, err := os.Stat(src)
+	if err != nil {
+		return fmt.Errorf("failed to get source info: %w", err)
+	}
+
+	if err := os.Chmod(dst, sourceInfo.Mode()); err != nil {
+		return fmt.Errorf("failed to set permissions: %w", err)
+	}
+
+	return nil
 }
 
 func getTerraformVersion() string {
