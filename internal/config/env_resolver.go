@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	"encoding/base64"
+	// "encoding/base64" // unused import
 	"encoding/json"
 	"fmt"
 	"os"
@@ -131,12 +131,13 @@ func (r *EnvResolver) initFunctions() {
 		"csvdecode":       stdlib.CSVDecodeFunc,
 		"jsondecode":      stdlib.JSONDecodeFunc,
 		"jsonencode":      stdlib.JSONEncodeFunc,
-		"urlencode":       stdlib.URLEncodeFunc,
-		"yamldecode":      stdlib.YAMLDecodeFunc,
-		"yamlencode":      stdlib.YAMLEncodeFunc,
+		// Functions not available in stdlib
+		// "urlencode":       stdlib.URLEncodeFunc,
+		// "yamldecode":      stdlib.YAMLDecodeFunc,
+		// "yamlencode":      stdlib.YAMLEncodeFunc,
 		"formatdate":      stdlib.FormatDateFunc,
 		"timeadd":         stdlib.TimeAddFunc,
-		"timestamp":       stdlib.TimestampFunc,
+		// "timestamp":       stdlib.TimestampFunc, // not available
 
 		// Custom functions
 		"env":             r.envFunc(),
@@ -517,12 +518,16 @@ func (r *EnvResolver) evaluateExpression(expr string) (string, error) {
 	}
 
 	// Convert other types to JSON string
-	jsonBytes, err := stdlib.JSONEncode(val)
+	jsonVal, err := stdlib.JSONEncode(val)
 	if err != nil {
 		return "", fmt.Errorf("encoding value to JSON: %w", err)
 	}
 
-	return string(jsonBytes), nil
+	// JSONEncode returns a cty.Value, need to convert to string
+	if jsonVal.Type() == cty.String {
+		return jsonVal.AsString(), nil
+	}
+	return "", fmt.Errorf("unexpected JSON encoding result")
 }
 
 func (r *EnvResolver) getEnv(keys ...string) string {

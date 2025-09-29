@@ -301,15 +301,15 @@ type CostAllocation struct {
 }
 
 type CostTrends struct {
-	DailyTrend      TrendAnalysis          `json:"daily_trend"`
-	WeeklyTrend     TrendAnalysis          `json:"weekly_trend"`
-	MonthlyTrend    TrendAnalysis          `json:"monthly_trend"`
-	ServiceTrends   map[string]TrendAnalysis `json:"service_trends"`
+	DailyTrend      CostTrendAnalysis          `json:"daily_trend"`
+	WeeklyTrend     CostTrendAnalysis          `json:"weekly_trend"`
+	MonthlyTrend    CostTrendAnalysis          `json:"monthly_trend"`
+	ServiceTrends   map[string]CostTrendAnalysis `json:"service_trends"`
 	SeasonalPattern SeasonalAnalysis       `json:"seasonal_pattern"`
 	GrowthRate      GrowthAnalysis         `json:"growth_rate"`
 }
 
-type TrendAnalysis struct {
+type CostTrendAnalysis struct {
 	Direction       string    `json:"direction"`
 	Magnitude       float64   `json:"magnitude"`
 	Slope           float64   `json:"slope"`
@@ -512,7 +512,7 @@ func (ca *CostAnalyzer) calculateSummary(ctx context.Context, resources []core.R
 			continue
 		}
 
-		cost := resource.Cost.Actual
+		cost := resource.Cost.MonthlyCost
 		if options.IncludeTaxes {
 			cost += cost * ca.config.TaxRate
 		}
@@ -526,11 +526,11 @@ func (ca *CostAnalyzer) calculateSummary(ctx context.Context, resources []core.R
 		summary.CostByService[serviceName] += cost
 		summary.CostByRegion[resource.Region] += cost
 
-		if project, ok := resource.Labels["project"]; ok {
+		if project, ok := resource.Tags["project"]; ok {
 			summary.CostByProject[project] += cost
 		}
 
-		for key, value := range resource.Labels {
+		for key, value := range resource.Tags {
 			labelKey := fmt.Sprintf("%s:%s", key, value)
 			summary.CostByLabel[labelKey] += cost
 		}
@@ -569,7 +569,7 @@ func (ca *CostAnalyzer) calculateBreakdown(ctx context.Context, resources []core
 			continue
 		}
 
-		cost := resource.Cost.Actual
+		cost := resource.Cost.MonthlyCost
 
 		serviceName := ca.getServiceFromResourceType(resource.Type)
 		if _, exists := breakdown.ByService[serviceName]; !exists {
@@ -618,7 +618,7 @@ func (ca *CostAnalyzer) calculateBreakdown(ctx context.Context, resources []core
 		region.ResourceCount++
 		breakdown.ByRegion[resource.Region] = region
 
-		if project, ok := resource.Labels["project"]; ok {
+		if project, ok := resource.Tags["project"]; ok {
 			if _, exists := breakdown.ByProject[project]; !exists {
 				breakdown.ByProject[project] = ProjectCost{
 					ProjectID:        project,
@@ -633,7 +633,7 @@ func (ca *CostAnalyzer) calculateBreakdown(ctx context.Context, resources []core
 			breakdown.ByProject[project] = proj
 		}
 
-		if dept, ok := resource.Labels["department"]; ok {
+		if dept, ok := resource.Tags["department"]; ok {
 			if _, exists := breakdown.ByDepartment[dept]; !exists {
 				breakdown.ByDepartment[dept] = DepartmentCost{
 					Department:    dept,
@@ -648,7 +648,7 @@ func (ca *CostAnalyzer) calculateBreakdown(ctx context.Context, resources []core
 			breakdown.ByDepartment[dept] = department
 		}
 
-		if env, ok := resource.Labels["environment"]; ok {
+		if env, ok := resource.Tags["environment"]; ok {
 			if _, exists := breakdown.ByEnvironment[env]; !exists {
 				breakdown.ByEnvironment[env] = EnvironmentCost{
 					Environment:      env,
@@ -662,7 +662,7 @@ func (ca *CostAnalyzer) calculateBreakdown(ctx context.Context, resources []core
 			breakdown.ByEnvironment[env] = environment
 		}
 
-		for key, value := range resource.Labels {
+		for key, value := range resource.Tags {
 			labelKey := fmt.Sprintf("%s:%s", key, value)
 			if _, exists := breakdown.ByLabel[labelKey]; !exists {
 				breakdown.ByLabel[labelKey] = LabelCost{
@@ -716,7 +716,7 @@ func (ca *CostAnalyzer) generateTimeline(ctx context.Context, resources []core.R
 			}
 
 			if resource.Cost != nil {
-				cost := resource.Cost.Actual / 30
+				cost := resource.Cost.MonthlyCost / 30
 				dailyCost += cost
 
 				serviceName := ca.getServiceFromResourceType(resource.Type)
@@ -847,9 +847,9 @@ func (ca *CostAnalyzer) identifyOptimizations(ctx context.Context, resources []c
 			Category:      "COMPUTE",
 			Title:         fmt.Sprintf("Rightsize %s", resource.Name),
 			Description:   fmt.Sprintf("Resource %s is underutilized (avg CPU: 15%%)", resource.Name),
-			CurrentCost:   resource.Cost.Actual,
-			OptimizedCost: resource.Cost.Actual * 0.6,
-			Savings:       resource.Cost.Actual * 0.4,
+			CurrentCost:   resource.Cost.MonthlyCost,
+			OptimizedCost: resource.Cost.MonthlyCost * 0.6,
+			Savings:       resource.Cost.MonthlyCost * 0.4,
 			SavingsPercent: 40,
 			Risk:          "LOW",
 			Effort:        "LOW",
@@ -900,9 +900,9 @@ func (ca *CostAnalyzer) identifyOptimizations(ctx context.Context, resources []c
 			Category:         "UNUSED",
 			Title:            fmt.Sprintf("Terminate idle resource %s", resource.Name),
 			Description:      fmt.Sprintf("Resource %s has been idle for 7+ days", resource.Name),
-			CurrentCost:      resource.Cost.Actual,
+			CurrentCost:      resource.Cost.MonthlyCost,
 			OptimizedCost:    0,
-			Savings:          resource.Cost.Actual,
+			Savings:          resource.Cost.MonthlyCost,
 			SavingsPercent:   100,
 			Risk:             "MEDIUM",
 			Effort:           "LOW",
@@ -935,14 +935,14 @@ func (ca *CostAnalyzer) calculateAllocations(resources []core.Resource, options 
 			continue
 		}
 
-		cost := resource.Cost.Actual
+		cost := resource.Cost.MonthlyCost
 		totalCost += cost
 
-		if dept, ok := resource.Labels["department"]; ok {
+		if dept, ok := resource.Tags["department"]; ok {
 			departmentCosts[dept] += cost
 		}
 
-		if project, ok := resource.Labels["project"]; ok {
+		if project, ok := resource.Tags["project"]; ok {
 			projectCosts[project] += cost
 		}
 	}
@@ -994,7 +994,7 @@ func (ca *CostAnalyzer) analyzeTrends(timeline []CostTimelineEntry) CostTrends {
 	}
 
 	trends := CostTrends{
-		ServiceTrends: make(map[string]TrendAnalysis),
+		ServiceTrends: make(map[string]CostTrendAnalysis),
 	}
 
 	dailyCosts := []float64{}
@@ -1206,13 +1206,13 @@ func (ca *CostAnalyzer) getServiceFromResourceType(resourceType string) string {
 func (ca *CostAnalyzer) getApplicableDiscount(resource core.Resource) float64 {
 	discount := ca.config.DiscountRate
 
-	if resource.Labels["commitment"] == "1year" {
+	if resource.Tags["commitment"] == "1year" {
 		discount += 0.2
-	} else if resource.Labels["commitment"] == "3year" {
+	} else if resource.Tags["commitment"] == "3year" {
 		discount += 0.3
 	}
 
-	if resource.Labels["sustained_use"] == "true" {
+	if resource.Tags["sustained_use"] == "true" {
 		discount += ca.config.SustainedUseDiscount
 	}
 
@@ -1272,7 +1272,7 @@ func (ca *CostAnalyzer) analyzeCostChange(ctx context.Context, currentCost float
 	previousCost := 0.0
 	for _, resource := range previousResources {
 		if resource.Cost != nil {
-			previousCost += resource.Cost.Actual
+			previousCost += resource.Cost.MonthlyCost
 		}
 	}
 
@@ -1348,7 +1348,7 @@ func (ca *CostAnalyzer) getResourceRecommendations(resource core.Resource) []str
 		recommendations = append(recommendations, "Consider terminating stopped resources")
 	}
 
-	if resource.Cost != nil && resource.Cost.Actual > 100 {
+	if resource.Cost != nil && resource.Cost.MonthlyCost > 100 {
 		recommendations = append(recommendations, "High cost resource - review for optimization")
 	}
 
@@ -1511,12 +1511,12 @@ func (ca *CostAnalyzer) identifyCommitmentOpportunities(breakdown CostBreakdown)
 	return opportunities
 }
 
-func (ca *CostAnalyzer) calculateTrendAnalysis(costs []float64, name string) TrendAnalysis {
+func (ca *CostAnalyzer) calculateTrendAnalysis(costs []float64, name string) CostTrendAnalysis {
 	if len(costs) == 0 {
-		return TrendAnalysis{}
+		return CostTrendAnalysis{}
 	}
 
-	trend := TrendAnalysis{
+	trend := CostTrendAnalysis{
 		DataPoints: len(costs),
 		StartValue: costs[0],
 		EndValue:   costs[len(costs)-1],
@@ -1604,7 +1604,7 @@ func (ca *CostAnalyzer) calculateVolatility(costs []float64) float64 {
 	return math.Sqrt(variance) / mean * 100
 }
 
-func (ca *CostAnalyzer) interpretTrend(trend TrendAnalysis) string {
+func (ca *CostAnalyzer) interpretTrend(trend CostTrendAnalysis) string {
 	if trend.Volatility > 50 {
 		return "Highly volatile cost pattern detected"
 	}

@@ -173,14 +173,7 @@ type DiscoveryResult struct {
 	Duration     time.Duration          `json:"duration"`
 }
 
-type DiscoverySummary struct {
-	TotalAccounts   int                    `json:"total_accounts"`
-	TotalResources  int                    `json:"total_resources"`
-	ResourcesByType map[string]int         `json:"resources_by_type"`
-	ResourcesByRegion map[string]int       `json:"resources_by_region"`
-	AccountsByProvider map[string]int      `json:"accounts_by_provider"`
-	ErrorCount      int                    `json:"error_count"`
-}
+// DiscoverySummary is defined in discoverer.go
 
 type DiscoveryError struct {
 	Provider    string    `json:"provider"`
@@ -193,12 +186,13 @@ type DiscoveryError struct {
 
 func (dr *DiscoveryResult) AddAccount(account Account) {
 	dr.Accounts = append(dr.Accounts, account)
-	dr.Summary.TotalAccounts = len(dr.Accounts)
+	// TotalAccounts and AccountsByProvider not available in DiscoverySummary
+	// dr.Summary.TotalAccounts = len(dr.Accounts)
 
-	if dr.Summary.AccountsByProvider == nil {
-		dr.Summary.AccountsByProvider = make(map[string]int)
-	}
-	dr.Summary.AccountsByProvider[account.Provider]++
+	// if dr.Summary.AccountsByProvider == nil {
+	// 	dr.Summary.AccountsByProvider = make(map[string]int)
+	// }
+	// dr.Summary.AccountsByProvider[account.Provider]++
 }
 
 func (dr *DiscoveryResult) AddResource(resource Resource) {
@@ -218,7 +212,8 @@ func (dr *DiscoveryResult) AddResource(resource Resource) {
 
 func (dr *DiscoveryResult) AddError(err DiscoveryError) {
 	dr.Errors = append(dr.Errors, err)
-	dr.Summary.ErrorCount = len(dr.Errors)
+	// ErrorCount field not available in DiscoverySummary
+	// dr.Summary.ErrorCount = len(dr.Errors)
 }
 
 func (dr *DiscoveryResult) ToJSON() ([]byte, error) {

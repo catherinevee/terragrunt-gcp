@@ -6,13 +6,13 @@ import (
 	"net"
 	"net/http"
 	"strconv"
-	"strings"
+	// "strings"
 	"testing"
 	"time"
 
 	"google.golang.org/api/googleapi"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	// "google.golang.org/grpc/codes"
+	// "google.golang.org/grpc/status"
 )
 
 func TestNewGCPError(t *testing.T) {

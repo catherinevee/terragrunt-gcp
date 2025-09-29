@@ -114,7 +114,7 @@ output "subscriptions" {
         attributes    = sub.push_config[0].attributes
         oidc_token = try({
           service_account_email = sub.push_config[0].oidc_token[0].service_account_email
-          audience             = sub.push_config[0].oidc_token[0].audience
+          audience              = sub.push_config[0].oidc_token[0].audience
         }, null)
       }, null)
 
@@ -132,10 +132,10 @@ output "subscriptions" {
         filename_prefix          = sub.cloud_storage_config[0].filename_prefix
         filename_suffix          = sub.cloud_storage_config[0].filename_suffix
         filename_datetime_format = sub.cloud_storage_config[0].filename_datetime_format
-        max_duration            = sub.cloud_storage_config[0].max_duration
-        max_bytes               = sub.cloud_storage_config[0].max_bytes
-        state                   = sub.cloud_storage_config[0].state
-        service_account_email   = sub.cloud_storage_config[0].service_account_email
+        max_duration             = sub.cloud_storage_config[0].max_duration
+        max_bytes                = sub.cloud_storage_config[0].max_bytes
+        state                    = sub.cloud_storage_config[0].state
+        service_account_email    = sub.cloud_storage_config[0].service_account_email
       }, null)
     }
   }
@@ -148,7 +148,7 @@ output "subscription_names" {
 
 output "subscription_ids" {
   description = "Map of subscription names to IDs"
-  value       = {for sub_name, sub in google_pubsub_subscription.subscriptions : sub_name => sub.id}
+  value       = { for sub_name, sub in google_pubsub_subscription.subscriptions : sub_name => sub.id }
 }
 
 output "push_subscription_endpoints" {
@@ -245,8 +245,8 @@ output "monitoring_alert_policies" {
       combiner              = alert.combiner
       enabled               = alert.enabled
       notification_channels = alert.notification_channels
-      user_labels          = alert.user_labels
-      creation_record      = alert.creation_record
+      user_labels           = alert.user_labels
+      creation_record       = alert.creation_record
     }
   }
 }
@@ -289,9 +289,9 @@ output "subscription_iam_members" {
   value = {
     for key, member in google_pubsub_subscription_iam_member.subscription_members : key => {
       subscription = member.subscription
-      role        = member.role
-      member      = member.member
-      condition   = member.condition
+      role         = member.role
+      member       = member.member
+      condition    = member.condition
     }
   }
 }
@@ -322,17 +322,13 @@ output "gcloud_commands" {
 
     create_snapshot = length(google_pubsub_subscription.subscriptions) > 0 ? "gcloud pubsub snapshots create my-snapshot --subscription=${element(keys(google_pubsub_subscription.subscriptions), 0)} --project=${var.project_id}" : null
 
-    seek_to_time = length(google_pubsub_subscription.subscriptions) > 0 ?
-      "gcloud pubsub subscriptions seek ${element(keys(google_pubsub_subscription.subscriptions), 0)} --time=2024-01-01T00:00:00Z --project=${var.project_id}" :
-      null
+    seek_to_time = length(google_pubsub_subscription.subscriptions) > 0 ? "gcloud pubsub subscriptions seek ${element(keys(google_pubsub_subscription.subscriptions), 0)} --time=2024-01-01T00:00:00Z --project=${var.project_id}" : null
 
     describe_topic = "gcloud pubsub topics describe ${google_pubsub_topic.topic.name} --project=${var.project_id}"
 
     list_subscriptions = "gcloud pubsub subscriptions list --filter='topic:${google_pubsub_topic.topic.name}' --project=${var.project_id}"
 
-    update_subscription = length(google_pubsub_subscription.subscriptions) > 0 ?
-      "gcloud pubsub subscriptions update ${element(keys(google_pubsub_subscription.subscriptions), 0)} --ack-deadline=60 --project=${var.project_id}" :
-      null
+    update_subscription = length(google_pubsub_subscription.subscriptions) > 0 ? "gcloud pubsub subscriptions update ${element(keys(google_pubsub_subscription.subscriptions), 0)} --ack-deadline=60 --project=${var.project_id}" : null
   }
 }
 
@@ -364,8 +360,6 @@ output "import_commands" {
 
     subscription = length(google_pubsub_subscription.subscriptions) > 0 ? "terraform import 'google_pubsub_subscription.subscriptions[\"SUBSCRIPTION_NAME\"]' projects/${var.project_id}/subscriptions/SUBSCRIPTION_NAME" : null
 
-    snapshot = length(google_pubsub_snapshot.snapshots) > 0 ?
-      "terraform import 'google_pubsub_snapshot.snapshots[\"SNAPSHOT_NAME\"]' projects/${var.project_id}/snapshots/SNAPSHOT_NAME" :
-      null
+    snapshot = length(google_pubsub_snapshot.snapshots) > 0 ? "terraform import 'google_pubsub_snapshot.snapshots[\"SNAPSHOT_NAME\"]' projects/${var.project_id}/snapshots/SNAPSHOT_NAME" : null
   }
 }

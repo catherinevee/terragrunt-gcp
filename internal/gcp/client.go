@@ -132,6 +132,94 @@ type ClientConfig struct {
 	TLSInsecureSkipVerify  bool
 }
 
+// Validate validates the client configuration
+func (c *ClientConfig) Validate() error {
+	if c.ProjectID == "" {
+		return fmt.Errorf("project ID is required")
+	}
+	if c.MaxRetries < 0 {
+		return fmt.Errorf("max retries cannot be negative")
+	}
+	if c.MaxConcurrentRequests < 0 {
+		return fmt.Errorf("max concurrent requests cannot be negative")
+	}
+	if c.MaxRequestsPerSecond < 0 {
+		return fmt.Errorf("max requests per second cannot be negative")
+	}
+	return nil
+}
+
+// SetDefaults sets default values for unspecified configuration fields
+func (c *ClientConfig) SetDefaults() {
+	if c.Region == "" {
+		c.Region = "us-central1"
+	}
+	if c.Zone == "" {
+		c.Zone = "us-central1-a"
+	}
+	if c.MaxRetries == 0 {
+		c.MaxRetries = 3
+	}
+	if c.RetryTimeout == 0 {
+		c.RetryTimeout = 5 * time.Minute
+	}
+	if c.ConnectionTimeout == 0 {
+		c.ConnectionTimeout = 30 * time.Second
+	}
+	if c.RequestTimeout == 0 {
+		c.RequestTimeout = 60 * time.Second
+	}
+	if c.MaxConcurrentRequests == 0 {
+		c.MaxConcurrentRequests = 100
+	}
+	if c.MaxRequestsPerSecond == 0 {
+		c.MaxRequestsPerSecond = 100
+	}
+	if c.BurstSize == 0 {
+		c.BurstSize = 200
+	}
+	if c.CacheTTL == 0 {
+		c.CacheTTL = 5 * time.Minute
+	}
+}
+
+// Timeout returns the request timeout
+func (c *ClientConfig) Timeout() time.Duration {
+	if c.RequestTimeout > 0 {
+		return c.RequestTimeout
+	}
+	return 60 * time.Second
+}
+
+// RetryAttempts returns the maximum number of retry attempts
+func (c *ClientConfig) RetryAttempts() int {
+	if c.MaxRetries > 0 {
+		return c.MaxRetries
+	}
+	return 3
+}
+
+// RetryDelay returns the base retry delay
+func (c *ClientConfig) RetryDelay() time.Duration {
+	return time.Second // Base delay, will be multiplied with exponential backoff
+}
+
+// RateLimitQPS returns the rate limit in queries per second
+func (c *ClientConfig) RateLimitQPS() int {
+	if c.MaxRequestsPerSecond > 0 {
+		return c.MaxRequestsPerSecond
+	}
+	return 100
+}
+
+// RateLimitBurst returns the burst size for rate limiting
+func (c *ClientConfig) RateLimitBurst() int {
+	if c.BurstSize > 0 {
+		return c.BurstSize
+	}
+	return 200
+}
+
 // GRPCConnectionPool manages a pool of gRPC connections
 type GRPCConnectionPool struct {
 	mu          sync.RWMutex
@@ -433,6 +521,84 @@ func (c *Client) Zone() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.zone
+}
+
+// UserAgent returns the configured user agent
+func (c *Client) UserAgent() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if c.config != nil {
+		return c.config.UserAgent
+	}
+	return ""
+}
+
+// GetCredentials returns the client's credentials
+func (c *Client) GetCredentials() (*google.Credentials, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if c.credentials == nil {
+		return nil, fmt.Errorf("credentials not initialized")
+	}
+	return c.credentials, nil
+}
+
+// IsAuthenticated checks if the client has valid credentials
+func (c *Client) IsAuthenticated() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.credentials != nil
+}
+
+// RefreshCredentials refreshes the OAuth2 token
+func (c *Client) RefreshCredentials(ctx context.Context) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.credentials == nil {
+		return fmt.Errorf("no credentials to refresh")
+	}
+
+	// Get a fresh token
+	token, err := c.credentials.TokenSource.Token()
+	if err != nil {
+		return fmt.Errorf("failed to refresh token: %w", err)
+	}
+
+	// Update the token
+	if token.Valid() {
+		return nil
+	}
+
+	return fmt.Errorf("refreshed token is not valid")
+}
+
+// HealthCheck performs a health check on the client
+func (c *Client) HealthCheck(ctx context.Context) error {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	// Check if authenticated
+	if c.credentials == nil {
+		return fmt.Errorf("not authenticated")
+	}
+
+	// Check if token is valid
+	token, err := c.credentials.TokenSource.Token()
+	if err != nil {
+		return fmt.Errorf("failed to get token: %w", err)
+	}
+
+	if !token.Valid() {
+		return fmt.Errorf("token is expired or invalid")
+	}
+
+	// Check if circuit breaker allows requests
+	if c.circuitBreaker != nil && c.circuitBreaker.state == CircuitOpen {
+		return fmt.Errorf("circuit breaker is open")
+	}
+
+	return nil
 }
 
 // GetComputeClient returns the Compute Engine client, initializing if needed

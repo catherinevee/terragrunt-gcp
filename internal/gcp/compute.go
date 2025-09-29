@@ -3,14 +3,14 @@ package gcp
 import (
 	"context"
 	"fmt"
-	"strings"
+	// "strings"
 	"sync"
 	"time"
 
 	compute "cloud.google.com/go/compute/apiv1"
 	"cloud.google.com/go/compute/apiv1/computepb"
 	"cloud.google.com/go/compute/metadata"
-	"github.com/googleapis/gax-go/v2"
+	// "github.com/googleapis/gax-go/v2"
 	"go.uber.org/zap"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -308,8 +308,6 @@ type RateLimiter struct {
 
 // NewComputeService creates a new comprehensive compute service
 func NewComputeService(ctx context.Context, client *Client, opts ...option.ClientOption) (*ComputeService, error) {
-	logger := client.logger.Named("compute")
-
 	// Initialize all compute clients
 	instancesClient, err := compute.NewInstancesRESTClient(ctx, opts...)
 	if err != nil {
@@ -451,7 +449,7 @@ func NewComputeService(ctx context.Context, client *Client, opts ...option.Clien
 		client:          globalOpsClient,
 		zoneOpsClient:   zoneOpsClient,
 		regionOpsClient: regionOpsClient,
-		logger:          logger.Named("operations"),
+		logger:          zap.L().Named("operations"),
 		pollInterval:    2 * time.Second,
 		maxPollDuration: 10 * time.Minute,
 	}
@@ -511,7 +509,7 @@ func NewComputeService(ctx context.Context, client *Client, opts ...option.Clien
 		zonesClient:             zonesClient,
 		regionsClient:           regionsClient,
 		projectsClient:          projectsClient,
-		logger:                  logger,
+		logger:                  zap.L(),
 		cache:                   cache,
 		metrics:                 metrics,
 		rateLimiter:             rateLimiter,
@@ -544,7 +542,8 @@ func (cs *ComputeService) CreateInstance(ctx context.Context, config *InstanceCo
 		MinCpuPlatform:          proto.String(config.MinCpuPlatform),
 		DeletionProtection:      proto.Bool(config.DeletionProtection),
 		Hostname:                proto.String(config.Hostname),
-		EnableDisplay:           proto.Bool(config.EnableDisplay),
+		// EnableDisplay field not available in current computepb.Instance
+		// EnableDisplay:           proto.Bool(config.EnableDisplay),
 		PrivateIpv6GoogleAccess: proto.String(config.PrivateIpv6GoogleAccess),
 		Fingerprint:             proto.String(config.Fingerprint),
 	}
@@ -707,7 +706,8 @@ func (cs *ComputeService) CreateInstance(ctx context.Context, config *InstanceCo
 			OnHostMaintenance:         proto.String(config.Scheduling.OnHostMaintenance),
 			Preemptible:               proto.Bool(config.Scheduling.Preemptible),
 			ProvisioningModel:         proto.String(config.Scheduling.ProvisioningModel),
-			HostErrorTimeoutSeconds:   proto.Int32(config.Scheduling.HostErrorTimeoutSeconds),
+			// HostErrorTimeoutSeconds field not available in current computepb.Scheduling
+			// HostErrorTimeoutSeconds:   proto.Int32(config.Scheduling.HostErrorTimeoutSeconds),
 		}
 
 		if len(config.Scheduling.NodeAffinities) > 0 {
@@ -792,8 +792,13 @@ func (cs *ComputeService) CreateInstance(ctx context.Context, config *InstanceCo
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, config.Zone, op.GetName()); err != nil {
-		return nil, fmt.Errorf("instance creation operation failed: %w", err)
+	// op.Name is a pointer to string
+	if op.Name != nil {
+		if err := cs.waitForZoneOperation(ctx, config.Zone, op.Name()); err != nil {
+			return nil, fmt.Errorf("instance creation operation failed: %w", err)
+		}
+	} else {
+		return nil, fmt.Errorf("operation name is nil")
 	}
 
 	// Get the created instance
@@ -964,7 +969,11 @@ func (cs *ComputeService) DeleteInstance(ctx context.Context, zone, name string)
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	// op.Name is a pointer to string
+	if op.Name == nil {
+		return fmt.Errorf("operation name is nil")
+	}
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return fmt.Errorf("instance deletion operation failed: %w", err)
 	}
 
@@ -1016,7 +1025,7 @@ func (cs *ComputeService) StartInstance(ctx context.Context, zone, name string) 
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return fmt.Errorf("instance start operation failed: %w", err)
 	}
 
@@ -1054,7 +1063,7 @@ func (cs *ComputeService) StopInstance(ctx context.Context, zone, name string) e
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return fmt.Errorf("instance stop operation failed: %w", err)
 	}
 
@@ -1092,7 +1101,7 @@ func (cs *ComputeService) ResetInstance(ctx context.Context, zone, name string) 
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return fmt.Errorf("instance reset operation failed: %w", err)
 	}
 
@@ -1140,7 +1149,7 @@ func (cs *ComputeService) ResizeInstance(ctx context.Context, zone, name, newMac
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return fmt.Errorf("machine type change operation failed: %w", err)
 	}
 
@@ -1197,7 +1206,7 @@ func (cs *ComputeService) AttachDisk(ctx context.Context, zone, instance, disk s
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return fmt.Errorf("disk attach operation failed: %w", err)
 	}
 
@@ -1238,7 +1247,7 @@ func (cs *ComputeService) DetachDisk(ctx context.Context, zone, instance, device
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return fmt.Errorf("disk detach operation failed: %w", err)
 	}
 
@@ -1286,7 +1295,7 @@ func (cs *ComputeService) CreateSnapshot(ctx context.Context, zone, disk, snapsh
 	}
 
 	// Wait for operation to complete
-	if err := cs.waitForZoneOperation(ctx, zone, op.GetName()); err != nil {
+	if err := cs.waitForZoneOperation(ctx, zone, op.Name()); err != nil {
 		return nil, fmt.Errorf("snapshot creation operation failed: %w", err)
 	}
 
@@ -1369,7 +1378,7 @@ func (op *OperationPoller) WaitForZoneOperation(ctx context.Context, project, zo
 				return fmt.Errorf("failed to get operation status: %w", err)
 			}
 
-			if operation.GetStatus() == "DONE" {
+			if operation.GetStatus() == computepb.Operation_DONE {
 				if operation.GetError() != nil {
 					return fmt.Errorf("operation failed: %v", operation.GetError())
 				}
@@ -1378,8 +1387,8 @@ func (op *OperationPoller) WaitForZoneOperation(ctx context.Context, project, zo
 
 			op.logger.Debug("Waiting for operation",
 				zap.String("operation", operationName),
-				zap.String("status", operation.GetStatus()),
-				zap.Int64("progress", operation.GetProgress()))
+				zap.String("status", operation.GetStatus().String()),
+				zap.Int32("progress", operation.GetProgress()))
 		}
 	}
 }
@@ -1411,7 +1420,7 @@ func (op *OperationPoller) WaitForRegionOperation(ctx context.Context, project, 
 				return fmt.Errorf("failed to get operation status: %w", err)
 			}
 
-			if operation.GetStatus() == "DONE" {
+			if operation.GetStatus() == computepb.Operation_DONE {
 				if operation.GetError() != nil {
 					return fmt.Errorf("operation failed: %v", operation.GetError())
 				}
@@ -1420,8 +1429,8 @@ func (op *OperationPoller) WaitForRegionOperation(ctx context.Context, project, 
 
 			op.logger.Debug("Waiting for operation",
 				zap.String("operation", operationName),
-				zap.String("status", operation.GetStatus()),
-				zap.Int64("progress", operation.GetProgress()))
+				zap.String("status", operation.GetStatus().String()),
+				zap.Int32("progress", operation.GetProgress()))
 		}
 	}
 }
@@ -1452,7 +1461,7 @@ func (op *OperationPoller) WaitForGlobalOperation(ctx context.Context, project, 
 				return fmt.Errorf("failed to get operation status: %w", err)
 			}
 
-			if operation.GetStatus() == "DONE" {
+			if operation.GetStatus() == computepb.Operation_DONE {
 				if operation.GetError() != nil {
 					return fmt.Errorf("operation failed: %v", operation.GetError())
 				}
@@ -1461,8 +1470,8 @@ func (op *OperationPoller) WaitForGlobalOperation(ctx context.Context, project, 
 
 			op.logger.Debug("Waiting for operation",
 				zap.String("operation", operationName),
-				zap.String("status", operation.GetStatus()),
-				zap.Int64("progress", operation.GetProgress()))
+				zap.String("status", operation.GetStatus().String()),
+				zap.Int32("progress", operation.GetProgress()))
 		}
 	}
 }

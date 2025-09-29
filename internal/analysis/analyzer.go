@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"strings"
+	// "strings"
 	"sync"
 	"time"
 
@@ -564,8 +564,8 @@ func (a *Analyzer) analyzeCost(ctx context.Context, resource core.Resource) Cost
 	}
 
 	if resource.Cost != nil {
-		cost.CurrentCost = resource.Cost.Actual
-		cost.ProjectedCost = resource.Cost.Estimated
+		cost.CurrentCost = resource.Cost.MonthlyCost
+		cost.ProjectedCost = resource.Cost.EstimatedAnnualCost / 12
 
 		utilization := a.analyzeUtilization(ctx, resource)
 		if utilization.Efficiency == "UNDERUTILIZED" {

@@ -115,6 +115,7 @@ const (
 	ErrorCodeTooManyRequests     ErrorCode = "TOO_MANY_REQUESTS"
 	ErrorCodePreconditionFailed  ErrorCode = "PRECONDITION_FAILED"
 	ErrorCodeBadRequest          ErrorCode = "BAD_REQUEST"
+	ErrorCodeUnknown             ErrorCode = "UNKNOWN"
 )
 
 // ErrorHandler handles and categorizes GCP errors
@@ -408,7 +409,8 @@ func (h *ErrorHandler) extractErrorDetails(ctx context.Context, gcpErr *Error, e
 		for _, e := range apiErr.Errors {
 			detail := ErrorDetail{
 				Reason:  e.Reason,
-				Domain:  e.Domain,
+				// Domain field not available in googleapi.ErrorItem
+				// Domain:  e.Domain,
 			}
 
 			if e.Message != "" {
@@ -429,7 +431,8 @@ func (h *ErrorHandler) extractErrorDetails(ctx context.Context, gcpErr *Error, e
 		for _, e := range apiErr.Errors {
 			if strings.Contains(strings.ToLower(e.Reason), "quota") {
 				gcpErr.QuotaExceeded = true
-				gcpErr.QuotaMetric = e.Domain
+				// Domain field not available in googleapi.ErrorItem
+				// gcpErr.QuotaMetric = e.Domain
 				break
 			}
 		}

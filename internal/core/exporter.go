@@ -7,7 +7,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +15,6 @@ import (
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 )
 
 type Exporter struct {
@@ -322,7 +320,7 @@ func (e *Exporter) marshalCSV(data interface{}) ([]byte, error) {
 		for _, resource := range v.Resources {
 			cost := "0"
 			if resource.Cost != nil {
-				cost = fmt.Sprintf("%.2f", resource.Cost.Actual)
+				cost = fmt.Sprintf("%.2f", resource.Cost.MonthlyCost)
 			}
 
 			record := []string{
@@ -332,7 +330,7 @@ func (e *Exporter) marshalCSV(data interface{}) ([]byte, error) {
 				resource.Region,
 				resource.Status,
 				resource.CreatedAt.Format(time.RFC3339),
-				resource.ModifiedAt.Format(time.RFC3339),
+				resource.UpdatedAt.Format(time.RFC3339), // Using UpdatedAt instead of ModifiedAt
 				cost,
 			}
 			if err := writer.Write(record); err != nil {
@@ -400,15 +398,16 @@ func (e *Exporter) resourceToTerraform(resource Resource) string {
 
 	buf.WriteString(fmt.Sprintf("resource \"%s\" \"%s\" {\n", resourceType, resourceName))
 
-	if resource.Configuration != nil {
+	// Configuration field not available in Resource struct
+	/*if resource.Configuration != nil {
 		for key, value := range resource.Configuration {
 			buf.WriteString(fmt.Sprintf("  %s = %q\n", key, value))
 		}
-	}
+	}*/
 
-	if len(resource.Labels) > 0 {
+	if len(resource.Tags) > 0 { // Using Tags instead of Labels
 		buf.WriteString("  labels = {\n")
-		for key, value := range resource.Labels {
+		for key, value := range resource.Tags {
 			buf.WriteString(fmt.Sprintf("    %s = %q\n", key, value))
 		}
 		buf.WriteString("  }\n")
@@ -627,7 +626,7 @@ func (e *Exporter) prepareBigQueryRecords(data interface{}) ([]interface{}, erro
 		for _, resource := range v.Resources {
 			cost := 0.0
 			if resource.Cost != nil {
-				cost = resource.Cost.Actual
+				cost = resource.Cost.MonthlyCost
 			}
 
 			record := map[string]interface{}{
@@ -637,7 +636,7 @@ func (e *Exporter) prepareBigQueryRecords(data interface{}) ([]interface{}, erro
 				"region":      resource.Region,
 				"status":      resource.Status,
 				"created_at":  resource.CreatedAt,
-				"modified_at": resource.ModifiedAt,
+				"modified_at": resource.UpdatedAt, // Using UpdatedAt
 				"cost":        cost,
 			}
 			records = append(records, record)

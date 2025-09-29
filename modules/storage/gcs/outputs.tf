@@ -158,13 +158,13 @@ output "objects" {
   value = {
     for k, v in google_storage_bucket_object.objects :
     k => {
-      name         = v.name
-      self_link    = v.self_link
-      media_link   = v.media_link
-      crc32c       = v.crc32c
-      md5hash      = v.md5hash
+      name          = v.name
+      self_link     = v.self_link
+      media_link    = v.media_link
+      crc32c        = v.crc32c
+      md5hash       = v.md5hash
       storage_class = v.storage_class
-      size         = v.output_name
+      size          = v.output_name
     }
   }
 }

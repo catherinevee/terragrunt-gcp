@@ -94,21 +94,21 @@ output "tables" {
   description = "Information about all tables in the dataset"
   value = {
     for table_id, table in google_bigquery_table.tables : table_id => {
-      id                    = table.id
-      self_link            = table.self_link
-      table_id             = table.table_id
-      friendly_name        = table.friendly_name
-      description          = table.description
-      type                 = table.type
-      creation_time        = table.creation_time
-      expiration_time      = table.expiration_time
-      last_modified_time   = table.last_modified_time
-      location             = table.location
-      num_bytes            = table.num_bytes
-      num_long_term_bytes  = table.num_long_term_bytes
-      num_rows             = table.num_rows
-      labels               = table.labels
-      etag                 = table.etag
+      id                  = table.id
+      self_link           = table.self_link
+      table_id            = table.table_id
+      friendly_name       = table.friendly_name
+      description         = table.description
+      type                = table.type
+      creation_time       = table.creation_time
+      expiration_time     = table.expiration_time
+      last_modified_time  = table.last_modified_time
+      location            = table.location
+      num_bytes           = table.num_bytes
+      num_long_term_bytes = table.num_long_term_bytes
+      num_rows            = table.num_rows
+      labels              = table.labels
+      etag                = table.etag
 
       schema = table.schema
 
@@ -128,7 +128,7 @@ output "tables" {
         }
       }, null)
 
-      clustering            = table.clustering
+      clustering               = table.clustering
       encryption_configuration = table.encryption_configuration
 
       view = try({
@@ -140,18 +140,18 @@ output "tables" {
         query                            = table.materialized_view[0].query
         enable_refresh                   = table.materialized_view[0].enable_refresh
         refresh_interval_ms              = table.materialized_view[0].refresh_interval_ms
-        last_refresh_time               = table.materialized_view[0].last_refresh_time
+        last_refresh_time                = table.materialized_view[0].last_refresh_time
         allow_non_incremental_definition = table.materialized_view[0].allow_non_incremental_definition
       }, null)
 
       external_data_configuration = try({
-        source_uris        = table.external_data_configuration[0].source_uris
-        source_format      = table.external_data_configuration[0].source_format
-        autodetect         = table.external_data_configuration[0].autodetect
-        compression        = table.external_data_configuration[0].compression
-        ignore_unknown_values = table.external_data_configuration[0].ignore_unknown_values
-        max_bad_records    = table.external_data_configuration[0].max_bad_records
-        schema             = table.external_data_configuration[0].schema
+        source_uris               = table.external_data_configuration[0].source_uris
+        source_format             = table.external_data_configuration[0].source_format
+        autodetect                = table.external_data_configuration[0].autodetect
+        compression               = table.external_data_configuration[0].compression
+        ignore_unknown_values     = table.external_data_configuration[0].ignore_unknown_values
+        max_bad_records           = table.external_data_configuration[0].max_bad_records
+        schema                    = table.external_data_configuration[0].schema
         reference_file_schema_uri = table.external_data_configuration[0].reference_file_schema_uri
       }, null)
     }
@@ -165,7 +165,7 @@ output "table_ids" {
 
 output "table_self_links" {
   description = "Map of table IDs to self links"
-  value       = {for table_id, table in google_bigquery_table.tables : table_id => table.self_link}
+  value       = { for table_id, table in google_bigquery_table.tables : table_id => table.self_link }
 }
 
 output "view_definitions" {
@@ -191,9 +191,9 @@ output "routines" {
   description = "Information about all routines in the dataset"
   value = {
     for routine_id, routine in google_bigquery_routine.routines : routine_id => {
-      id                  = routine.id
-      routine_id          = routine.routine_id
-      routine_type        = routine.routine_type
+      id                 = routine.id
+      routine_id         = routine.routine_id
+      routine_type       = routine.routine_type
       language           = routine.language
       definition_body    = routine.definition_body
       description        = routine.description
@@ -206,10 +206,10 @@ output "routines" {
       last_modified_time = routine.last_modified_time
 
       remote_function_options = try({
-        endpoint                = routine.remote_function_options[0].endpoint
-        connection              = routine.remote_function_options[0].connection
-        user_defined_context    = routine.remote_function_options[0].user_defined_context
-        max_batching_rows       = routine.remote_function_options[0].max_batching_rows
+        endpoint             = routine.remote_function_options[0].endpoint
+        connection           = routine.remote_function_options[0].connection
+        user_defined_context = routine.remote_function_options[0].user_defined_context
+        max_batching_rows    = routine.remote_function_options[0].max_batching_rows
       }, null)
 
       spark_options = try({
@@ -253,7 +253,7 @@ output "data_transfers" {
       state                     = transfer.state
       user_id                   = transfer.user_id
       dataset_region            = transfer.dataset_region
-      next_run_time            = transfer.next_run_time
+      next_run_time             = transfer.next_run_time
     }
   }
 }
@@ -267,16 +267,16 @@ output "data_transfer_names" {
 output "reservation" {
   description = "Reservation information"
   value = try({
-    id                         = google_bigquery_reservation.reservation[0].id
-    name                       = google_bigquery_reservation.reservation[0].name
-    slot_capacity              = google_bigquery_reservation.reservation[0].slot_capacity
-    edition                    = google_bigquery_reservation.reservation[0].edition
-    ignore_idle_slots          = google_bigquery_reservation.reservation[0].ignore_idle_slots
-    concurrency                = google_bigquery_reservation.reservation[0].concurrency
-    multi_region_auxiliary     = google_bigquery_reservation.reservation[0].multi_region_auxiliary
-    creation_time              = google_bigquery_reservation.reservation[0].creation_time
-    update_time                = google_bigquery_reservation.reservation[0].update_time
-    autoscale                  = google_bigquery_reservation.reservation[0].autoscale
+    id                     = google_bigquery_reservation.reservation[0].id
+    name                   = google_bigquery_reservation.reservation[0].name
+    slot_capacity          = google_bigquery_reservation.reservation[0].slot_capacity
+    edition                = google_bigquery_reservation.reservation[0].edition
+    ignore_idle_slots      = google_bigquery_reservation.reservation[0].ignore_idle_slots
+    concurrency            = google_bigquery_reservation.reservation[0].concurrency
+    multi_region_auxiliary = google_bigquery_reservation.reservation[0].multi_region_auxiliary
+    creation_time          = google_bigquery_reservation.reservation[0].creation_time
+    update_time            = google_bigquery_reservation.reservation[0].update_time
+    autoscale              = google_bigquery_reservation.reservation[0].autoscale
   }, null)
 }
 
@@ -289,12 +289,12 @@ output "reservation_name" {
 output "capacity_commitment" {
   description = "Capacity commitment information"
   value = try({
-    id                = google_bigquery_capacity_commitment.commitment[0].id
-    commitment_plan   = google_bigquery_capacity_commitment.commitment[0].commitment_plan
-    slot_count        = google_bigquery_capacity_commitment.commitment[0].slot_count
-    edition           = google_bigquery_capacity_commitment.commitment[0].edition
-    renewal_plan      = google_bigquery_capacity_commitment.commitment[0].renewal_plan
-    state            = google_bigquery_capacity_commitment.commitment[0].state
+    id                    = google_bigquery_capacity_commitment.commitment[0].id
+    commitment_plan       = google_bigquery_capacity_commitment.commitment[0].commitment_plan
+    slot_count            = google_bigquery_capacity_commitment.commitment[0].slot_count
+    edition               = google_bigquery_capacity_commitment.commitment[0].edition
+    renewal_plan          = google_bigquery_capacity_commitment.commitment[0].renewal_plan
+    state                 = google_bigquery_capacity_commitment.commitment[0].state
     commitment_start_time = google_bigquery_capacity_commitment.commitment[0].commitment_start_time
     commitment_end_time   = google_bigquery_capacity_commitment.commitment[0].commitment_end_time
   }, null)
@@ -410,12 +410,8 @@ output "import_commands" {
   value = {
     dataset = "terraform import google_bigquery_dataset.dataset projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}"
 
-    table = length(google_bigquery_table.tables) > 0 ?
-      "terraform import 'google_bigquery_table.tables[\\\"TABLE_ID\\\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/tables/TABLE_ID" :
-      null
+    table = length(google_bigquery_table.tables) > 0 ? "terraform import 'google_bigquery_table.tables[\\\"TABLE_ID\\\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/tables/TABLE_ID" : null
 
-    routine = length(google_bigquery_routine.routines) > 0 ?
-      "terraform import 'google_bigquery_routine.routines[\\\"ROUTINE_ID\\\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/routines/ROUTINE_ID" :
-      null
+    routine = length(google_bigquery_routine.routines) > 0 ? "terraform import 'google_bigquery_routine.routines[\\\"ROUTINE_ID\\\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/routines/ROUTINE_ID" : null
   }
 }

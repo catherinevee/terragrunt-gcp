@@ -19,15 +19,15 @@ resource "google_project_service" "interconnect_apis" {
 resource "google_compute_interconnect" "dedicated_interconnects" {
   for_each = var.dedicated_interconnects
 
-  name                     = each.key
-  description             = each.value.description
-  interconnect_type       = "DEDICATED"
-  location                = each.value.location
-  requested_link_count    = each.value.link_count
-  link_type              = each.value.link_type
-  admin_enabled          = each.value.admin_enabled
-  noc_contact_email      = each.value.noc_contact_email
-  customer_name          = each.value.customer_name
+  name                 = each.key
+  description          = each.value.description
+  interconnect_type    = "DEDICATED"
+  location             = each.value.location
+  requested_link_count = each.value.link_count
+  link_type            = each.value.link_type
+  admin_enabled        = each.value.admin_enabled
+  noc_contact_email    = each.value.noc_contact_email
+  customer_name        = each.value.customer_name
 
   dynamic "expected_outages" {
     for_each = each.value.expected_outages != null ? each.value.expected_outages : []
@@ -73,17 +73,17 @@ resource "google_compute_interconnect_attachment" "dedicated_attachments" {
   for_each = var.dedicated_attachments
 
   name                     = each.key
-  description             = each.value.description
-  interconnect            = google_compute_interconnect.dedicated_interconnects[each.value.interconnect_name].id
-  type                    = "DEDICATED"
-  router                  = google_compute_router.interconnect_routers[each.value.router_name].id
-  region                  = each.value.region
-  vlan_tag8021q          = each.value.vlan_tag
-  bandwidth              = each.value.bandwidth
-  candidate_subnets      = each.value.candidate_subnets
-  admin_enabled          = each.value.admin_enabled
+  description              = each.value.description
+  interconnect             = google_compute_interconnect.dedicated_interconnects[each.value.interconnect_name].id
+  type                     = "DEDICATED"
+  router                   = google_compute_router.interconnect_routers[each.value.router_name].id
+  region                   = each.value.region
+  vlan_tag8021q            = each.value.vlan_tag
+  bandwidth                = each.value.bandwidth
+  candidate_subnets        = each.value.candidate_subnets
+  admin_enabled            = each.value.admin_enabled
   edge_availability_domain = each.value.edge_availability_domain
-  encryption             = each.value.encryption
+  encryption               = each.value.encryption
   ipsec_internal_addresses = each.value.ipsec_internal_addresses
 
   project = var.project_id
@@ -98,17 +98,17 @@ resource "google_compute_interconnect_attachment" "dedicated_attachments" {
 resource "google_compute_interconnect_attachment" "partner_attachments" {
   for_each = var.partner_attachments
 
-  name         = each.key
-  description  = each.value.description
-  type         = "PARTNER"
-  router       = google_compute_router.interconnect_routers[each.value.router_name].id
-  region       = each.value.region
-  bandwidth    = each.value.bandwidth
-  admin_enabled = each.value.admin_enabled
+  name                     = each.key
+  description              = each.value.description
+  type                     = "PARTNER"
+  router                   = google_compute_router.interconnect_routers[each.value.router_name].id
+  region                   = each.value.region
+  bandwidth                = each.value.bandwidth
+  admin_enabled            = each.value.admin_enabled
   edge_availability_domain = each.value.edge_availability_domain
-  pairing_key  = each.value.pairing_key
-  partner_asn  = each.value.partner_asn
-  encryption   = each.value.encryption
+  pairing_key              = each.value.pairing_key
+  partner_asn              = each.value.partner_asn
+  encryption               = each.value.encryption
 
   project = var.project_id
 
@@ -121,9 +121,9 @@ resource "google_compute_interconnect_attachment" "partner_attachments" {
 resource "google_compute_router" "interconnect_routers" {
   for_each = var.cloud_routers
 
-  name    = each.key
-  region  = each.value.region
-  network = each.value.network
+  name        = each.key
+  region      = each.value.region
+  network     = each.value.network
   description = each.value.description
 
   bgp {
@@ -158,12 +158,12 @@ resource "google_compute_router_peer" "interconnect_bgp_peers" {
   name                      = each.key
   router                    = google_compute_router.interconnect_routers[each.value.router_name].name
   region                    = each.value.region
-  peer_ip_address          = each.value.peer_ip_address
-  peer_asn                 = each.value.peer_asn
+  peer_ip_address           = each.value.peer_ip_address
+  peer_asn                  = each.value.peer_asn
   advertised_route_priority = each.value.advertised_route_priority
-  interface                = google_compute_router_interface.interconnect_interfaces[each.value.interface_name].name
-  advertise_mode           = each.value.advertise_mode
-  advertised_groups        = each.value.advertised_groups
+  interface                 = google_compute_router_interface.interconnect_interfaces[each.value.interface_name].name
+  advertise_mode            = each.value.advertise_mode
+  advertised_groups         = each.value.advertised_groups
 
   dynamic "advertised_ip_ranges" {
     for_each = each.value.advertised_ip_ranges != null ? each.value.advertised_ip_ranges : []
@@ -183,7 +183,7 @@ resource "google_compute_router_peer" "interconnect_bgp_peers" {
     }
   }
 
-  enable           = each.value.enable
+  enable                    = each.value.enable
   router_appliance_instance = each.value.router_appliance_instance
 
   project = var.project_id
@@ -197,19 +197,19 @@ resource "google_compute_router_peer" "interconnect_bgp_peers" {
 resource "google_compute_router_interface" "interconnect_interfaces" {
   for_each = var.router_interfaces
 
-  name               = each.key
-  router             = google_compute_router.interconnect_routers[each.value.router_name].name
-  region             = each.value.region
-  ip_range           = each.value.ip_range
-  vpn_tunnel         = each.value.vpn_tunnel
+  name       = each.key
+  router     = google_compute_router.interconnect_routers[each.value.router_name].name
+  region     = each.value.region
+  ip_range   = each.value.ip_range
+  vpn_tunnel = each.value.vpn_tunnel
   interconnect_attachment = each.value.attachment_name != null ? (
     contains(keys(var.dedicated_attachments), each.value.attachment_name) ?
     google_compute_interconnect_attachment.dedicated_attachments[each.value.attachment_name].id :
     google_compute_interconnect_attachment.partner_attachments[each.value.attachment_name].id
   ) : null
   redundant_interface = each.value.redundant_interface
-  subnetwork         = each.value.subnetwork
-  private_ip_address = each.value.private_ip_address
+  subnetwork          = each.value.subnetwork
+  private_ip_address  = each.value.private_ip_address
 
   project = var.project_id
 
@@ -244,7 +244,7 @@ resource "google_network_connectivity_spoke" "interconnect_spokes" {
   dynamic "linked_vpn_tunnels" {
     for_each = each.value.linked_vpn_tunnels != null ? [each.value.linked_vpn_tunnels] : []
     content {
-      uris                = linked_vpn_tunnels.value.uris
+      uris                       = linked_vpn_tunnels.value.uris
       site_to_site_data_transfer = linked_vpn_tunnels.value.site_to_site_data_transfer
     }
   }
@@ -252,7 +252,7 @@ resource "google_network_connectivity_spoke" "interconnect_spokes" {
   dynamic "linked_interconnect_attachments" {
     for_each = each.value.linked_interconnect_attachments != null ? [each.value.linked_interconnect_attachments] : []
     content {
-      uris                = linked_interconnect_attachments.value.uris
+      uris                       = linked_interconnect_attachments.value.uris
       site_to_site_data_transfer = linked_interconnect_attachments.value.site_to_site_data_transfer
     }
   }
@@ -264,7 +264,7 @@ resource "google_network_connectivity_spoke" "interconnect_spokes" {
         for_each = linked_router_appliance_instances.value.instances
         content {
           virtual_machine = instances.value.virtual_machine
-          ip_address     = instances.value.ip_address
+          ip_address      = instances.value.ip_address
         }
       }
       site_to_site_data_transfer = linked_router_appliance_instances.value.site_to_site_data_transfer
@@ -274,8 +274,8 @@ resource "google_network_connectivity_spoke" "interconnect_spokes" {
   dynamic "linked_vpc_network" {
     for_each = each.value.linked_vpc_network != null ? [each.value.linked_vpc_network] : []
     content {
-      uri                        = linked_vpc_network.value.uri
-      exclude_export_ranges      = linked_vpc_network.value.exclude_export_ranges
+      uri                   = linked_vpc_network.value.uri
+      exclude_export_ranges = linked_vpc_network.value.exclude_export_ranges
     }
   }
 
@@ -296,9 +296,9 @@ resource "google_compute_interconnect_macsec_config" "macsec_configs" {
   dynamic "pre_shared_keys" {
     for_each = each.value.pre_shared_keys
     content {
-      name     = pre_shared_keys.value.name
-      cak      = pre_shared_keys.value.cak
-      ckn      = pre_shared_keys.value.ckn
+      name       = pre_shared_keys.value.name
+      cak        = pre_shared_keys.value.cak
+      ckn        = pre_shared_keys.value.ckn
       start_time = pre_shared_keys.value.start_time
     }
   }
@@ -463,10 +463,10 @@ resource "google_monitoring_alert_policy" "interconnect_alerts" {
       threshold_value = each.value.threshold_value
 
       aggregations {
-        alignment_period   = each.value.alignment_period
-        per_series_aligner = each.value.per_series_aligner
+        alignment_period     = each.value.alignment_period
+        per_series_aligner   = each.value.per_series_aligner
         cross_series_reducer = each.value.cross_series_reducer
-        group_by_fields    = each.value.group_by_fields
+        group_by_fields      = each.value.group_by_fields
       }
 
       dynamic "trigger" {
@@ -513,8 +513,8 @@ resource "google_compute_interconnect_iam_binding" "interconnect_bindings" {
   for_each = var.interconnect_iam_bindings
 
   interconnect = contains(keys(var.dedicated_interconnects), each.value.interconnect_name) ? google_compute_interconnect.dedicated_interconnects[each.value.interconnect_name].name : google_compute_interconnect.partner_interconnects[each.value.interconnect_name].name
-  role    = each.value.role
-  members = each.value.members
+  role         = each.value.role
+  members      = each.value.members
 
   project = var.project_id
 
@@ -570,7 +570,7 @@ resource "google_logging_project_sink" "interconnect_audit_sink" {
   ])
 
   unique_writer_identity = true
-  project               = var.project_id
+  project                = var.project_id
 
   depends_on = [
     google_project_service.interconnect_apis

@@ -303,7 +303,7 @@ resource "google_compute_instance" "instance" {
 
   lifecycle {
     # ignore_changes must be static, not variable
-    ignore_changes = []_list
+    ignore_changes = []
 
     create_before_destroy = var.create_before_destroy
   }

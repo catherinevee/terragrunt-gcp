@@ -2,21 +2,22 @@ package providers
 
 import (
 	"context"
-	"encoding/json"
+	// "encoding/json" - unused
 	"fmt"
 	"math/rand"
 	"strings"
 	"sync"
 	"time"
 
-	"cloud.google.com/go/compute/apiv1"
-	"cloud.google.com/go/compute/apiv1/computepb"
+	computeapiv1 "cloud.google.com/go/compute/apiv1"
+	// "cloud.google.com/go/compute/apiv1/computepb" - unused
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"github.com/terragrunt-gcp/terragrunt-gcp/internal/core"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/iam/v1"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/monitoring/v3"
 	"google.golang.org/api/option"
 	"google.golang.org/api/serviceusage/v1"
@@ -33,7 +34,7 @@ type GCPProvider struct {
 	monitoringService *monitoring.Service
 	resourceManager  *cloudresourcemanager.Service
 	serviceUsage     *serviceusage.Service
-	instancesClient  *computepb.InstancesClient
+	instancesClient  *computeapiv1.InstancesClient
 	logger           *logrus.Logger
 	cache            *ProviderCache
 	rateLimiter      *RateLimiter
@@ -125,7 +126,7 @@ func NewGCPProvider(ctx context.Context, project, region string, opts ...option.
 		return nil, fmt.Errorf("failed to create service usage service: %w", err)
 	}
 
-	provider.instancesClient, err = compute.NewInstancesRESTClient(ctx, opts...)
+	provider.instancesClient, err = computeapiv1.NewInstancesRESTClient(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create instances client: %w", err)
 	}
@@ -216,7 +217,7 @@ func (p *GCPProvider) Close() error {
 
 // Resource discovery and management
 func (p *GCPProvider) ListResources(ctx context.Context, resourceType string, filters map[string]interface{}) ([]core.Resource, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	// Check cache first
 	cacheKey := fmt.Sprintf("list-%s-%v", resourceType, filters)
@@ -261,7 +262,7 @@ func (p *GCPProvider) ListResources(ctx context.Context, resourceType string, fi
 }
 
 func (p *GCPProvider) GetResource(ctx context.Context, resourceID string) (*core.Resource, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	// Check cache first
 	if cached := p.getFromCache(resourceID); cached != nil {
@@ -303,7 +304,7 @@ func (p *GCPProvider) GetResource(ctx context.Context, resourceID string) (*core
 }
 
 func (p *GCPProvider) CreateResource(ctx context.Context, resource *core.Resource) error {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	switch resource.Type {
 	case "compute.instances":
@@ -316,7 +317,7 @@ func (p *GCPProvider) CreateResource(ctx context.Context, resource *core.Resourc
 }
 
 func (p *GCPProvider) UpdateResource(ctx context.Context, resource *core.Resource) error {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	switch resource.Type {
 	case "compute.instances":
@@ -329,7 +330,7 @@ func (p *GCPProvider) UpdateResource(ctx context.Context, resource *core.Resourc
 }
 
 func (p *GCPProvider) DeleteResource(ctx context.Context, resourceID string) error {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	parts := strings.Split(resourceID, "/")
 	if len(parts) < 2 {
@@ -350,7 +351,7 @@ func (p *GCPProvider) DeleteResource(ctx context.Context, resourceID string) err
 
 // Resource metadata and configuration
 func (p *GCPProvider) GetResourceTags(ctx context.Context, resourceID string, resourceType string) (map[string]string, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	resource, err := p.GetResource(ctx, resourceID)
 	if err != nil {
@@ -361,7 +362,7 @@ func (p *GCPProvider) GetResourceTags(ctx context.Context, resourceID string, re
 }
 
 func (p *GCPProvider) SetResourceTags(ctx context.Context, resourceID string, resourceType string, tags map[string]string) error {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	switch resourceType {
 	case "compute.instances":
@@ -374,7 +375,7 @@ func (p *GCPProvider) SetResourceTags(ctx context.Context, resourceID string, re
 }
 
 func (p *GCPProvider) GetResourceMetrics(ctx context.Context, resourceID string, resourceType string) (map[string]interface{}, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	metrics := make(map[string]interface{})
 
@@ -402,19 +403,20 @@ func (p *GCPProvider) GetResourceMetrics(ctx context.Context, resourceID string,
 }
 
 func (p *GCPProvider) GetResourceConfiguration(ctx context.Context, resourceID string, resourceType string) (map[string]interface{}, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	resource, err := p.GetResource(ctx, resourceID)
 	if err != nil {
 		return nil, err
 	}
 
-	return resource.Configuration, nil
+	// Configuration field not available, using Properties instead
+	return resource.Properties, nil
 }
 
 // Cost and billing
 func (p *GCPProvider) GetResourceCost(ctx context.Context, resourceID string, resourceType string) (*core.ResourceCost, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	// Simulate cost calculation based on resource type
 	baseCost := 0.0
@@ -431,15 +433,16 @@ func (p *GCPProvider) GetResourceCost(ctx context.Context, resourceID string, re
 	}
 
 	return &core.ResourceCost{
-		Actual:    baseCost,
-		Estimated: baseCost * 1.1,
+		DailyCost:    baseCost,
+		MonthlyCost:  baseCost * 30,
+		EstimatedAnnualCost: baseCost * 365,
 		Currency:  "USD",
-		Period:    "daily",
+		LastUpdated: time.Now(),
 	}, nil
 }
 
 func (p *GCPProvider) GetBillingData(ctx context.Context, startDate, endDate time.Time) ([]BillingData, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	// Simulate billing data
 	var billingData []BillingData
@@ -460,8 +463,6 @@ func (p *GCPProvider) GetBillingData(ctx context.Context, startDate, endDate tim
 				Tags: map[string]string{
 					"project":     p.project,
 					"environment": "production",
-				},
-				Metadata: map[string]interface{}{
 					"region": p.region,
 				},
 			})
@@ -473,7 +474,7 @@ func (p *GCPProvider) GetBillingData(ctx context.Context, startDate, endDate tim
 }
 
 func (p *GCPProvider) GetCostForecast(ctx context.Context, days int) (*CostForecast, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	// Simulate cost forecast
 	currentCost := 5000.0
@@ -508,7 +509,7 @@ func (p *GCPProvider) GetCostForecast(ctx context.Context, days int) (*CostForec
 
 // Security and compliance
 func (p *GCPProvider) CheckResourceCompliance(ctx context.Context, resourceID string, resourceType string) ([]map[string]interface{}, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	var findings []map[string]interface{}
 
@@ -561,7 +562,7 @@ func (p *GCPProvider) CheckResourceCompliance(ctx context.Context, resourceID st
 }
 
 func (p *GCPProvider) ScanResourceVulnerabilities(ctx context.Context, resourceID string, resourceType string) ([]map[string]interface{}, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	var vulnerabilities []map[string]interface{}
 
@@ -592,7 +593,7 @@ func (p *GCPProvider) ScanResourceVulnerabilities(ctx context.Context, resourceI
 }
 
 func (p *GCPProvider) GetResourceRecommendations(ctx context.Context, resourceID string, resourceType string) ([]string, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	recommendations := []string{}
 
@@ -623,7 +624,7 @@ func (p *GCPProvider) GetResourceRecommendations(ctx context.Context, resourceID
 }
 
 func (p *GCPProvider) GetSecurityFindings(ctx context.Context, resourceID string) ([]SecurityFinding, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	findings := []SecurityFinding{}
 
@@ -642,9 +643,7 @@ func (p *GCPProvider) GetSecurityFindings(ctx context.Context, resourceID string
 			Status:       "OPEN",
 			FirstDetected: time.Now().AddDate(0, 0, -7),
 			LastSeen:     time.Now(),
-			Metadata:     map[string]interface{}{
-				"scanner": "security-scanner-v1",
-			},
+			// Metadata not used in SecurityFinding struct
 		})
 	}
 
@@ -653,7 +652,7 @@ func (p *GCPProvider) GetSecurityFindings(ctx context.Context, resourceID string
 
 // Dependencies and relationships
 func (p *GCPProvider) GetResourceDependencies(ctx context.Context, resourceID string, resourceType string) ([]string, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	dependencies := []string{}
 
@@ -675,7 +674,7 @@ func (p *GCPProvider) GetResourceDependencies(ctx context.Context, resourceID st
 }
 
 func (p *GCPProvider) GetResourceRelationships(ctx context.Context, resourceID string) ([]ResourceRelationship, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	relationships := []ResourceRelationship{
 		{
@@ -685,7 +684,8 @@ func (p *GCPProvider) GetResourceRelationships(ctx context.Context, resourceID s
 			TargetType:  "compute.networks",
 			Strength:    "STRONG",
 			Description: "Instance depends on network",
-			Metadata:    map[string]interface{}{},
+			// Metadata field not available
+			// Metadata:    map[string]interface{}{},
 		},
 		{
 			Type:        "ATTACHED_TO",
@@ -694,7 +694,8 @@ func (p *GCPProvider) GetResourceRelationships(ctx context.Context, resourceID s
 			TargetType:  "compute.disks",
 			Strength:    "STRONG",
 			Description: "Disk attached to instance",
-			Metadata:    map[string]interface{}{},
+			// Metadata field not available
+			// Metadata:    map[string]interface{}{},
 		},
 	}
 
@@ -703,14 +704,15 @@ func (p *GCPProvider) GetResourceRelationships(ctx context.Context, resourceID s
 
 // Account and project management
 func (p *GCPProvider) DiscoverAccounts(ctx context.Context) ([]core.Account, error) {
-	p.rateLimiter.wait()
+	p.waitForRateLimit()
 
 	accounts := []core.Account{
 		{
 			ID:       p.project,
 			Name:     p.project,
 			Type:     "GCP_PROJECT",
-			Provider: "gcp",
+			// Provider field not available in Resource struct
+			// Provider: "gcp",
 			Status:   "ACTIVE",
 			Metadata: map[string]interface{}{
 				"project_number": "123456789",
@@ -770,21 +772,22 @@ func (p *GCPProvider) listComputeInstances(ctx context.Context, filters map[stri
 			ID:       fmt.Sprintf("compute.instances/%s", instance.Name),
 			Name:     instance.Name,
 			Type:     "compute.instances",
-			Provider: "gcp",
+			// Provider field not available in Resource struct
+			// Provider: "gcp",
 			Region:   p.region,
 			Zone:     p.zone,
 			Status:   instance.Status,
 			CreatedAt: parseGCPTimestamp(instance.CreationTimestamp),
-			ModifiedAt: parseGCPTimestamp(instance.LastStartTimestamp),
+			UpdatedAt: parseGCPTimestamp(instance.LastStartTimestamp),
 			Tags:     convertLabelsToTags(instance.Labels),
-			Labels:   instance.Labels,
-			Configuration: map[string]interface{}{
+			// Labels field not available
+			// Labels:   instance.Labels,
+			Properties: map[string]interface{}{
 				"machineType":    instance.MachineType,
 				"canIpForward":   instance.CanIpForward,
 				"cpuPlatform":    instance.CpuPlatform,
 				"deletionProtection": instance.DeletionProtection,
-			},
-			Metadata: map[string]interface{}{
+				// Merged from Metadata
 				"id":           instance.Id,
 				"selfLink":     instance.SelfLink,
 				"zone":         instance.Zone,
@@ -796,9 +799,10 @@ func (p *GCPProvider) listComputeInstances(ctx context.Context, filters map[stri
 		resource.Cost = cost
 
 		// Get network information
-		if len(instance.NetworkInterfaces) > 0 {
-			resource.Network = extractNetworkFromInterface(instance.NetworkInterfaces[0])
-		}
+		// Network field not available in Resource struct
+		// if len(instance.NetworkInterfaces) > 0 {
+		// 	resource.Network = extractNetworkFromInterface(instance.NetworkInterfaces[0])
+		// }
 
 		resources = append(resources, resource)
 	}
@@ -823,22 +827,22 @@ func (p *GCPProvider) listStorageBuckets(ctx context.Context, filters map[string
 			ID:         fmt.Sprintf("storage.buckets/%s", bucket.Name),
 			Name:       bucket.Name,
 			Type:       "storage.buckets",
-			Provider:   "gcp",
+			// Provider:   "gcp",
 			Region:     bucket.Location,
 			Status:     "ACTIVE",
 			CreatedAt:  bucket.Created,
-			ModifiedAt: bucket.Updated,
+			UpdatedAt: bucket.Updated,
 			Tags:       convertLabelsToTags(bucket.Labels),
-			Labels:     bucket.Labels,
-			Configuration: map[string]interface{}{
+			// Labels field not available
+			// Labels:     bucket.Labels,
+			Properties: map[string]interface{}{
 				"storageClass":      bucket.StorageClass,
 				"location":         bucket.Location,
 				"locationType":     bucket.LocationType,
 				"versioningEnabled": bucket.VersioningEnabled,
 				"encryption":       bucket.Encryption,
-			},
-			Metadata: map[string]interface{}{
-				"metageneration":    bucket.Metageneration,
+				// Merged from Metadata
+				"metageneration":    bucket.MetaGeneration,
 				"projectNumber":     bucket.ProjectNumber,
 			},
 		}
@@ -866,17 +870,16 @@ func (p *GCPProvider) listNetworks(ctx context.Context, filters map[string]inter
 			ID:         fmt.Sprintf("compute.networks/%s", network.Name),
 			Name:       network.Name,
 			Type:       "compute.networks",
-			Provider:   "gcp",
+			// Provider:   "gcp",
 			Region:     "global",
 			Status:     "ACTIVE",
 			CreatedAt:  parseGCPTimestamp(network.CreationTimestamp),
-			ModifiedAt: parseGCPTimestamp(network.CreationTimestamp),
-			Configuration: map[string]interface{}{
+			UpdatedAt: parseGCPTimestamp(network.CreationTimestamp),
+			Properties: map[string]interface{}{
 				"autoCreateSubnetworks": network.AutoCreateSubnetworks,
 				"routingMode":          network.RoutingConfig,
 				"mtu":                  network.Mtu,
-			},
-			Metadata: map[string]interface{}{
+				// Merged from Metadata
 				"id":       network.Id,
 				"selfLink": network.SelfLink,
 				"kind":     network.Kind,
@@ -906,19 +909,19 @@ func (p *GCPProvider) listDisks(ctx context.Context, filters map[string]interfac
 			ID:         fmt.Sprintf("compute.disks/%s", disk.Name),
 			Name:       disk.Name,
 			Type:       "compute.disks",
-			Provider:   "gcp",
+			// Provider:   "gcp",
 			Region:     p.region,
 			Zone:       p.zone,
 			Status:     disk.Status,
 			CreatedAt:  parseGCPTimestamp(disk.CreationTimestamp),
-			ModifiedAt: parseGCPTimestamp(disk.LastAttachTimestamp),
+			UpdatedAt: parseGCPTimestamp(disk.LastAttachTimestamp),
 			Tags:       convertLabelsToTags(disk.Labels),
-			Labels:     disk.Labels,
-			Configuration: map[string]interface{}{
+			// Labels field not available
+			// Labels:     disk.Labels,
+			Properties: map[string]interface{}{
 				"sizeGb": disk.SizeGb,
 				"type":   disk.Type,
-			},
-			Metadata: map[string]interface{}{
+				// Merged from Metadata
 				"id":       disk.Id,
 				"selfLink": disk.SelfLink,
 			},
@@ -947,18 +950,17 @@ func (p *GCPProvider) listFirewallRules(ctx context.Context, filters map[string]
 			ID:         fmt.Sprintf("compute.firewalls/%s", firewall.Name),
 			Name:       firewall.Name,
 			Type:       "compute.firewalls",
-			Provider:   "gcp",
+			// Provider:   "gcp",
 			Region:     "global",
 			Status:     "ACTIVE",
 			CreatedAt:  parseGCPTimestamp(firewall.CreationTimestamp),
-			ModifiedAt: parseGCPTimestamp(firewall.CreationTimestamp),
-			Configuration: map[string]interface{}{
+			UpdatedAt: parseGCPTimestamp(firewall.CreationTimestamp),
+			Properties: map[string]interface{}{
 				"direction":     firewall.Direction,
 				"priority":      firewall.Priority,
 				"sourceRanges":  firewall.SourceRanges,
 				"targetTags":    firewall.TargetTags,
-			},
-			Metadata: map[string]interface{}{
+				// Merged from Metadata
 				"id":       firewall.Id,
 				"selfLink": firewall.SelfLink,
 				"network":  firewall.Network,
@@ -967,10 +969,11 @@ func (p *GCPProvider) listFirewallRules(ctx context.Context, filters map[string]
 
 		// Add cost information (firewalls typically don't have direct costs)
 		resource.Cost = &core.ResourceCost{
-			Actual:   0,
-			Estimated: 0,
+			DailyCost:   0,
+			MonthlyCost: 0,
+			EstimatedAnnualCost: 0,
 			Currency: "USD",
-			Period:   "daily",
+			LastUpdated: time.Now(),
 		}
 
 		resources = append(resources, resource)
@@ -993,15 +996,14 @@ func (p *GCPProvider) listLoadBalancers(ctx context.Context, filters map[string]
 			ID:         fmt.Sprintf("compute.loadBalancers/%s", urlMap.Name),
 			Name:       urlMap.Name,
 			Type:       "compute.loadBalancers",
-			Provider:   "gcp",
+			// Provider:   "gcp",
 			Region:     "global",
 			Status:     "ACTIVE",
 			CreatedAt:  parseGCPTimestamp(urlMap.CreationTimestamp),
-			ModifiedAt: parseGCPTimestamp(urlMap.CreationTimestamp),
-			Configuration: map[string]interface{}{
+			UpdatedAt: parseGCPTimestamp(urlMap.CreationTimestamp),
+			Properties: map[string]interface{}{
 				"defaultService": urlMap.DefaultService,
-			},
-			Metadata: map[string]interface{}{
+				// Merged from Metadata
 				"id":       urlMap.Id,
 				"selfLink": urlMap.SelfLink,
 			},
@@ -1031,26 +1033,27 @@ func (p *GCPProvider) listServiceAccounts(ctx context.Context, filters map[strin
 			ID:       fmt.Sprintf("iam.serviceAccounts/%s", sa.Email),
 			Name:     sa.DisplayName,
 			Type:     "iam.serviceAccounts",
-			Provider: "gcp",
+			// Provider field not available in Resource struct
+			// Provider: "gcp",
 			Region:   "global",
 			Status:   "ACTIVE",
-			Configuration: map[string]interface{}{
-				"email":        sa.Email,
-				"uniqueId":     sa.UniqueId,
+			Properties: map[string]interface{}{
+				"email":          sa.Email,
+				"uniqueId":       sa.UniqueId,
 				"oauth2ClientId": sa.Oauth2ClientId,
-			},
-			Metadata: map[string]interface{}{
-				"name":        sa.Name,
-				"projectId":   sa.ProjectId,
+				// Merged from Metadata
+				"name":      sa.Name,
+				"projectId": sa.ProjectId,
 			},
 		}
 
 		// Service accounts don't have direct costs
 		resource.Cost = &core.ResourceCost{
-			Actual:   0,
-			Estimated: 0,
+			DailyCost:   0,
+			MonthlyCost: 0,
+			EstimatedAnnualCost: 0,
 			Currency: "USD",
-			Period:   "daily",
+			LastUpdated: time.Now(),
 		}
 
 		resources = append(resources, resource)
@@ -1074,23 +1077,23 @@ func (p *GCPProvider) getComputeInstance(ctx context.Context, resourceID string)
 	}
 
 	resource := &core.Resource{
-		ID:         resourceID,
-		Name:       instance.Name,
-		Type:       "compute.instances",
-		Provider:   "gcp",
-		Region:     p.region,
+		ID:   resourceID,
+		Name: instance.Name,
+		Type: "compute.instances",
+		// Provider field not available in Resource struct
+		// Provider:   "gcp",
+		Region: p.region,
 		Zone:       p.zone,
 		Status:     instance.Status,
 		CreatedAt:  parseGCPTimestamp(instance.CreationTimestamp),
-		ModifiedAt: parseGCPTimestamp(instance.LastStartTimestamp),
+		UpdatedAt: parseGCPTimestamp(instance.LastStartTimestamp),
 		Tags:       convertLabelsToTags(instance.Labels),
-		Labels:     instance.Labels,
-		Configuration: map[string]interface{}{
+		// Labels:     instance.Labels,
+		Properties: map[string]interface{}{
 			"machineType": instance.MachineType,
 			"canIpForward": instance.CanIpForward,
 			"cpuPlatform": instance.CpuPlatform,
-		},
-		Metadata: map[string]interface{}{
+			// Merged from Metadata
 			"id":       instance.Id,
 			"selfLink": instance.SelfLink,
 		},
@@ -1114,22 +1117,22 @@ func (p *GCPProvider) getStorageBucket(ctx context.Context, resourceID string) (
 	}
 
 	resource := &core.Resource{
-		ID:         resourceID,
-		Name:       attrs.Name,
-		Type:       "storage.buckets",
-		Provider:   "gcp",
-		Region:     attrs.Location,
+		ID:   resourceID,
+		Name: attrs.Name,
+		Type: "storage.buckets",
+		// Provider field not available in Resource struct
+		// Provider:   "gcp",
+		Region: attrs.Location,
 		Status:     "ACTIVE",
 		CreatedAt:  attrs.Created,
-		ModifiedAt: attrs.Updated,
+		UpdatedAt: attrs.Updated,
 		Tags:       convertLabelsToTags(attrs.Labels),
-		Labels:     attrs.Labels,
-		Configuration: map[string]interface{}{
+		// Labels:     attrs.Labels,
+		Properties: map[string]interface{}{
 			"storageClass": attrs.StorageClass,
 			"location":     attrs.Location,
-		},
-		Metadata: map[string]interface{}{
-			"metageneration": attrs.Metageneration,
+			// Merged from Metadata
+			"metageneration": attrs.MetaGeneration,
 		},
 	}
 
@@ -1150,18 +1153,18 @@ func (p *GCPProvider) getNetwork(ctx context.Context, resourceID string) (*core.
 	}
 
 	resource := &core.Resource{
-		ID:         resourceID,
-		Name:       network.Name,
-		Type:       "compute.networks",
-		Provider:   "gcp",
-		Region:     "global",
+		ID:   resourceID,
+		Name: network.Name,
+		Type: "compute.networks",
+		// Provider field not available in Resource struct
+		// Provider:   "gcp",
+		Region: "global",
 		Status:     "ACTIVE",
 		CreatedAt:  parseGCPTimestamp(network.CreationTimestamp),
-		ModifiedAt: parseGCPTimestamp(network.CreationTimestamp),
-		Configuration: map[string]interface{}{
+		UpdatedAt: parseGCPTimestamp(network.CreationTimestamp),
+		Properties: map[string]interface{}{
 			"autoCreateSubnetworks": network.AutoCreateSubnetworks,
-		},
-		Metadata: map[string]interface{}{
+			// Merged from Metadata
 			"id":       network.Id,
 			"selfLink": network.SelfLink,
 		},
@@ -1296,7 +1299,7 @@ func (p *GCPProvider) ResizeInstance(ctx context.Context, instanceID string, new
 }
 
 // Helper functions
-func (p *GCPProvider) rateLimiter.wait() {
+func (p *GCPProvider) waitForRateLimit() {
 	p.rateLimiter.mutex.Lock()
 	defer p.rateLimiter.mutex.Unlock()
 

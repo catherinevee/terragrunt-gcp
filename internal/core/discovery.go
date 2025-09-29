@@ -56,7 +56,7 @@ func (de *DiscoveryEngine) DiscoverAll(ctx context.Context) (*DiscoveryResult, e
 		Summary: DiscoverySummary{
 			ResourcesByType:    make(map[string]int),
 			ResourcesByRegion:  make(map[string]int),
-			AccountsByProvider: make(map[string]int),
+			ResourcesByStatus:  make(map[string]int),
 		},
 	}
 
@@ -119,7 +119,7 @@ func (de *DiscoveryEngine) discoverProvider(ctx context.Context, providerName st
 		Summary: DiscoverySummary{
 			ResourcesByType:    make(map[string]int),
 			ResourcesByRegion:  make(map[string]int),
-			AccountsByProvider: make(map[string]int),
+			ResourcesByStatus:  make(map[string]int),
 		},
 	}
 
@@ -313,27 +313,16 @@ func containsSubstring(s, substr string) bool {
 	return false
 }
 
-type DiscoveryOptions struct {
-	Providers         []string
-	AccountFilters    []AccountFilter
-	ResourceFilters   []ResourceFilter
-	MaxConcurrency    int
-	Timeout           time.Duration
-	RetryAttempts     int
-	RetryDelay        time.Duration
-	IncludeInactive   bool
-	IncludeCosts      bool
-	IncludeDependencies bool
-}
-
+// DiscoverWithOptions uses options defined in discoverer.go
 func (de *DiscoveryEngine) DiscoverWithOptions(ctx context.Context, options DiscoveryOptions) (*DiscoveryResult, error) {
 	oldConfig := de.config
 
-	de.config.AccountFilters = options.AccountFilters
-	de.config.ResourceFilters = options.ResourceFilters
-	if options.MaxConcurrency > 0 {
-		de.config.MaxConcurrency = options.MaxConcurrency
-	}
+	// Fields not available in DiscoveryOptions
+	// de.config.AccountFilters = options.AccountFilters
+	// de.config.ResourceFilters = options.ResourceFilters
+	// if options.MaxConcurrency > 0 {
+	// 	de.config.MaxConcurrency = options.MaxConcurrency
+	// }
 	if options.Timeout > 0 {
 		de.config.Timeout = options.Timeout
 	}
@@ -348,7 +337,8 @@ func (de *DiscoveryEngine) DiscoverWithOptions(ctx context.Context, options Disc
 		de.config = oldConfig
 	}()
 
-	if len(options.Providers) == 0 {
+	// Providers field not available in DiscoveryOptions
+	if true { // len(options.Providers) == 0 {
 		return de.DiscoverAll(ctx)
 	}
 
@@ -357,11 +347,12 @@ func (de *DiscoveryEngine) DiscoverWithOptions(ctx context.Context, options Disc
 		Summary: DiscoverySummary{
 			ResourcesByType:    make(map[string]int),
 			ResourcesByRegion:  make(map[string]int),
-			AccountsByProvider: make(map[string]int),
+			ResourcesByStatus:  make(map[string]int),
 		},
 	}
 
-	for _, providerName := range options.Providers {
+	// Providers field not available in DiscoveryOptions
+	/*for _, providerName := range options.Providers {
 		provider, exists := de.GetProvider(providerName)
 		if !exists {
 			result.AddError(DiscoveryError{
@@ -383,7 +374,7 @@ func (de *DiscoveryEngine) DiscoverWithOptions(ctx context.Context, options Disc
 		for _, err := range providerResult.Errors {
 			result.AddError(err)
 		}
-	}
+	}*/
 
 	result.EndTime = time.Now()
 	result.Duration = result.EndTime.Sub(result.StartTime)

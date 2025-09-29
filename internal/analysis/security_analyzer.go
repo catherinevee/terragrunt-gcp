@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"regexp"
+	// "regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -78,7 +78,7 @@ type SecurityCache struct {
 }
 
 type CachedFinding struct {
-	Finding   SecurityFinding
+	Finding   core.SecurityFinding
 	CachedAt  time.Time
 	ExpiresAt time.Time
 }
@@ -96,10 +96,10 @@ type SecurityOptions struct {
 
 type SecurityAnalysisResults struct {
 	Summary         SecurityAnalysisSummary      `json:"summary"`
-	Findings        []SecurityFinding            `json:"findings"`
+	Findings        []core.SecurityFinding            `json:"findings"`
 	Compliance      ComplianceResults            `json:"compliance"`
 	Vulnerabilities []Vulnerability              `json:"vulnerabilities"`
-	Remediations    []Remediation                `json:"remediations,omitempty"`
+	Remediations    []core.Remediation                `json:"remediations,omitempty"`
 	RiskAssessment  RiskAssessment               `json:"risk_assessment"`
 	IAMAnalysis     IAMSecurityAnalysis          `json:"iam_analysis"`
 	NetworkAnalysis NetworkSecurityAnalysis      `json:"network_analysis"`
@@ -875,9 +875,9 @@ func (sa *SecurityAnalyzer) AnalyzeSecurity(ctx context.Context, options Securit
 	sa.logger.Info("Starting comprehensive security analysis")
 
 	results := &SecurityAnalysisResults{
-		Findings:        []SecurityFinding{},
+		Findings:        []core.SecurityFinding{},
 		Vulnerabilities: []Vulnerability{},
-		Remediations:    []Remediation{},
+		Remediations:    []core.Remediation{},
 		Recommendations: []SecurityRecommendation{},
 		Metadata:        make(map[string]interface{}),
 	}
@@ -888,7 +888,7 @@ func (sa *SecurityAnalyzer) AnalyzeSecurity(ctx context.Context, options Securit
 	}
 
 	var wg sync.WaitGroup
-	findingsChan := make(chan SecurityFinding, len(resources))
+	findingsChan := make(chan core.SecurityFinding, len(resources))
 	vulnChan := make(chan Vulnerability, sa.config.MaxWorkers)
 
 	for _, resource := range resources {
@@ -947,8 +947,8 @@ func (sa *SecurityAnalyzer) AnalyzeSecurity(ctx context.Context, options Securit
 	return results, nil
 }
 
-func (sa *SecurityAnalyzer) scanResource(ctx context.Context, resource core.Resource, options SecurityOptions) []SecurityFinding {
-	findings := []SecurityFinding{}
+func (sa *SecurityAnalyzer) scanResource(ctx context.Context, resource core.Resource, options SecurityOptions) []core.SecurityFinding {
+	findings := []core.SecurityFinding{}
 
 	checks := sa.getSecurityChecks(resource.Type)
 	for _, check := range checks {
@@ -1005,7 +1005,7 @@ func (sa *SecurityAnalyzer) scanVulnerabilities(ctx context.Context, resource co
 	return vulnerabilities
 }
 
-func (sa *SecurityAnalyzer) calculateSummary(findings []SecurityFinding, vulnerabilities []Vulnerability) SecurityAnalysisSummary {
+func (sa *SecurityAnalyzer) calculateSummary(findings []core.SecurityFinding, vulnerabilities []Vulnerability) SecurityAnalysisSummary {
 	summary := SecurityAnalysisSummary{
 		TotalFindings: len(findings),
 		TopRisks:      []Risk{},
@@ -1098,8 +1098,8 @@ func (sa *SecurityAnalyzer) assessRisk(results *SecurityAnalysisResults) RiskAss
 		risk := sa.calculateRisk(finding)
 
 		riskItem := RiskItem{
-			Name:        finding.Title,
-			Category:    finding.Category,
+			Name:        finding.ID,
+			Category:    finding.Type,
 			Likelihood:  risk.Likelihood,
 			Impact:      risk.Impact,
 			Score:       risk.Score,
@@ -1226,16 +1226,16 @@ func (sa *SecurityAnalyzer) analyzeDataSecurity(ctx context.Context, resources [
 	return analysis
 }
 
-func (sa *SecurityAnalyzer) generateRemediations(results *SecurityAnalysisResults) []Remediation {
-	remediations := []Remediation{}
+func (sa *SecurityAnalyzer) generateRemediations(results *SecurityAnalysisResults) []core.Remediation {
+	remediations := []core.Remediation{}
 
 	for _, finding := range results.Findings {
 		if finding.Severity == "CRITICAL" || finding.Severity == "HIGH" {
-			remediation := Remediation{
+			remediation := core.Remediation{
 				ID:          fmt.Sprintf("rem-%s", sa.generateID()),
-				Type:        finding.Category,
+				Type:        finding.Type,
 				Priority:    finding.Severity,
-				Description: fmt.Sprintf("Remediate %s", finding.Title),
+				Description: fmt.Sprintf("Remediate %s", finding.ID),
 				Steps:       sa.getRemediationSteps(finding),
 				Script:      sa.generateRemediationScript(finding),
 				Impact:      "Security posture improvement",
@@ -1343,7 +1343,7 @@ func (sa *SecurityAnalyzer) shouldRunCheck(check SecurityCheck, options Security
 	return true
 }
 
-func (sa *SecurityAnalyzer) executeCheck(ctx context.Context, resource core.Resource, check SecurityCheck) *SecurityFinding {
+func (sa *SecurityAnalyzer) executeCheck(ctx context.Context, resource core.Resource, check SecurityCheck) *core.SecurityFinding {
 	compliance, err := sa.provider.CheckResourceCompliance(ctx, resource.ID, resource.Type)
 	if err != nil {
 		return nil
@@ -1351,21 +1351,16 @@ func (sa *SecurityAnalyzer) executeCheck(ctx context.Context, resource core.Reso
 
 	for _, issue := range compliance {
 		if checkID, ok := issue["check_id"].(string); ok && checkID == check.ID {
-			return &SecurityFinding{
+			return &core.SecurityFinding{
 				ID:           fmt.Sprintf("finding-%s", sa.generateID()),
 				Type:         "CONFIGURATION",
 				Severity:     sa.getSeverity(issue),
-				Resource:     resource.ID,
-				ResourceName: resource.Name,
-				ResourceType: resource.Type,
-				Title:        check.Name,
-				Description:  sa.getDescription(issue),
+				Resource:     fmt.Sprintf("%s (%s)", resource.Name, resource.Type),
+				Description:  fmt.Sprintf("%s: %s", check.Name, sa.getDescription(issue)),
 				Risk:         sa.getRisk(issue),
 				Remediation:  sa.getRemediation(issue),
-				Category:     sa.getCategory(check),
 				FirstDetected: time.Now(),
 				LastSeen:     time.Now(),
-				Status:       "OPEN",
 			}
 		}
 	}
@@ -1454,7 +1449,7 @@ func (sa *SecurityAnalyzer) getControlRemediation(control ComplianceControl) str
 	return "Review control requirements and implement necessary changes"
 }
 
-func (sa *SecurityAnalyzer) calculateRisk(finding SecurityFinding) Risk {
+func (sa *SecurityAnalyzer) calculateRisk(finding core.SecurityFinding) Risk {
 	likelihood := 0.5
 	impact := 0.5
 
@@ -1475,8 +1470,8 @@ func (sa *SecurityAnalyzer) calculateRisk(finding SecurityFinding) Risk {
 
 	return Risk{
 		ID:          fmt.Sprintf("risk-%s", sa.generateID()),
-		Name:        finding.Title,
-		Category:    finding.Category,
+		Name:        finding.ID,
+		Category:    finding.Type,
 		Severity:    finding.Severity,
 		Likelihood:  likelihood,
 		Impact:      impact,
@@ -1525,11 +1520,11 @@ func (sa *SecurityAnalyzer) evaluateSecurityPosture(summary SecurityAnalysisSumm
 	return "CRITICAL"
 }
 
-func (sa *SecurityAnalyzer) identifyImprovementAreas(findings []SecurityFinding) []string {
+func (sa *SecurityAnalyzer) identifyImprovementAreas(findings []core.SecurityFinding) []string {
 	areas := make(map[string]int)
 
 	for _, finding := range findings {
-		areas[finding.Category]++
+		areas[finding.Type]++
 	}
 
 	improvements := []string{}
@@ -1542,7 +1537,7 @@ func (sa *SecurityAnalyzer) identifyImprovementAreas(findings []SecurityFinding)
 	return improvements
 }
 
-func (sa *SecurityAnalyzer) calculateAverageSeverity(findings []SecurityFinding) float64 {
+func (sa *SecurityAnalyzer) calculateAverageSeverity(findings []core.SecurityFinding) float64 {
 	if len(findings) == 0 {
 		return 0
 	}
@@ -1564,11 +1559,11 @@ func (sa *SecurityAnalyzer) calculateAverageSeverity(findings []SecurityFinding)
 	return total / float64(len(findings))
 }
 
-func (sa *SecurityAnalyzer) getCategoryDistribution(findings []SecurityFinding) map[string]int {
+func (sa *SecurityAnalyzer) getCategoryDistribution(findings []core.SecurityFinding) map[string]int {
 	distribution := make(map[string]int)
 
 	for _, finding := range findings {
-		distribution[finding.Category]++
+		distribution[finding.Type]++
 	}
 
 	return distribution
@@ -1640,17 +1635,17 @@ func (sa *SecurityAnalyzer) getCategory(check SecurityCheck) string {
 }
 
 func (sa *SecurityAnalyzer) getResourceConfiguration(resource core.Resource) string {
-	config, err := json.Marshal(resource.Configuration)
+	config, err := json.Marshal(resource.Properties)
 	if err != nil {
 		return "{}"
 	}
 	return string(config)
 }
 
-func (sa *SecurityAnalyzer) getRemediationSteps(finding SecurityFinding) []string {
+func (sa *SecurityAnalyzer) getRemediationSteps(finding core.SecurityFinding) []string {
 	steps := []string{
 		fmt.Sprintf("Identify affected resource: %s", finding.Resource),
-		fmt.Sprintf("Review current configuration for %s", finding.Title),
+		fmt.Sprintf("Review current configuration for %s", finding.ID),
 		"Apply recommended security configuration",
 		"Validate changes",
 		"Monitor for compliance",
@@ -1658,7 +1653,7 @@ func (sa *SecurityAnalyzer) getRemediationSteps(finding SecurityFinding) []strin
 	return steps
 }
 
-func (sa *SecurityAnalyzer) generateRemediationScript(finding SecurityFinding) string {
+func (sa *SecurityAnalyzer) generateRemediationScript(finding core.SecurityFinding) string {
 	script := fmt.Sprintf(`#!/bin/bash
 # Remediation script for: %s
 # Resource: %s
@@ -1669,12 +1664,12 @@ echo "Starting remediation..."
 # TODO: Add specific remediation commands based on finding type
 
 echo "Remediation complete"
-`, finding.Title, finding.Resource, finding.Severity)
+`, finding.ID, finding.Resource, finding.Severity)
 
 	return script
 }
 
-func (sa *SecurityAnalyzer) estimateRemediationEffort(finding SecurityFinding) string {
+func (sa *SecurityAnalyzer) estimateRemediationEffort(finding core.SecurityFinding) string {
 	switch finding.Severity {
 	case "CRITICAL":
 		return "HIGH"

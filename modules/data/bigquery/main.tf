@@ -140,7 +140,7 @@ resource "google_bigquery_dataset" "dataset" {
 
   lifecycle {
     # ignore_changes must be static, not variable
-    ignore_changes = []_on_dataset
+    ignore_changes = []
   }
 }
 
@@ -325,7 +325,7 @@ resource "google_bigquery_table" "tables" {
 
   lifecycle {
     # ignore_changes must be static, not variable
-    ignore_changes = []_on_tables
+    ignore_changes = []
   }
 
   depends_on = [google_bigquery_dataset.dataset]

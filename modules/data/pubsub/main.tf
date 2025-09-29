@@ -34,14 +34,14 @@ locals {
   subscription_labels = merge(
     var.subscription_labels,
     {
-      managed_by  = "terraform"
-      module      = "pubsub"
-      topic       = local.topic_name
+      managed_by = "terraform"
+      module     = "pubsub"
+      topic      = local.topic_name
     }
   )
 
   # Message retention duration
-  message_retention_duration = var.message_retention_duration != null ? var.message_retention_duration : "604800s"  # 7 days default
+  message_retention_duration = var.message_retention_duration != null ? var.message_retention_duration : "604800s" # 7 days default
 
   # Schema settings
   schema_type = var.schema_type != null ? var.schema_type : "PROTOCOL_BUFFER"
@@ -104,7 +104,7 @@ resource "google_pubsub_topic" "dead_letter_topic" {
   labels = merge(
     local.topic_labels,
     {
-      type = "dead-letter"
+      type         = "dead-letter"
       parent_topic = local.topic_name
     }
   )
@@ -129,12 +129,12 @@ resource "google_pubsub_subscription" "dead_letter_subscription" {
   name    = "${google_pubsub_topic.dead_letter_topic[0].name}-monitoring"
   topic   = google_pubsub_topic.dead_letter_topic[0].name
 
-  message_retention_duration = "604800s"  # 7 days
-  retain_acked_messages     = true
-  ack_deadline_seconds      = 600  # 10 minutes
+  message_retention_duration = "604800s" # 7 days
+  retain_acked_messages      = true
+  ack_deadline_seconds       = 600 # 10 minutes
 
   expiration_policy {
-    ttl = ""  # Never expire
+    ttl = "" # Never expire
   }
 
   labels = merge(
@@ -164,7 +164,7 @@ resource "google_pubsub_subscription" "subscriptions" {
 
   # Message retention
   message_retention_duration = lookup(each.value, "message_retention_duration", local.message_retention_duration)
-  retain_acked_messages     = lookup(each.value, "retain_acked_messages", false)
+  retain_acked_messages      = lookup(each.value, "retain_acked_messages", false)
 
   # Expiration policy
   dynamic "expiration_policy" {
@@ -204,7 +204,7 @@ resource "google_pubsub_subscription" "subscriptions" {
         for_each = lookup(push_config.value, "oidc_token", null) != null ? [push_config.value.oidc_token] : []
         content {
           service_account_email = oidc_token.value.service_account_email
-          audience             = lookup(oidc_token.value, "audience", null)
+          audience              = lookup(oidc_token.value, "audience", null)
         }
       }
 
@@ -222,11 +222,11 @@ resource "google_pubsub_subscription" "subscriptions" {
   dynamic "bigquery_config" {
     for_each = lookup(each.value, "bigquery_config", null) != null ? [each.value.bigquery_config] : []
     content {
-      table               = bigquery_config.value.table
-      use_topic_schema    = lookup(bigquery_config.value, "use_topic_schema", false)
-      write_metadata      = lookup(bigquery_config.value, "write_metadata", false)
-      drop_unknown_fields = lookup(bigquery_config.value, "drop_unknown_fields", false)
-      use_table_schema    = lookup(bigquery_config.value, "use_table_schema", false)
+      table                 = bigquery_config.value.table
+      use_topic_schema      = lookup(bigquery_config.value, "use_topic_schema", false)
+      write_metadata        = lookup(bigquery_config.value, "write_metadata", false)
+      drop_unknown_fields   = lookup(bigquery_config.value, "drop_unknown_fields", false)
+      use_table_schema      = lookup(bigquery_config.value, "use_table_schema", false)
       service_account_email = lookup(bigquery_config.value, "service_account_email", null)
     }
   }
@@ -239,16 +239,16 @@ resource "google_pubsub_subscription" "subscriptions" {
       filename_prefix          = lookup(cloud_storage_config.value, "filename_prefix", null)
       filename_suffix          = lookup(cloud_storage_config.value, "filename_suffix", null)
       filename_datetime_format = lookup(cloud_storage_config.value, "filename_datetime_format", null)
-      max_duration            = lookup(cloud_storage_config.value, "max_duration", "300s")
-      max_bytes               = lookup(cloud_storage_config.value, "max_bytes", 1000000000)
-      state                   = lookup(cloud_storage_config.value, "state", null)
-      service_account_email   = lookup(cloud_storage_config.value, "service_account_email", null)
+      max_duration             = lookup(cloud_storage_config.value, "max_duration", "300s")
+      max_bytes                = lookup(cloud_storage_config.value, "max_bytes", 1000000000)
+      state                    = lookup(cloud_storage_config.value, "state", null)
+      service_account_email    = lookup(cloud_storage_config.value, "service_account_email", null)
 
       dynamic "avro_config" {
         for_each = lookup(cloud_storage_config.value, "avro_config", null) != null ? [cloud_storage_config.value.avro_config] : []
         content {
-          write_metadata        = lookup(avro_config.value, "write_metadata", false)
-          use_topic_schema     = lookup(avro_config.value, "use_topic_schema", false)
+          write_metadata   = lookup(avro_config.value, "write_metadata", false)
+          use_topic_schema = lookup(avro_config.value, "use_topic_schema", false)
         }
       }
     }
@@ -398,7 +398,7 @@ resource "google_monitoring_alert_policy" "pubsub_alerts" {
 resource "google_monitoring_dashboard" "pubsub_dashboard" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.topic_name} Pub/Sub Dashboard"
     mosaicLayout = {
@@ -507,7 +507,7 @@ resource "google_pubsub_lite_topic" "lite_topic" {
   zone    = var.lite_topic_zone
 
   partition_config {
-    count    = var.lite_partition_count
+    count = var.lite_partition_count
     capacity {
       publish_mib_per_sec   = var.lite_publish_capacity_mib_per_sec
       subscribe_mib_per_sec = var.lite_subscribe_capacity_mib_per_sec
@@ -516,7 +516,7 @@ resource "google_pubsub_lite_topic" "lite_topic" {
 
   retention_config {
     per_partition_bytes = var.lite_retention_bytes_per_partition
-    period             = var.lite_retention_period
+    period              = var.lite_retention_period
   }
 
   reservation_config {

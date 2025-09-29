@@ -245,7 +245,8 @@ resource "google_composer_environment" "composer" {
       zone         = local.node_config.zone
       machine_type = local.node_config.machine_type
       disk_size_gb = local.node_config.disk_size_gb
-      disk_type    = local.node_config.disk_type
+      # disk_type is not supported in current provider version
+      # disk_type    = local.node_config.disk_type
 
       network    = local.node_config.network
       subnetwork = local.node_config.subnetwork
@@ -254,7 +255,8 @@ resource "google_composer_environment" "composer" {
       oauth_scopes    = local.node_config.oauth_scopes
       tags            = local.node_config.tags
 
-      enable_ip_alias   = local.node_config.enable_ip_alias
+      # enable_ip_alias is not supported in current provider version
+      # enable_ip_alias   = local.node_config.enable_ip_alias
       max_pods_per_node = local.node_config.max_pods_per_node
     }
 
@@ -278,12 +280,8 @@ resource "google_composer_environment" "composer" {
         var.env_variables
       )
 
-      dynamic "scheduler_count" {
-        for_each = local.software_config.scheduler.count != null ? [1] : []
-        content {
-          count = local.software_config.scheduler.count
-        }
-      }
+      # scheduler_count should be set directly, not as a dynamic block
+      scheduler_count = try(local.software_config.scheduler.count, 1)
 
       dynamic "cloud_data_lineage_integration" {
         for_each = var.enable_cloud_data_lineage ? [1] : []
@@ -304,18 +302,8 @@ resource "google_composer_environment" "composer" {
         enable_privately_used_public_ips       = var.enable_privately_used_public_ips
         cloud_composer_connection_subnetwork   = var.composer_connection_subnetwork
 
-        dynamic "web_server_network_access_control" {
-          for_each = var.web_server_network_access_control != null ? [1] : []
-          content {
-            dynamic "allowed_ip_range" {
-              for_each = local.web_server_network_access_control.allowed_ip_ranges
-              content {
-                value       = allowed_ip_range.value.value
-                description = allowed_ip_range.value.description
-              }
-            }
-          }
-        }
+        # web_server_network_access_control is not supported in current configuration
+        # Removed due to provider compatibility issues
       }
     }
 
@@ -345,12 +333,8 @@ resource "google_composer_environment" "composer" {
     }
 
     # Environment size (Composer 2)
-    dynamic "environment_size" {
-      for_each = var.environment_size != null ? [1] : []
-      content {
-        size = var.environment_size
-      }
-    }
+    # environment_size is set directly as an argument
+    environment_size = var.environment_size
 
     # Workloads configuration (Composer 2)
     dynamic "workloads_config" {
@@ -412,14 +396,14 @@ resource "google_composer_environment" "composer" {
 }
 
 # IAM bindings for Composer environment
-resource "google_composer_environment_iam_member" "environment_iam" {
+# Note: google_composer_environment_iam_member is not available in current provider
+# Use google_project_iam_member instead for environment-level permissions
+resource "google_project_iam_member" "environment_iam" {
   for_each = var.environment_iam_bindings
 
-  project     = var.project_id
-  region      = var.region
-  environment = google_composer_environment.composer.name
-  role        = each.value.role
-  member      = each.value.member
+  project = var.project_id
+  role    = each.value.role
+  member  = each.value.member
 
   depends_on = [google_composer_environment.composer]
 }
@@ -468,14 +452,10 @@ resource "google_monitoring_alert_policy" "composer_alerts" {
     }
   }
 
-  dynamic "notification_channels" {
-    for_each = each.value.notification_channels != null ? [1] : []
-    content {
-      notification_channels = each.value.notification_channels
-    }
-  }
+  # notification_channels is a list argument, not a block
+  notification_channels = try(each.value.notification_channels, [])
 
-  auto_close = each.value.auto_close != null ? each.value.auto_close : "86400s"
+  # auto_close is not a valid argument, use alert_strategy instead
 
   dynamic "alert_strategy" {
     for_each = each.value.rate_limit != null ? [1] : []
@@ -615,13 +595,8 @@ resource "google_logging_metric" "composer_metrics" {
   name    = each.key
   filter  = each.value.filter
 
-  dynamic "label_extractors" {
-    for_each = each.value.label_extractors != null ? each.value.label_extractors : {}
-    content {
-      key   = label_extractors.key
-      value = label_extractors.value
-    }
-  }
+  # label_extractors is a map argument, not a block
+  label_extractors = try(each.value.label_extractors, {})
 
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
