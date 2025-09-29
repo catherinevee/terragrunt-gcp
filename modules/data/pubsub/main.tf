@@ -185,8 +185,7 @@ resource "google_pubsub_subscription" "subscriptions" {
 
   # Dead letter policy
   dynamic "dead_letter_policy" {
-    for_each = (var.create_dead_letter_topic || lookup(each.value, "dead_letter_topic", null) != null) &&
-               lookup(each.value, "enable_dead_letter_policy", true) ? [1] : []
+    for_each = (var.create_dead_letter_topic || lookup(each.value, "dead_letter_topic", null) != null) && lookup(each.value, "enable_dead_letter_policy", true) ? [1] : []
     content {
       dead_letter_topic     = lookup(each.value, "dead_letter_topic", null) != null ? each.value.dead_letter_topic : google_pubsub_topic.dead_letter_topic[0].id
       max_delivery_attempts = lookup(each.value, "max_delivery_attempts", local.dead_letter_max_delivery_attempts)

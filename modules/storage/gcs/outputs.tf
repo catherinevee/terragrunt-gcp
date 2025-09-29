@@ -271,12 +271,8 @@ output "import_commands" {
   value = {
     bucket = "terraform import google_storage_bucket.bucket ${var.project_id}/${google_storage_bucket.bucket.name}"
 
-    iam_policy = var.iam_policy != null ?
-      "terraform import google_storage_bucket_iam_policy.policy ${google_storage_bucket.bucket.name}" :
-      null
+    iam_policy = var.iam_policy != null ? "terraform import google_storage_bucket_iam_policy.policy ${google_storage_bucket.bucket.name}" : null
 
-    iam_binding = length(var.iam_bindings) > 0 ?
-      "terraform import 'google_storage_bucket_iam_binding.bindings[\"ROLE\"]' '${google_storage_bucket.bucket.name} ROLE'" :
-      null
+    iam_binding = length(var.iam_bindings) > 0 ? "terraform import 'google_storage_bucket_iam_binding.bindings[\\\"ROLE\\\"]' '${google_storage_bucket.bucket.name} ROLE'" : null
   }
 }

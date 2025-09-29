@@ -318,13 +318,9 @@ output "gcloud_commands" {
   value = {
     publish_message = "gcloud pubsub topics publish ${google_pubsub_topic.topic.name} --message='Hello World' --project=${var.project_id}"
 
-    pull_messages = length(google_pubsub_subscription.subscriptions) > 0 ?
-      "gcloud pubsub subscriptions pull ${element(keys(google_pubsub_subscription.subscriptions), 0)} --auto-ack --limit=10 --project=${var.project_id}" :
-      null
+    pull_messages = length(google_pubsub_subscription.subscriptions) > 0 ? "gcloud pubsub subscriptions pull ${element(keys(google_pubsub_subscription.subscriptions), 0)} --auto-ack --limit=10 --project=${var.project_id}" : null
 
-    create_snapshot = length(google_pubsub_subscription.subscriptions) > 0 ?
-      "gcloud pubsub snapshots create my-snapshot --subscription=${element(keys(google_pubsub_subscription.subscriptions), 0)} --project=${var.project_id}" :
-      null
+    create_snapshot = length(google_pubsub_subscription.subscriptions) > 0 ? "gcloud pubsub snapshots create my-snapshot --subscription=${element(keys(google_pubsub_subscription.subscriptions), 0)} --project=${var.project_id}" : null
 
     seek_to_time = length(google_pubsub_subscription.subscriptions) > 0 ?
       "gcloud pubsub subscriptions seek ${element(keys(google_pubsub_subscription.subscriptions), 0)} --time=2024-01-01T00:00:00Z --project=${var.project_id}" :
@@ -354,25 +350,7 @@ future = publisher.publish(topic_path, b'Hello World!')
 print(f'Published message ID: {future.result()}')
 EOT
 
-    subscribe = length(google_pubsub_subscription.subscriptions) > 0 ? <<-EOT
-from google.cloud import pubsub_v1
-
-subscriber = pubsub_v1.SubscriberClient()
-subscription_path = subscriber.subscription_path('${var.project_id}', '${element(keys(google_pubsub_subscription.subscriptions), 0)}')
-
-def callback(message):
-    print(f'Received: {message.data.decode()}')
-    message.ack()
-
-streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
-print(f'Listening for messages on {subscription_path}...')
-
-try:
-    streaming_pull_future.result(timeout=30)
-except KeyboardInterrupt:
-    streaming_pull_future.cancel()
-EOT
-    : null
+    subscribe = length(google_pubsub_subscription.subscriptions) > 0 ? "from google.cloud import pubsub_v1\n\nsubscriber = pubsub_v1.SubscriberClient()\nsubscription_path = subscriber.subscription_path('${var.project_id}', '${element(keys(google_pubsub_subscription.subscriptions), 0)}')\n\ndef callback(message):\n    print(f'Received: {message.data.decode()}')\n    message.ack()\n\nstreaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)\nprint(f'Listening for messages on {subscription_path}...')\n\ntry:\n    streaming_pull_future.result(timeout=30)\nexcept KeyboardInterrupt:\n    streaming_pull_future.cancel()" : null
   }
 }
 
@@ -382,13 +360,9 @@ output "import_commands" {
   value = {
     topic = "terraform import google_pubsub_topic.topic projects/${var.project_id}/topics/${google_pubsub_topic.topic.name}"
 
-    schema = var.create_schema ?
-      "terraform import google_pubsub_schema.schema projects/${var.project_id}/schemas/${google_pubsub_schema.schema[0].name}" :
-      null
+    schema = var.create_schema ? "terraform import google_pubsub_schema.schema projects/${var.project_id}/schemas/${google_pubsub_schema.schema[0].name}" : null
 
-    subscription = length(google_pubsub_subscription.subscriptions) > 0 ?
-      "terraform import 'google_pubsub_subscription.subscriptions[\"SUBSCRIPTION_NAME\"]' projects/${var.project_id}/subscriptions/SUBSCRIPTION_NAME" :
-      null
+    subscription = length(google_pubsub_subscription.subscriptions) > 0 ? "terraform import 'google_pubsub_subscription.subscriptions[\"SUBSCRIPTION_NAME\"]' projects/${var.project_id}/subscriptions/SUBSCRIPTION_NAME" : null
 
     snapshot = length(google_pubsub_snapshot.snapshots) > 0 ?
       "terraform import 'google_pubsub_snapshot.snapshots[\"SNAPSHOT_NAME\"]' projects/${var.project_id}/snapshots/SNAPSHOT_NAME" :

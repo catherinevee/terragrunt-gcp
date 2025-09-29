@@ -512,9 +512,7 @@ resource "google_monitoring_alert_policy" "interconnect_alerts" {
 resource "google_compute_interconnect_iam_binding" "interconnect_bindings" {
   for_each = var.interconnect_iam_bindings
 
-  interconnect = contains(keys(var.dedicated_interconnects), each.value.interconnect_name) ?
-    google_compute_interconnect.dedicated_interconnects[each.value.interconnect_name].name :
-    google_compute_interconnect.partner_interconnects[each.value.interconnect_name].name
+  interconnect = contains(keys(var.dedicated_interconnects), each.value.interconnect_name) ? google_compute_interconnect.dedicated_interconnects[each.value.interconnect_name].name : google_compute_interconnect.partner_interconnects[each.value.interconnect_name].name
   role    = each.value.role
   members = each.value.members
 
