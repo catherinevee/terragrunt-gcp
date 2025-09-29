@@ -470,6 +470,53 @@ type SecretConfig struct {
 	Topics           []*TopicConfig
 }
 
+// SecretPayload represents the payload data for a secret
+type SecretPayload struct {
+	Data []byte
+}
+
+// PayloadChecksum represents checksum information for a payload
+type PayloadChecksum struct {
+	Crc32c int64
+}
+
+// SecretVersionConfig represents configuration for a secret version
+type SecretVersionConfig struct {
+	Payload                        *SecretPayload
+	State                          string
+	ClientSpecifiedPayloadChecksum *PayloadChecksum
+}
+
+// SecretAccessControl represents access control configuration for a secret
+type SecretAccessControl struct {
+	Principal        string
+	Role             string
+	Conditions       []string
+	TimeRestrictions *TimeRestrictions
+}
+
+// TimeRestrictions represents time-based access restrictions
+type TimeRestrictions struct {
+	StartTime string
+	EndTime   string
+	DaysOfWeek []string
+	Timezone   string
+}
+
+// validateSecretPayload validates a secret payload
+func validateSecretPayload(payload *SecretPayload, maxSize int) error {
+	if payload == nil {
+		return fmt.Errorf("payload is required")
+	}
+	if len(payload.Data) == 0 {
+		return fmt.Errorf("payload data cannot be empty")
+	}
+	if len(payload.Data) > maxSize {
+		return fmt.Errorf("payload size %d exceeds maximum %d", len(payload.Data), maxSize)
+	}
+	return nil
+}
+
 // ReplicationConfig represents replication configuration
 type ReplicationConfig struct {
 	Automatic    bool

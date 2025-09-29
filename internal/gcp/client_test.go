@@ -52,16 +52,16 @@ func TestNewClient(t *testing.T) {
 			}
 
 			if !tt.wantErr && client != nil {
-				if client.ProjectID != tt.projectID {
-					t.Errorf("NewClient() ProjectID = %v, want %v", client.ProjectID, tt.projectID)
+				if client.ProjectID() != tt.projectID {
+					t.Errorf("NewClient() ProjectID = %v, want %v", client.ProjectID(), tt.projectID)
 				}
 
-				if client.Region != config.Region {
-					t.Errorf("NewClient() Region = %v, want %v", client.Region, config.Region)
+				if client.Region() != config.Region {
+					t.Errorf("NewClient() Region = %v, want %v", client.Region(), config.Region)
 				}
 
-				if client.Zone != config.Zone {
-					t.Errorf("NewClient() Zone = %v, want %v", client.Zone, config.Zone)
+				if client.Zone() != config.Zone {
+					t.Errorf("NewClient() Zone = %v, want %v", client.Zone(), config.Zone)
 				}
 			}
 		})

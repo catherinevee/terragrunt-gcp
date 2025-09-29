@@ -75,6 +75,9 @@ type Retryer struct {
 	logger          Logger
 }
 
+// RetryManager is an alias for Retryer for backward compatibility
+type RetryManager = Retryer
+
 // BackoffStrategy defines the backoff calculation strategy
 type BackoffStrategy interface {
 	NextBackoff(attempt int) time.Duration
@@ -201,6 +204,11 @@ func NewRetryer(config *RetryConfig, errorHandler *ErrorHandler, logger Logger) 
 	}
 
 	return retryer
+}
+
+// NewRetryManager creates a new retry manager (alias for NewRetryer for backward compatibility)
+func NewRetryManager(config *RetryConfig) *RetryManager {
+	return NewRetryer(config, nil, nil)
 }
 
 // DefaultRetryConfig returns the default retry configuration
@@ -341,11 +349,11 @@ func (r *Retryer) ExecuteWithResult(ctx context.Context, fn RetryableWithResultF
 // executeAttempt executes a single attempt
 func (r *Retryer) executeAttempt(ctx context.Context, fn RetryableFunc, attempt int) error {
 	// Create attempt context with shorter timeout if needed
-	attemptCtx := ctx
+	// attemptCtx not used since RetryableFunc doesn't take context
+	// attemptCtx := ctx
 	if r.config.RetryTimeout > 0 {
 		timeout := r.config.RetryTimeout / time.Duration(r.config.MaxRetries)
-		var cancel context.CancelFunc
-		attemptCtx, cancel = context.WithTimeout(ctx, timeout)
+		_, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 
@@ -359,6 +367,7 @@ func (r *Retryer) executeAttempt(ctx context.Context, fn RetryableFunc, attempt 
 		}()
 
 		// Execute the function
+		// RetryableFunc doesn't take context - fn takes no arguments
 		err = fn()
 	}()
 

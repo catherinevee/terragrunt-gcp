@@ -40,7 +40,11 @@ type AuthProvider struct {
 	oidcProvider     *OIDCProvider
 	cache            *TokenCache
 	logger           Logger
+	projectID        string
 }
+
+// AuthService is an alias for AuthProvider for backward compatibility
+type AuthService = AuthProvider
 
 // AuthConfig contains authentication configuration
 type AuthConfig struct {

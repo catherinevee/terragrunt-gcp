@@ -2,7 +2,7 @@ package gcp
 
 import (
 	"context"
-	"strings"
+	// "strings"
 	"testing"
 	"time"
 
@@ -1057,28 +1057,4 @@ func TestNetworkConnectivityValidation(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Helper function for ConnectivityTestConfig validation (would be part of actual implementation)
-func (c *ConnectivityTestConfig) Validate() error {
-	if c.Name == "" {
-		return fmt.Errorf("name is required")
-	}
-	if c.Source == nil {
-		return fmt.Errorf("source is required")
-	}
-	if c.Destination == nil {
-		return fmt.Errorf("destination is required")
-	}
-	if c.Source.IPAddress != "" {
-		if net.ParseIP(c.Source.IPAddress) == nil {
-			return fmt.Errorf("invalid source IP address")
-		}
-	}
-	if c.Destination.IPAddress != "" {
-		if net.ParseIP(c.Destination.IPAddress) == nil {
-			return fmt.Errorf("invalid destination IP address")
-		}
-	}
-	return nil
 }

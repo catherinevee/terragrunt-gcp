@@ -2,7 +2,7 @@ package gcp
 
 import (
 	"context"
-	"strings"
+	// "strings"
 	"testing"
 	"time"
 
@@ -911,20 +911,6 @@ func TestSecretPayloadValidation(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Helper function for secret payload validation (would be part of actual implementation)
-func validateSecretPayload(payload *SecretPayload, maxSize int) error {
-	if payload == nil {
-		return fmt.Errorf("payload is required")
-	}
-	if len(payload.Data) == 0 {
-		return fmt.Errorf("payload data cannot be empty")
-	}
-	if len(payload.Data) > maxSize {
-		return fmt.Errorf("payload size %d exceeds maximum %d", len(payload.Data), maxSize)
-	}
-	return nil
 }
 
 func TestSecretAccessControls(t *testing.T) {

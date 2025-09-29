@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strings"
+	// "strings"
 	"sync"
 	"time"
 
 	compute "cloud.google.com/go/compute/apiv1"
 	"cloud.google.com/go/compute/apiv1/computepb"
 	networkconnectivity "cloud.google.com/go/networkconnectivity/apiv1"
-	"cloud.google.com/go/networkconnectivity/apiv1/networkconnectivitypb"
+	// "cloud.google.com/go/networkconnectivity/apiv1/networkconnectivitypb"
 	// servicenetworking "cloud.google.com/go/servicenetworking/apiv1"
 	vpcaccess "cloud.google.com/go/vpcaccess/apiv1"
-	"cloud.google.com/go/vpcaccess/apiv1/vpcaccesspb"
+	// "cloud.google.com/go/vpcaccess/apiv1/vpcaccesspb"
 	"go.uber.org/zap"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/iterator"
@@ -50,7 +50,7 @@ type NetworkService struct {
 	packetMirroringsClient     *compute.PacketMirroringsClient
 	securityPoliciesClient     *compute.SecurityPoliciesClient
 	networkConnectivityClient  *networkconnectivity.HubClient
-	serviceNetworkingClient    *servicenetworking.Service
+	serviceNetworkingClient    *servicenetworking.APIService
 	vpcAccessClient            *vpcaccess.Client
 	dnsService                 *dns.Service
 	networkManagementService   *networkmanagement.Service
@@ -171,7 +171,7 @@ type PeeringManager struct {
 
 // PrivateServiceManager manages private service connections
 type PrivateServiceManager struct {
-	client              *servicenetworking.Service
+	client              *servicenetworking.APIService
 	logger              *zap.Logger
 	connections         map[string]*PrivateServiceConnection
 	allocatedRanges     map[string]*AllocatedRange
@@ -475,6 +475,49 @@ type PeeringConfig struct {
 	ExportSubnetRoutesWithPublicIP bool
 	ImportSubnetRoutesWithPublicIP bool
 	StackType                string
+}
+
+// ConnectivityEndpoint represents an endpoint for connectivity testing
+type ConnectivityEndpoint struct {
+	IPAddress    string
+	Port         int32
+	Instance     string
+	Network      string
+	ProjectID    string
+	CloudSQLInstance string
+}
+
+// ConnectivityTestConfig represents configuration for network connectivity tests
+type ConnectivityTestConfig struct {
+	Name        string
+	Source      *ConnectivityEndpoint
+	Destination *ConnectivityEndpoint
+	Protocol    string
+	Labels      map[string]string
+}
+
+// Validate validates the connectivity test configuration
+func (c *ConnectivityTestConfig) Validate() error {
+	if c.Name == "" {
+		return fmt.Errorf("name is required")
+	}
+	if c.Source == nil {
+		return fmt.Errorf("source is required")
+	}
+	if c.Destination == nil {
+		return fmt.Errorf("destination is required")
+	}
+	if c.Source.IPAddress != "" {
+		if net.ParseIP(c.Source.IPAddress) == nil {
+			return fmt.Errorf("invalid source IP address")
+		}
+	}
+	if c.Destination.IPAddress != "" {
+		if net.ParseIP(c.Destination.IPAddress) == nil {
+			return fmt.Errorf("invalid destination IP address")
+		}
+	}
+	return nil
 }
 
 // NewNetworkService creates a new comprehensive network service
@@ -799,7 +842,8 @@ func (ns *NetworkService) CreateNetwork(ctx context.Context, projectID string, c
 		Mtu:                             proto.Int32(config.MTU),
 		EnableUlaInternalIpv6:           proto.Bool(config.EnableUlaInternalIpv6),
 		InternalIpv6Range:               proto.String(config.InternalIpv6Range),
-		NetworkFirewallPolicyEnforcement: proto.String(config.NetworkFirewallPolicyEnforcement),
+		// NetworkFirewallPolicyEnforcement field not available in current version
+		// NetworkFirewallPolicyEnforcement: proto.String(config.NetworkFirewallPolicyEnforcement),
 	}
 
 	req := &computepb.InsertNetworkRequest{
@@ -816,7 +860,7 @@ func (ns *NetworkService) CreateNetwork(ctx context.Context, projectID string, c
 	}
 
 	// Wait for operation to complete
-	if err := ns.waitForGlobalOperation(ctx, projectID, op.GetName()); err != nil {
+	if err := ns.waitForGlobalOperation(ctx, projectID, op.Name()); err != nil {
 		return nil, fmt.Errorf("network creation operation failed: %w", err)
 	}
 
@@ -907,8 +951,9 @@ func (ns *NetworkService) CreateSubnet(ctx context.Context, projectID, networkNa
 		Ipv6AccessType:           proto.String(config.Ipv6AccessType),
 		Ipv6CidrRange:            proto.String(config.Ipv6CidrRange),
 		ExternalIpv6Prefix:       proto.String(config.ExternalIpv6Prefix),
-		AggregationInterval:      proto.String(config.AggregationInterval),
-		EnableL7IlbSubnet:        proto.Bool(config.EnableL7IlbSubnet),
+		// Fields not available in current version
+		// AggregationInterval:      proto.String(config.AggregationInterval),
+		// EnableL7IlbSubnet:        proto.Bool(config.EnableL7IlbSubnet),
 	}
 
 	// Configure secondary IP ranges
@@ -950,7 +995,7 @@ func (ns *NetworkService) CreateSubnet(ctx context.Context, projectID, networkNa
 	}
 
 	// Wait for operation to complete
-	if err := ns.waitForRegionOperation(ctx, projectID, config.Region, op.GetName()); err != nil {
+	if err := ns.waitForRegionOperation(ctx, projectID, config.Region, op.Name()); err != nil {
 		return nil, fmt.Errorf("subnet creation operation failed: %w", err)
 	}
 
@@ -1067,7 +1112,7 @@ func (ns *NetworkService) CreateFirewallRule(ctx context.Context, projectID, net
 	}
 
 	// Wait for operation to complete
-	if err := ns.waitForGlobalOperation(ctx, projectID, op.GetName()); err != nil {
+	if err := ns.waitForGlobalOperation(ctx, projectID, op.Name()); err != nil {
 		return nil, fmt.Errorf("firewall rule creation operation failed: %w", err)
 	}
 
@@ -1134,7 +1179,7 @@ func (ns *NetworkService) CreateRoute(ctx context.Context, projectID, networkNam
 		Description:      proto.String(config.Description),
 		Network:          proto.String(fmt.Sprintf("projects/%s/global/networks/%s", projectID, networkName)),
 		DestRange:        proto.String(config.DestRange),
-		Priority:         proto.Int32(config.Priority),
+		Priority:         proto.Uint32(uint32(config.Priority)),
 		Tags:             config.Tags,
 	}
 
@@ -1172,7 +1217,7 @@ func (ns *NetworkService) CreateRoute(ctx context.Context, projectID, networkNam
 	}
 
 	// Wait for operation to complete
-	if err := ns.waitForGlobalOperation(ctx, projectID, op.GetName()); err != nil {
+	if err := ns.waitForGlobalOperation(ctx, projectID, op.Name()); err != nil {
 		return nil, fmt.Errorf("route creation operation failed: %w", err)
 	}
 
@@ -1254,7 +1299,7 @@ func (ns *NetworkService) CreatePeering(ctx context.Context, projectID, networkN
 	}
 
 	// Wait for operation to complete
-	if err := ns.waitForGlobalOperation(ctx, projectID, op.GetName()); err != nil {
+	if err := ns.waitForGlobalOperation(ctx, projectID, op.Name()); err != nil {
 		return fmt.Errorf("peering creation operation failed: %w", err)
 	}
 
@@ -1396,7 +1441,7 @@ func (ns *NetworkService) DeleteNetwork(ctx context.Context, projectID, networkN
 	}
 
 	// Wait for operation to complete
-	if err := ns.waitForGlobalOperation(ctx, projectID, op.GetName()); err != nil {
+	if err := ns.waitForGlobalOperation(ctx, projectID, op.Name()); err != nil {
 		return fmt.Errorf("network deletion operation failed: %w", err)
 	}
 
