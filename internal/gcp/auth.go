@@ -2,22 +2,24 @@ package gcp
 
 import (
 	"context"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/base64"
+	// "crypto/rsa"
+	// "crypto/x509"
+	// "encoding/base64"
 	"encoding/json"
-	"encoding/pem"
+	// "encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
 
-	"cloud.google.com/go/iam/credentials/apiv1"
-	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
+	// "cloud.google.com/go/iam/credentials/apiv1"
+	// "cloud.google.com/go/iam/credentials/apiv1/credentialspb"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"
@@ -517,16 +519,283 @@ func (p *AuthProvider) getSubjectToken(ctx context.Context, source CredentialSou
 
 // getExecutableToken retrieves token from an executable
 func (p *AuthProvider) getExecutableToken(ctx context.Context, config *ExecutableConfig) (string, error) {
-	// Implementation would execute the command and parse output
-	// This is a placeholder
-	return "", fmt.Errorf("executable credential source not implemented")
+	if config == nil || config.Command == "" {
+		return "", fmt.Errorf("executable config or command is empty")
+	}
+
+	p.logger.Debug("Executing credential command", zap.String("command", config.Command))
+
+	// Set default timeout if not specified
+	timeout := 30 * time.Second
+	if config.TimeoutMillis > 0 {
+		timeout = time.Duration(config.TimeoutMillis) * time.Millisecond
+	}
+
+	// Create context with timeout
+	execCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	// Parse command and arguments
+	parts := strings.Fields(config.Command)
+	if len(parts) == 0 {
+		return "", fmt.Errorf("invalid command: empty")
+	}
+
+	cmd := exec.CommandContext(execCtx, parts[0], parts[1:]...)
+
+	// Set environment variables for the command
+	cmd.Env = append(os.Environ(),
+		"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1",
+		"GOOGLE_EXTERNAL_ACCOUNT_AUDIENCE="+p.config.Audience,
+	)
+
+	// Execute command and capture output
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		p.logger.Error("Failed to execute credential command",
+			zap.String("command", config.Command),
+			zap.Error(err),
+			zap.String("output", string(output)))
+		return "", fmt.Errorf("executing credential command: %w", err)
+	}
+
+	// Parse JSON output
+	var result struct {
+		Version int    `json:"version"`
+		Success bool   `json:"success"`
+		Token   string `json:"token_type,omitempty"`
+		SubjectToken string `json:"subject_token,omitempty"`
+		ExpirationTime int64 `json:"expiration_time,omitempty"`
+		TokenType string `json:"token_type,omitempty"`
+		Message string `json:"message,omitempty"`
+		Code string `json:"code,omitempty"`
+	}
+
+	if err := json.Unmarshal(output, &result); err != nil {
+		p.logger.Error("Failed to parse credential command output",
+			zap.Error(err),
+			zap.String("output", string(output)))
+		return "", fmt.Errorf("parsing credential command output: %w", err)
+	}
+
+	// Check for errors in response
+	if !result.Success {
+		return "", fmt.Errorf("credential command failed: %s (code: %s)", result.Message, result.Code)
+	}
+
+	// Return the subject token
+	if result.SubjectToken != "" {
+		p.logger.Debug("Successfully retrieved token from executable")
+		return result.SubjectToken, nil
+	}
+
+	return "", fmt.Errorf("no subject token in response")
 }
 
 // getEnvironmentToken retrieves token from environment (AWS/Azure metadata)
 func (p *AuthProvider) getEnvironmentToken(ctx context.Context, source CredentialSource) (string, error) {
-	// Implementation would query AWS/Azure metadata service
-	// This is a placeholder
-	return "", fmt.Errorf("environment credential source not implemented")
+	if source.EnvironmentID == "" {
+		return "", fmt.Errorf("environment ID is empty")
+	}
+
+	p.logger.Debug("Retrieving token from environment", zap.String("environment", source.EnvironmentID))
+
+	// Determine which cloud environment
+	switch source.EnvironmentID {
+	case "aws1":
+		return p.getAWSToken(ctx, source)
+	case "azure1":
+		return p.getAzureToken(ctx, source)
+	default:
+		return "", fmt.Errorf("unsupported environment ID: %s", source.EnvironmentID)
+	}
+}
+
+// getAWSToken retrieves token from AWS metadata service
+func (p *AuthProvider) getAWSToken(ctx context.Context, source CredentialSource) (string, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	// Get AWS region if needed
+	var region string
+	if source.RegionURL != "" {
+		req, err := http.NewRequestWithContext(ctx, "GET", source.RegionURL, nil)
+		if err != nil {
+			return "", fmt.Errorf("creating region request: %w", err)
+		}
+
+		// Add custom headers
+		for key, value := range source.Headers {
+			req.Header.Set(key, value)
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return "", fmt.Errorf("fetching AWS region: %w", err)
+		}
+		defer resp.Body.Close()
+
+		regionBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("reading region response: %w", err)
+		}
+		region = string(regionBytes)
+		p.logger.Debug("Retrieved AWS region", zap.String("region", region))
+	}
+
+	// Get IMDSv2 session token if configured
+	var sessionToken string
+	if source.IMDSv2SessionTokenURL != "" {
+		req, err := http.NewRequestWithContext(ctx, "PUT", source.IMDSv2SessionTokenURL, nil)
+		if err != nil {
+			return "", fmt.Errorf("creating IMDSv2 session token request: %w", err)
+		}
+
+		req.Header.Set("X-aws-ec2-metadata-token-ttl-seconds", "300")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return "", fmt.Errorf("fetching IMDSv2 session token: %w", err)
+		}
+		defer resp.Body.Close()
+
+		tokenBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("reading session token response: %w", err)
+		}
+		sessionToken = string(tokenBytes)
+		p.logger.Debug("Retrieved IMDSv2 session token")
+	}
+
+	// Get the credential from the main URL
+	if source.URL == "" {
+		return "", fmt.Errorf("credential URL is empty")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", source.URL, nil)
+	if err != nil {
+		return "", fmt.Errorf("creating credential request: %w", err)
+	}
+
+	// Add IMDSv2 session token if available
+	if sessionToken != "" {
+		req.Header.Set("X-aws-ec2-metadata-token", sessionToken)
+	}
+
+	// Add custom headers
+	for key, value := range source.Headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("fetching AWS credentials: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("AWS metadata service returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("reading credentials response: %w", err)
+	}
+
+	// Parse response based on format
+	token, err := p.parseCredentialResponse(body, source.Format)
+	if err != nil {
+		return "", fmt.Errorf("parsing AWS credentials: %w", err)
+	}
+
+	p.logger.Debug("Successfully retrieved AWS token")
+	return token, nil
+}
+
+// getAzureToken retrieves token from Azure metadata service
+func (p *AuthProvider) getAzureToken(ctx context.Context, source CredentialSource) (string, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	if source.URL == "" {
+		return "", fmt.Errorf("credential URL is empty")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", source.URL, nil)
+	if err != nil {
+		return "", fmt.Errorf("creating credential request: %w", err)
+	}
+
+	// Azure requires Metadata: true header
+	req.Header.Set("Metadata", "true")
+
+	// Add custom headers
+	for key, value := range source.Headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("fetching Azure credentials: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("Azure metadata service returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("reading credentials response: %w", err)
+	}
+
+	// Parse response based on format
+	token, err := p.parseCredentialResponse(body, source.Format)
+	if err != nil {
+		return "", fmt.Errorf("parsing Azure credentials: %w", err)
+	}
+
+	p.logger.Debug("Successfully retrieved Azure token")
+	return token, nil
+}
+
+// parseCredentialResponse parses credential response based on format
+func (p *AuthProvider) parseCredentialResponse(data []byte, format *CredentialFormat) (string, error) {
+	if format == nil {
+		// Default: assume the entire response is the token
+		return string(data), nil
+	}
+
+	switch format.Type {
+	case "json":
+		// Parse JSON and extract field
+		var result map[string]interface{}
+		if err := json.Unmarshal(data, &result); err != nil {
+			return "", fmt.Errorf("parsing JSON response: %w", err)
+		}
+
+		fieldName := format.SubjectTokenFieldName
+		if fieldName == "" {
+			fieldName = "access_token" // Default field name
+		}
+
+		token, ok := result[fieldName]
+		if !ok {
+			return "", fmt.Errorf("field %s not found in response", fieldName)
+		}
+
+		tokenStr, ok := token.(string)
+		if !ok {
+			return "", fmt.Errorf("field %s is not a string", fieldName)
+		}
+
+		return tokenStr, nil
+
+	case "text":
+		// Return as plain text
+		return string(data), nil
+
+	default:
+		return "", fmt.Errorf("unsupported format type: %s", format.Type)
+	}
 }
 
 // initializeOIDC initializes OIDC authentication
@@ -633,7 +902,7 @@ func (o *OIDCProvider) fetchJWKS(ctx context.Context) error {
 
 // createTokenSource creates an OAuth2 token source for OIDC
 func (o *OIDCProvider) createTokenSource(ctx context.Context) (oauth2.TokenSource, error) {
-	config := &oauth2.Config{
+	_ = &oauth2.Config{ // config unused
 		ClientID:     o.clientID,
 		ClientSecret: o.clientSecret,
 		Endpoint: oauth2.Endpoint{
