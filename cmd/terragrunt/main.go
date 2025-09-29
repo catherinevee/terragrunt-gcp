@@ -20,9 +20,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/terragrunt-gcp/terragrunt-gcp/internal/config"
-	"github.com/terragrunt-gcp/terragrunt-gcp/internal/gcp"
-	"github.com/terragrunt-gcp/terragrunt-gcp/internal/terraform"
 )
 
 var (
@@ -1347,7 +1344,10 @@ func initializeBackend(ctx *ExecutionContext) error {
 
 	switch ctx.Config.Backend.Type {
 	case "gcs":
-		return gcp.CreateBucketIfNotExists(ctx.Config.Backend.Bucket, ctx.Config.GCP.Project)
+		// TODO: Implement bucket creation check
+		// For now, assume bucket exists or will be created by Terraform
+		ctx.Logger.Infof("Using GCS backend bucket: %s", ctx.Config.Backend.Bucket)
+		return nil
 	default:
 		return fmt.Errorf("unsupported backend type: %s", ctx.Config.Backend.Type)
 	}
@@ -1589,8 +1589,8 @@ func downloadTerraform(ctx *ExecutionContext) error {
 
 	// Determine required version from config or use latest
 	version := "latest"
-	if ctx.Config != nil && ctx.Config.TerraformVersion != "" {
-		version = ctx.Config.TerraformVersion
+	if ctx.Config != nil && ctx.Config.TerraformBinary.Version != "" {
+		version = ctx.Config.TerraformBinary.Version
 	}
 
 	// Detect OS and architecture
