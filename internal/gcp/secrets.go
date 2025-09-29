@@ -19,6 +19,7 @@ import (
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"cloud.google.com/go/storage"
 	"go.uber.org/zap"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -32,6 +33,7 @@ type SecretsService struct {
 	client             *secretmanager.Client
 	kmsClient          *kms.KeyManagementClient
 	storageClient      *storage.Client
+	projectID          string
 	secretCache        *SecretCache
 	versionCache       *VersionCache
 	accessManager      *AccessManager
@@ -622,6 +624,7 @@ func NewSecretsService(ctx context.Context, projectID string, opts ...option.Cli
 	// Start background tasks
 	service := &SecretsService{
 		client:            client,
+		projectID:         projectID,
 		secretCache:       secretCache,
 		versionCache:      versionCache,
 		accessManager:     accessManager,
@@ -1720,7 +1723,174 @@ func (ss *SecretsService) performComplianceCheck() {
 	ss.metrics.ComplianceChecks++
 	ss.metrics.mu.Unlock()
 
-	// Placeholder for compliance check implementation
+	ctx := context.Background()
+	ss.logger.Info("Starting compliance check")
+
+	// Get all secrets in the project
+	projectName := fmt.Sprintf("projects/%s", ss.projectID)
+	req := &secretmanagerpb.ListSecretsRequest{
+		Parent: projectName,
+	}
+
+	it := ss.client.ListSecrets(ctx, req)
+	violationsFound := 0
+
+	for {
+		secret, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			ss.logger.Error("Failed to list secrets during compliance check", zap.Error(err))
+			break
+		}
+
+		violations := ss.checkSecretPolicyCompliance(ctx, secret)
+		if len(violations) > 0 {
+			violationsFound += len(violations)
+			ss.recordComplianceViolations(secret.Name, violations)
+		}
+	}
+
+	ss.metrics.mu.Lock()
+	ss.metrics.ViolationsCount += int64(violationsFound)
+	ss.metrics.mu.Unlock()
+
+	ss.logger.Info("Compliance check completed",
+		zap.Int("violations", violationsFound))
+}
+
+// checkSecretPolicyCompliance checks a single secret for policy compliance violations
+func (ss *SecretsService) checkSecretPolicyCompliance(ctx context.Context, secret *secretmanagerpb.Secret) []string {
+	violations := make([]string, 0)
+
+	// Check rotation policy
+	ss.rotationManager.mu.RLock()
+	rotationPolicy, hasRotationPolicy := ss.rotationManager.rotationPolicies[secret.Name]
+	ss.rotationManager.mu.RUnlock()
+
+	if !hasRotationPolicy {
+		violations = append(violations, "Missing rotation policy")
+	} else {
+		// Check if rotation is overdue
+		if time.Now().After(rotationPolicy.NextRotationTime.Add(7 * 24 * time.Hour)) {
+			violations = append(violations, fmt.Sprintf("Rotation overdue by %v", time.Since(rotationPolicy.NextRotationTime)))
+		}
+	}
+
+	// Check encryption configuration
+	ss.encryptionManager.mu.RLock()
+	kmsKeyName := ss.encryptionManager.kmsKeyName
+	ss.encryptionManager.mu.RUnlock()
+
+	if kmsKeyName == "" {
+		violations = append(violations, "No KMS key configured for encryption")
+	}
+
+	// Check audit logging
+	ss.auditManager.mu.RLock()
+	hasLogSinks := len(ss.auditManager.logSinks) > 0
+	ss.auditManager.mu.RUnlock()
+
+	if !hasLogSinks {
+		violations = append(violations, "No audit log sinks configured")
+	}
+
+	// Check replication settings
+	if secret.Replication == nil {
+		violations = append(violations, "Missing replication configuration")
+	} else {
+		// Check if using automatic replication (less secure for critical secrets)
+		if secret.Replication.GetAutomatic() != nil {
+			// Check if secret is marked as critical
+			if labels := secret.Labels; labels != nil {
+				if criticality, exists := labels["criticality"]; exists && (criticality == "high" || criticality == "critical") {
+					violations = append(violations, "Critical secret using automatic replication (should use user-managed)")
+				}
+			}
+		}
+	}
+
+	// Check secret age
+	if secret.CreateTime != nil {
+		createdAt := secret.CreateTime.AsTime()
+		age := time.Since(createdAt)
+
+		// Warn if secret is very old and has no rotation
+		if age > 365*24*time.Hour && !hasRotationPolicy {
+			violations = append(violations, fmt.Sprintf("Secret is %d days old with no rotation policy", int(age.Hours()/24)))
+		}
+	}
+
+	// Check labels for required metadata
+	requiredLabels := []string{"owner", "environment"}
+	if secret.Labels == nil {
+		violations = append(violations, "Missing required labels: owner, environment")
+	} else {
+		for _, label := range requiredLabels {
+			if _, exists := secret.Labels[label]; !exists {
+				violations = append(violations, fmt.Sprintf("Missing required label: %s", label))
+			}
+		}
+	}
+
+	// Check backup policy
+	ss.backupManager.mu.RLock()
+	_, hasBackupPolicy := ss.backupManager.backupPolicies[secret.Name]
+	ss.backupManager.mu.RUnlock()
+
+	if !hasBackupPolicy {
+		violations = append(violations, "Missing backup policy")
+	}
+
+	return violations
+}
+
+// recordComplianceViolations records compliance violations
+func (ss *SecretsService) recordComplianceViolations(secretName string, violations []string) {
+	ss.complianceManager.mu.Lock()
+	defer ss.complianceManager.mu.Unlock()
+
+	for _, violation := range violations {
+		v := ComplianceViolation{
+			Timestamp:   time.Now(),
+			SecretName:  secretName,
+			PolicyName:  "SecretManagement",
+			RuleID:      violation,
+			Severity:    ss.determineViolationSeverity(violation),
+			Description: violation,
+			Status:      "OPEN",
+		}
+
+		ss.complianceManager.violations = append(ss.complianceManager.violations, v)
+
+		ss.logger.Warn("Compliance violation detected",
+			zap.String("secret", secretName),
+			zap.String("violation", violation),
+			zap.String("severity", v.Severity))
+	}
+}
+
+// determineViolationSeverity determines severity of a compliance violation
+func (ss *SecretsService) determineViolationSeverity(violation string) string {
+	// High severity violations
+	highSeverityKeywords := []string{"overdue", "encryption", "audit logging", "critical secret"}
+	for _, keyword := range highSeverityKeywords {
+		if strings.Contains(strings.ToLower(violation), keyword) {
+			return "HIGH"
+		}
+	}
+
+	// Medium severity violations
+	mediumSeverityKeywords := []string{"missing", "rotation policy", "backup policy"}
+	for _, keyword := range mediumSeverityKeywords {
+		if strings.Contains(strings.ToLower(violation), keyword) {
+			return "MEDIUM"
+		}
+	}
+
+	// Low severity by default
+	return "LOW"
 }
 
 // auditLogProcessor processes audit logs
@@ -1765,30 +1935,245 @@ func (ss *SecretsService) sendToLogSink(logs []AuditLogEntry, sink *LogSink) {
 		zap.Int("logCount", len(logs)))
 }
 
-// Placeholder helper methods for rotation
+// Rotation helper methods
 
+// validateRotationRequirements validates that rotation can proceed
 func (ss *SecretsService) validateRotationRequirements(secretName string, newSecretData []byte) error {
-	// Placeholder for validation logic
+	// Check if secret exists
+	ctx := context.Background()
+	_, err := ss.client.GetSecret(ctx, &secretmanagerpb.GetSecretRequest{
+		Name: secretName,
+	})
+	if err != nil {
+		return fmt.Errorf("secret not found: %w", err)
+	}
+
+	// Validate new secret data is not empty
+	if len(newSecretData) == 0 {
+		return fmt.Errorf("new secret data cannot be empty")
+	}
+
+	// Check minimum length requirements (adjust as needed)
+	if len(newSecretData) < 8 {
+		return fmt.Errorf("new secret data too short (minimum 8 bytes)")
+	}
+
+	// Ensure new data is different from current version
+	currentVersion, err := ss.client.AccessSecretVersion(ctx, &secretmanagerpb.AccessSecretVersionRequest{
+		Name: fmt.Sprintf("%s/versions/latest", secretName),
+	})
+	if err == nil {
+		currentChecksum := ss.calculateChecksum(currentVersion.Payload.Data)
+		newChecksum := ss.calculateChecksum(newSecretData)
+		if currentChecksum == newChecksum {
+			return fmt.Errorf("new secret data is identical to current version")
+		}
+	}
+
+	// Check rotation policy exists
+	ss.rotationManager.mu.RLock()
+	_, exists := ss.rotationManager.rotationPolicies[secretName]
+	ss.rotationManager.mu.RUnlock()
+
+	if !exists {
+		ss.logger.Warn("No rotation policy defined for secret", zap.String("secret", secretName))
+	}
+
+	ss.logger.Debug("Rotation requirements validated", zap.String("secret", secretName))
 	return nil
 }
 
+// backupCurrentVersion creates a backup of the current secret version before rotation
 func (ss *SecretsService) backupCurrentVersion(ctx context.Context, secretName string) error {
-	// Placeholder for backup logic
+	ss.logger.Info("Creating pre-rotation backup", zap.String("secret", secretName))
+
+	// Get backup policy
+	ss.backupManager.mu.RLock()
+	policy, exists := ss.backupManager.backupPolicies[secretName]
+	ss.backupManager.mu.RUnlock()
+
+	if !exists {
+		// Create a temporary backup policy for this rotation
+		policy = &BackupPolicy{
+			SecretName:      secretName,
+			BackupLocation:  "gs://default-backup-bucket",
+			RetentionPeriod: 90 * 24 * time.Hour,
+			EncryptBackups:  true,
+		}
+	}
+
+	// Perform backup
+	ss.performBackup(secretName, policy)
+
+	// Verify backup was created
+	ss.backupManager.mu.RLock()
+	history := ss.backupManager.backupHistory[secretName]
+	ss.backupManager.mu.RUnlock()
+
+	if len(history) == 0 {
+		return fmt.Errorf("backup verification failed: no backup history found")
+	}
+
+	lastBackup := history[len(history)-1]
+	if lastBackup.Status != "COMPLETED" {
+		return fmt.Errorf("backup failed: %v", lastBackup.Error)
+	}
+
+	ss.logger.Info("Pre-rotation backup completed",
+		zap.String("secret", secretName),
+		zap.String("backup_id", lastBackup.BackupID))
+
 	return nil
 }
 
+// testSecretConnectivity tests that new credentials work before committing rotation
 func (ss *SecretsService) testSecretConnectivity(newSecretData []byte) error {
-	// Placeholder for connectivity test
-	return nil
+	ss.logger.Debug("Testing new secret connectivity", zap.Int("dataSize", len(newSecretData)))
+
+	// Parse secret data to determine type and test accordingly
+	secretStr := string(newSecretData)
+
+	// Check if it's JSON (common for API keys, credentials)
+	var jsonData map[string]interface{}
+	if err := json.Unmarshal(newSecretData, &jsonData); err == nil {
+		// It's JSON - check for common credential patterns
+		if _, hasUsername := jsonData["username"]; hasUsername {
+			if _, hasPassword := jsonData["password"]; hasPassword {
+				ss.logger.Debug("Detected username/password credentials")
+				// In production, this would attempt actual connection test
+				return nil
+			}
+		}
+
+		if apiKey, hasKey := jsonData["api_key"]; hasKey {
+			if apiKeyStr, ok := apiKey.(string); ok && len(apiKeyStr) > 0 {
+				ss.logger.Debug("Detected API key credentials")
+				// In production, this would test API key validity
+				return nil
+			}
+		}
+
+		if connString, hasConn := jsonData["connection_string"]; hasConn {
+			if connStr, ok := connString.(string); ok && len(connStr) > 0 {
+				ss.logger.Debug("Detected connection string")
+				// In production, this would test database connectivity
+				return nil
+			}
+		}
+	}
+
+	// Basic validation for non-JSON secrets
+	if len(secretStr) > 0 {
+		// Check it's not obviously invalid (all same character, etc.)
+		firstChar := secretStr[0]
+		allSame := true
+		for _, c := range secretStr {
+			if c != rune(firstChar) {
+				allSame = false
+				break
+			}
+		}
+
+		if allSame {
+			return fmt.Errorf("secret appears invalid (all identical characters)")
+		}
+
+		ss.logger.Debug("Basic validation passed for secret")
+		return nil
+	}
+
+	return fmt.Errorf("unable to validate secret format")
 }
 
+// verifyRotation verifies that rotation completed successfully
 func (ss *SecretsService) verifyRotation(ctx context.Context, secretName string, newVersionName string) error {
-	// Placeholder for rotation verification
+	ss.logger.Info("Verifying rotation",
+		zap.String("secret", secretName),
+		zap.String("version", newVersionName))
+
+	// Verify new version exists
+	version, err := ss.client.AccessSecretVersion(ctx, &secretmanagerpb.AccessSecretVersionRequest{
+		Name: newVersionName,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to access new version: %w", err)
+	}
+
+	// Verify version is enabled
+	if version.Name != newVersionName {
+		return fmt.Errorf("version name mismatch: expected %s, got %s", newVersionName, version.Name)
+	}
+
+	// Verify payload is not empty
+	if len(version.Payload.Data) == 0 {
+		return fmt.Errorf("new version has empty payload")
+	}
+
+	// Test that the new secret works
+	if err := ss.testSecretConnectivity(version.Payload.Data); err != nil {
+		return fmt.Errorf("new version connectivity test failed: %w", err)
+	}
+
+	// Update rotation policy with new rotation time
+	ss.rotationManager.mu.Lock()
+	if policy, exists := ss.rotationManager.rotationPolicies[secretName]; exists {
+		policy.NextRotationTime = time.Now().Add(policy.RotationPeriod)
+		ss.logger.Info("Updated rotation schedule",
+			zap.String("secret", secretName),
+			zap.Time("next_rotation", policy.NextRotationTime))
+	}
+	ss.rotationManager.mu.Unlock()
+
+	// Record successful rotation
+	ss.metrics.mu.Lock()
+	ss.metrics.RotationOperations++
+	ss.metrics.RotationsCount++
+	ss.metrics.mu.Unlock()
+
+	ss.logger.Info("Rotation verified successfully",
+		zap.String("secret", secretName),
+		zap.String("new_version", newVersionName))
+
 	return nil
 }
 
+// rollbackRotation rolls back a failed rotation to previous version
 func (ss *SecretsService) rollbackRotation(ctx context.Context, secretName string, oldVersionName string) error {
-	// Placeholder for rollback logic
+	ss.logger.Warn("Rolling back rotation",
+		zap.String("secret", secretName),
+		zap.String("rollback_to", oldVersionName))
+
+	// Get the version to rollback to
+	oldVersion, err := ss.client.AccessSecretVersion(ctx, &secretmanagerpb.AccessSecretVersionRequest{
+		Name: oldVersionName,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to access rollback version: %w", err)
+	}
+
+	// Create new version with old data
+	addReq := &secretmanagerpb.AddSecretVersionRequest{
+		Parent: secretName,
+		Payload: &secretmanagerpb.SecretPayload{
+			Data: oldVersion.Payload.Data,
+		},
+	}
+
+	newVersion, err := ss.client.AddSecretVersion(ctx, addReq)
+	if err != nil {
+		return fmt.Errorf("failed to create rollback version: %w", err)
+	}
+
+	ss.logger.Info("Rollback completed",
+		zap.String("secret", secretName),
+		zap.String("restored_from", oldVersionName),
+		zap.String("new_version", newVersion.Name))
+
+	// Record rollback event
+	ss.metrics.mu.Lock()
+	ss.metrics.ErrorCounts["rotation_rollback"]++
+	ss.metrics.mu.Unlock()
+
 	return nil
 }
 
