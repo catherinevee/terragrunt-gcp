@@ -1,0 +1,59 @@
+# Gitleaks configuration for terragrunt-gcp
+# https://github.com/gitleaks/gitleaks
+
+title = "Gitleaks Configuration for terragrunt-gcp"
+
+[extend]
+useDefault = true
+
+# Additional custom rules for GCP-specific secrets
+[[rules]]
+id = "gcp-service-account-key"
+description = "GCP Service Account Private Key"
+regex = '''-----BEGIN PRIVATE KEY-----'''
+tags = ["gcp", "credentials"]
+
+[[rules]]
+id = "gcp-api-key"
+description = "GCP API Key"
+regex = '''AIza[0-9A-Za-z\-_]{35}'''
+tags = ["gcp", "api-key"]
+
+[[rules]]
+id = "gcp-oauth-token"
+description = "GCP OAuth Access Token"
+regex = '''ya29\.[0-9A-Za-z\-_]+'''
+tags = ["gcp", "oauth"]
+
+[[rules]]
+id = "terraform-cloud-token"
+description = "Terraform Cloud API Token"
+regex = '''[a-zA-Z0-9]{14}\.atlasv1\.[a-zA-Z0-9\-_]{60,}'''
+tags = ["terraform", "token"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey)['":\s]+[0-9a-zA-Z\-_]{20,}'''
+tags = ["api-key"]
+
+# Allowlist specific files or paths
+[allowlist]
+description = "Allowlist for known false positives"
+paths = [
+  '''\.git/''',
+  '''node_modules/''',
+  '''vendor/''',
+  '''\.terraform/''',
+  '''\.terragrunt-cache/''',
+]
+
+regexes = [
+  '''EXAMPLE|example|test|TEST|demo|DEMO|placeholder|PLACEHOLDER''',
+  '''# gitleaks:allow''',
+]
+
+# Stop scanning at specific commits
+stopwords = [
+  "stopword",
+]
