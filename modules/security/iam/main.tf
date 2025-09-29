@@ -75,7 +75,7 @@ resource "google_iam_workload_identity_pool_provider" "workload_identity_pool_pr
   project                            = var.project_id
 
   oidc {
-    issuer_uri = var.oidc_issuer_uri
+    issuer_uri        = var.oidc_issuer_uri
     allowed_audiences = var.oidc_allowed_audiences
   }
 }

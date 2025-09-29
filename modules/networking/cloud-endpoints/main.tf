@@ -19,9 +19,9 @@ terraform {
 locals {
   # API configuration defaults
   api_defaults = {
-    api_version           = "v1"
-    display_name         = ""
-    management_features  = ["LOGGING", "MONITORING", "TRACING"]
+    api_version         = "v1"
+    display_name        = ""
+    management_features = ["LOGGING", "MONITORING", "TRACING"]
     quota_limits        = {}
     authentication      = {}
     backend_rules       = []
@@ -48,10 +48,10 @@ locals {
         config.openapi_spec_path,
         merge(
           {
-            project_id    = var.project_id
-            service_name  = "${name}.endpoints.${var.project_id}.cloud.goog"
-            backend_url   = config.backend_url
-            api_version   = coalesce(config.api_version, "v1")
+            project_id   = var.project_id
+            service_name = "${name}.endpoints.${var.project_id}.cloud.goog"
+            backend_url  = config.backend_url
+            api_version  = coalesce(config.api_version, "v1")
           },
           config.template_variables
         )
@@ -64,30 +64,30 @@ locals {
     for name, config in var.grpc_services : name => {
       service_name = "${name}.endpoints.${var.project_id}.cloud.goog"
       service_config = {
-        type = "grpc"
-        backend_address = config.backend_address
-        backend_port = config.backend_port
+        type                = "grpc"
+        backend_address     = config.backend_address
+        backend_port        = config.backend_port
         transcoding_enabled = config.enable_transcoding
-        proto_descriptors = config.proto_descriptor_path != null ? filebase64(config.proto_descriptor_path) : null
+        proto_descriptors   = config.proto_descriptor_path != null ? filebase64(config.proto_descriptor_path) : null
       }
     }
   }
 
   # Service perimeter for VPC Service Controls
   service_perimeter = var.enable_vpc_service_controls ? {
-    resources = [for name, _ in local.managed_services : "projects/${var.project_id}/services/${name}.endpoints.${var.project_id}.cloud.goog"]
+    resources           = [for name, _ in local.managed_services : "projects/${var.project_id}/services/${name}.endpoints.${var.project_id}.cloud.goog"]
     restricted_services = ["servicemanagement.googleapis.com", "servicecontrol.googleapis.com", "endpoints.googleapis.com"]
-    access_levels = var.vpc_access_levels
+    access_levels       = var.vpc_access_levels
   } : null
 
   # API Gateway configurations
   api_gateways = var.enable_api_gateway ? {
     for name, config in var.api_gateway_configs : name => {
-      api_id = "${name}-api"
-      gateway_id = "${name}-gateway"
-      region = config.region
+      api_id       = "${name}-api"
+      gateway_id   = "${name}-gateway"
+      region       = config.region
       display_name = coalesce(config.display_name, "${title(name)} API Gateway")
-      labels = merge(var.labels, config.labels)
+      labels       = merge(var.labels, config.labels)
     }
   } : {}
 
@@ -101,7 +101,7 @@ locals {
       "serviceruntime.googleapis.com/quota/exceeded"
     ]
     notification_channels = var.notification_channels
-    alert_policies = var.alert_policies
+    alert_policies        = var.alert_policies
   } : null
 }
 
@@ -118,7 +118,7 @@ resource "google_project_service" "endpoints_apis" {
 
   project                    = var.project_id
   service                    = each.value
-  disable_on_destroy        = false
+  disable_on_destroy         = false
   disable_dependent_services = false
 }
 
@@ -179,9 +179,9 @@ resource "google_endpoints_service" "grpc_services" {
     usage = var.enable_quota ? {
       rules = [
         for quota_name, quota_config in var.quota_configs : {
-          selector = quota_config.selector
+          selector                 = quota_config.selector
           allow_unregistered_calls = quota_config.allow_unregistered
-          skip_service_control = quota_config.skip_control
+          skip_service_control     = quota_config.skip_control
         }
       ]
     } : null
@@ -189,12 +189,12 @@ resource "google_endpoints_service" "grpc_services" {
     monitoring = var.enable_monitoring ? {
       producer_destinations = [{
         monitored_resource = "api"
-        metrics = local.monitoring_config.metrics
+        metrics            = local.monitoring_config.metrics
       }]
 
       consumer_destinations = [{
         monitored_resource = "api"
-        metrics = local.monitoring_config.metrics
+        metrics            = local.monitoring_config.metrics
       }]
     } : null
 

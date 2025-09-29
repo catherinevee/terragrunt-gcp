@@ -171,7 +171,7 @@ variable "retention_policy" {
   description = "Retention policy configuration"
   type = object({
     retention_period = number
-    is_locked       = optional(bool)
+    is_locked        = optional(bool)
   })
   default = null
 }
@@ -265,8 +265,8 @@ variable "iam_binding_conditions" {
 variable "iam_members" {
   description = "Individual IAM member bindings"
   type = map(object({
-    role      = string
-    member    = string
+    role   = string
+    member = string
     condition = optional(object({
       title       = string
       description = optional(string)
@@ -305,16 +305,16 @@ variable "default_acl" {
 variable "objects" {
   description = "Map of objects to create in the bucket"
   type = map(object({
-    source               = optional(string)
-    content              = optional(string)
-    content_type         = optional(string)
-    storage_class        = optional(string)
-    cache_control        = optional(string)
-    content_disposition  = optional(string)
-    content_encoding     = optional(string)
-    content_language     = optional(string)
-    event_based_hold     = optional(bool)
-    temporary_hold       = optional(bool)
+    source              = optional(string)
+    content             = optional(string)
+    content_type        = optional(string)
+    storage_class       = optional(string)
+    cache_control       = optional(string)
+    content_disposition = optional(string)
+    content_encoding    = optional(string)
+    content_language    = optional(string)
+    event_based_hold    = optional(bool)
+    temporary_hold      = optional(bool)
     kms_key_name        = optional(string)
     metadata            = optional(map(string))
   }))

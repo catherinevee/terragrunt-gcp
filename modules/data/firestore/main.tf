@@ -29,13 +29,13 @@ locals {
 
   # Database configuration with defaults
   database_config = merge({
-    name                        = "${local.name_prefix}-${local.environment}"
-    location_id                = var.region
-    type                       = "FIRESTORE_NATIVE"
-    concurrency_mode           = "OPTIMISTIC"
-    app_engine_integration_mode = "DISABLED"
+    name                              = "${local.name_prefix}-${local.environment}"
+    location_id                       = var.region
+    type                              = "FIRESTORE_NATIVE"
+    concurrency_mode                  = "OPTIMISTIC"
+    app_engine_integration_mode       = "DISABLED"
     point_in_time_recovery_enablement = "POINT_IN_TIME_RECOVERY_ENABLED"
-    delete_protection_state    = "DELETE_PROTECTION_ENABLED"
+    delete_protection_state           = "DELETE_PROTECTION_ENABLED"
   }, var.database_config)
 
   # Security rules configuration
@@ -71,13 +71,13 @@ locals {
   # Index configurations with validation
   validated_indexes = [
     for idx in var.indexes : merge({
-      collection = idx.collection
+      collection  = idx.collection
       query_scope = "COLLECTION"
       api_scope   = "ANY_API"
       fields = [
         for field in idx.fields : merge({
-          field_path = field.field_path
-          order      = "ASCENDING"
+          field_path   = field.field_path
+          order        = "ASCENDING"
           array_config = null
         }, field)
       ]
@@ -104,13 +104,13 @@ resource "google_firestore_database" "database" {
   provider = google-beta
 
   project                           = var.project_id
-  name                             = local.database_config.name
-  location_id                      = local.database_config.location_id
-  type                             = local.database_config.type
-  concurrency_mode                 = local.database_config.concurrency_mode
-  app_engine_integration_mode      = local.database_config.app_engine_integration_mode
+  name                              = local.database_config.name
+  location_id                       = local.database_config.location_id
+  type                              = local.database_config.type
+  concurrency_mode                  = local.database_config.concurrency_mode
+  app_engine_integration_mode       = local.database_config.app_engine_integration_mode
   point_in_time_recovery_enablement = local.database_config.point_in_time_recovery_enablement
-  delete_protection_state          = local.database_config.delete_protection_state
+  delete_protection_state           = local.database_config.delete_protection_state
 
   depends_on = [
     google_project_service.firestore_api
@@ -123,7 +123,7 @@ resource "google_project_service" "firestore_api" {
   service = "firestore.googleapis.com"
 
   disable_dependent_services = false
-  disable_on_destroy        = false
+  disable_on_destroy         = false
 }
 
 # Service account for Firestore operations
@@ -273,9 +273,9 @@ resource "google_monitoring_alert_policy" "firestore_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -329,7 +329,7 @@ resource "google_monitoring_alert_policy" "firestore_alerts" {
 resource "google_monitoring_dashboard" "firestore" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Firestore - ${title(local.environment)}"
     mosaicLayout = {
@@ -455,9 +455,9 @@ resource "google_logging_metric" "firestore_metrics" {
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
     content {
-      metric_kind = each.value.metric_descriptor.metric_kind
-      value_type  = each.value.metric_descriptor.value_type
-      unit        = each.value.metric_descriptor.unit
+      metric_kind  = each.value.metric_descriptor.metric_kind
+      value_type   = each.value.metric_descriptor.value_type
+      unit         = each.value.metric_descriptor.unit
       display_name = each.value.metric_descriptor.display_name
 
       dynamic "labels" {
@@ -504,8 +504,8 @@ resource "google_bigquery_dataset" "firestore_export" {
   location   = var.bigquery_export_location
 
   description                     = "BigQuery dataset for Firestore exports"
-  default_table_expiration_ms    = var.bigquery_table_expiration_ms
-  delete_contents_on_destroy     = false
+  default_table_expiration_ms     = var.bigquery_table_expiration_ms
+  delete_contents_on_destroy      = false
   default_partition_expiration_ms = var.bigquery_partition_expiration_ms
 
   labels = local.default_labels
@@ -513,10 +513,10 @@ resource "google_bigquery_dataset" "firestore_export" {
   dynamic "access" {
     for_each = var.bigquery_access_config
     content {
-      role          = access.value.role
-      user_by_email = access.value.user_by_email
+      role           = access.value.role
+      user_by_email  = access.value.user_by_email
       group_by_email = access.value.group_by_email
-      special_group = access.value.special_group
+      special_group  = access.value.special_group
     }
   }
 }
@@ -529,8 +529,8 @@ resource "google_cloudfunctions_function" "data_processor" {
   region  = var.region
   name    = "${local.name_prefix}-${each.key}-processor-${local.environment}"
 
-  runtime     = each.value.runtime
-  entry_point = each.value.entry_point
+  runtime               = each.value.runtime
+  entry_point           = each.value.entry_point
   source_archive_bucket = each.value.source_bucket
   source_archive_object = each.value.source_object
 
@@ -548,7 +548,7 @@ resource "google_cloudfunctions_function" "data_processor" {
   )
 
   available_memory_mb = each.value.memory_mb
-  timeout            = each.value.timeout_seconds
+  timeout             = each.value.timeout_seconds
 
   labels = merge(local.default_labels, each.value.labels != null ? each.value.labels : {})
 

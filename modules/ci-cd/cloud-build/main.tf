@@ -137,7 +137,7 @@ resource "google_sourcerepo_repository" "repositories" {
 
     content {
       topic                 = pubsub_configs.value.topic
-      message_format       = pubsub_configs.value.message_format
+      message_format        = pubsub_configs.value.message_format
       service_account_email = pubsub_configs.value.service_account_email
     }
   }
@@ -167,7 +167,7 @@ resource "google_cloudbuild_trigger" "build_triggers" {
 
         content {
           branch       = push.value.branch
-          tag         = push.value.tag
+          tag          = push.value.tag
           invert_regex = push.value.invert_regex
         }
       }
@@ -195,7 +195,7 @@ resource "google_cloudbuild_trigger" "build_triggers" {
 
         content {
           branch       = push.value.branch
-          tag         = push.value.tag
+          tag          = push.value.tag
           invert_regex = push.value.invert_regex
         }
       }
@@ -234,28 +234,28 @@ resource "google_cloudbuild_trigger" "build_triggers" {
     for_each = each.value.build != null ? [each.value.build] : []
 
     content {
-      images       = build.value.images
-      tags         = build.value.tags
-      timeout      = build.value.timeout
-      queue_ttl    = build.value.queue_ttl
-      logs_bucket  = build.value.logs_bucket
+      images      = build.value.images
+      tags        = build.value.tags
+      timeout     = build.value.timeout
+      queue_ttl   = build.value.queue_ttl
+      logs_bucket = build.value.logs_bucket
 
       dynamic "step" {
         for_each = build.value.steps != null ? build.value.steps : []
 
         content {
-          name         = step.value.name
-          args         = step.value.args
-          env          = step.value.env
-          id           = step.value.id
-          entrypoint   = step.value.entrypoint
-          dir          = step.value.dir
-          secret_env   = step.value.secret_env
-          timeout      = step.value.timeout
-          timing       = step.value.timing
-          wait_for     = step.value.wait_for
-          script       = step.value.script
-          allow_failure = step.value.allow_failure
+          name             = step.value.name
+          args             = step.value.args
+          env              = step.value.env
+          id               = step.value.id
+          entrypoint       = step.value.entrypoint
+          dir              = step.value.dir
+          secret_env       = step.value.secret_env
+          timeout          = step.value.timeout
+          timing           = step.value.timing
+          wait_for         = step.value.wait_for
+          script           = step.value.script
+          allow_failure    = step.value.allow_failure
           allow_exit_codes = step.value.allow_exit_codes
 
           dynamic "volumes" {
@@ -277,8 +277,8 @@ resource "google_cloudbuild_trigger" "build_triggers" {
             for_each = source.value.storage_source != null ? [source.value.storage_source] : []
 
             content {
-              bucket = storage_source.value.bucket
-              object = storage_source.value.object
+              bucket     = storage_source.value.bucket
+              object     = storage_source.value.object
               generation = storage_source.value.generation
             }
           }
@@ -287,13 +287,13 @@ resource "google_cloudbuild_trigger" "build_triggers" {
             for_each = source.value.repo_source != null ? [source.value.repo_source] : []
 
             content {
-              project_id   = repo_source.value.project_id
-              repo_name    = repo_source.value.repo_name
-              branch_name  = repo_source.value.branch_name
-              commit_sha   = repo_source.value.commit_sha
-              tag_name     = repo_source.value.tag_name
-              dir          = repo_source.value.dir
-              invert_regex = repo_source.value.invert_regex
+              project_id    = repo_source.value.project_id
+              repo_name     = repo_source.value.repo_name
+              branch_name   = repo_source.value.branch_name
+              commit_sha    = repo_source.value.commit_sha
+              tag_name      = repo_source.value.tag_name
+              dir           = repo_source.value.dir
+              invert_regex  = repo_source.value.invert_regex
               substitutions = repo_source.value.substitutions
             }
           }
@@ -328,7 +328,7 @@ resource "google_cloudbuild_trigger" "build_triggers" {
             for_each = artifacts.value.maven_artifacts != null ? artifacts.value.maven_artifacts : []
 
             content {
-              repository   = maven_artifacts.value.repository
+              repository  = maven_artifacts.value.repository
               path        = maven_artifacts.value.path
               artifact_id = maven_artifacts.value.artifact_id
               group_id    = maven_artifacts.value.group_id
@@ -360,17 +360,17 @@ resource "google_cloudbuild_trigger" "build_triggers" {
         for_each = build.value.options != null ? [build.value.options] : []
 
         content {
-          source_provenance_hash = options.value.source_provenance_hash
+          source_provenance_hash  = options.value.source_provenance_hash
           requested_verify_option = options.value.requested_verify_option
-          machine_type           = options.value.machine_type
-          disk_size_gb          = options.value.disk_size_gb
-          substitution_option   = options.value.substitution_option
-          dynamic_substitutions = options.value.dynamic_substitutions
-          log_streaming_option  = options.value.log_streaming_option
-          worker_pool          = options.value.worker_pool
-          logging              = options.value.logging
-          env                  = options.value.env
-          secret_env           = options.value.secret_env
+          machine_type            = options.value.machine_type
+          disk_size_gb            = options.value.disk_size_gb
+          substitution_option     = options.value.substitution_option
+          dynamic_substitutions   = options.value.dynamic_substitutions
+          log_streaming_option    = options.value.log_streaming_option
+          worker_pool             = options.value.worker_pool
+          logging                 = options.value.logging
+          env                     = options.value.env
+          secret_env              = options.value.secret_env
 
           dynamic "volumes" {
             for_each = options.value.volumes != null ? options.value.volumes : []
@@ -417,12 +417,12 @@ resource "google_cloudbuild_trigger" "build_triggers" {
     for_each = each.value.git_file_source != null ? [each.value.git_file_source] : []
 
     content {
-      path         = git_file_source.value.path
-      uri          = git_file_source.value.uri
-      repo_type    = git_file_source.value.repo_type
-      revision     = git_file_source.value.revision
+      path                     = git_file_source.value.path
+      uri                      = git_file_source.value.uri
+      repo_type                = git_file_source.value.repo_type
+      revision                 = git_file_source.value.revision
       github_enterprise_config = git_file_source.value.github_enterprise_config
-      bitbucket_server_config = git_file_source.value.bitbucket_server_config
+      bitbucket_server_config  = git_file_source.value.bitbucket_server_config
     }
   }
 
@@ -446,11 +446,11 @@ resource "google_cloudbuild_trigger" "build_triggers" {
     for_each = each.value.source_to_build != null ? [each.value.source_to_build] : []
 
     content {
-      uri        = source_to_build.value.uri
-      ref        = source_to_build.value.ref
-      repo_type  = source_to_build.value.repo_type
+      uri                      = source_to_build.value.uri
+      ref                      = source_to_build.value.ref
+      repo_type                = source_to_build.value.repo_type
       github_enterprise_config = source_to_build.value.github_enterprise_config
-      bitbucket_server_config = source_to_build.value.bitbucket_server_config
+      bitbucket_server_config  = source_to_build.value.bitbucket_server_config
     }
   }
 
@@ -469,10 +469,10 @@ resource "google_cloudbuild_trigger" "build_triggers" {
 
   include_build_logs = each.value.include_build_logs != null ? each.value.include_build_logs : "INCLUDE_BUILD_LOGS_WITH_STATUS"
 
-  substitutions = each.value.substitutions
-  ignored_files = each.value.ignored_files
+  substitutions  = each.value.substitutions
+  ignored_files  = each.value.ignored_files
   included_files = each.value.included_files
-  filter        = each.value.filter
+  filter         = each.value.filter
 
   tags = concat(
     each.value.tags != null ? each.value.tags : [],
@@ -515,7 +515,7 @@ resource "google_cloudbuild_worker_pool" "worker_pools" {
     content {
       peered_network          = network_config.value.peered_network
       peered_network_ip_range = network_config.value.peered_network_ip_range
-      egress_option          = network_config.value.egress_option
+      egress_option           = network_config.value.egress_option
     }
   }
 
@@ -554,7 +554,7 @@ resource "google_artifact_registry_repository" "registries" {
 
     content {
       allow_snapshot_overwrites = maven_config.value.allow_snapshot_overwrites
-      version_policy           = maven_config.value.version_policy
+      version_policy            = maven_config.value.version_policy
     }
   }
 
@@ -657,11 +657,11 @@ resource "google_artifact_registry_repository" "registries" {
 
         content {
           tag_state             = condition.value.tag_state
-          tag_prefixes         = condition.value.tag_prefixes
+          tag_prefixes          = condition.value.tag_prefixes
           version_name_prefixes = condition.value.version_name_prefixes
           package_name_prefixes = condition.value.package_name_prefixes
-          older_than           = condition.value.older_than
-          newer_than           = condition.value.newer_than
+          older_than            = condition.value.older_than
+          newer_than            = condition.value.newer_than
         }
       }
 
@@ -670,7 +670,7 @@ resource "google_artifact_registry_repository" "registries" {
 
         content {
           package_name_prefixes = most_recent_versions.value.package_name_prefixes
-          keep_count           = most_recent_versions.value.keep_count
+          keep_count            = most_recent_versions.value.keep_count
         }
       }
 
@@ -785,7 +785,7 @@ resource "google_monitoring_alert_policy" "build_alerts" {
 resource "google_monitoring_dashboard" "build_dashboard" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.name_prefix}-cloud-build-dashboard"
     mosaicLayout = {
@@ -940,22 +940,22 @@ resource "google_billing_budget" "build_budget" {
 
   threshold_rules {
     threshold_percent = 0.5
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 0.75
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 1.0
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 1.2
-    spend_basis      = "FORECASTED_SPEND"
+    spend_basis       = "FORECASTED_SPEND"
   }
 
   all_updates_rule {

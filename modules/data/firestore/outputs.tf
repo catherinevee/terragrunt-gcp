@@ -274,22 +274,22 @@ output "database_configuration" {
   value = {
     name                              = google_firestore_database.database.name
     location_id                       = google_firestore_database.database.location_id
-    type                             = google_firestore_database.database.type
-    concurrency_mode                 = google_firestore_database.database.concurrency_mode
-    app_engine_integration_mode      = google_firestore_database.database.app_engine_integration_mode
+    type                              = google_firestore_database.database.type
+    concurrency_mode                  = google_firestore_database.database.concurrency_mode
+    app_engine_integration_mode       = google_firestore_database.database.app_engine_integration_mode
     point_in_time_recovery_enablement = google_firestore_database.database.point_in_time_recovery_enablement
-    delete_protection_state          = google_firestore_database.database.delete_protection_state
+    delete_protection_state           = google_firestore_database.database.delete_protection_state
   }
 }
 
 output "security_configuration" {
   description = "Summary of security configuration"
   value = {
-    rules_deployed        = var.deploy_security_rules
+    rules_deployed          = var.deploy_security_rules
     service_account_created = var.create_service_account
-    ttl_policies_count    = length(var.ttl_policies)
-    iam_bindings_count    = length(var.database_iam_bindings)
-    security_config       = var.security_config
+    ttl_policies_count      = length(var.ttl_policies)
+    iam_bindings_count      = length(var.database_iam_bindings)
+    security_config         = var.security_config
   }
 }
 
@@ -310,16 +310,16 @@ output "performance_configuration" {
     realtime_updates_enabled = var.enable_realtime_updates
     offline_support_enabled  = var.enable_offline_support
     persistence_enabled      = var.enable_persistence
-    cache_size_mb           = var.cache_size_mb
-    performance_config      = var.performance_config
+    cache_size_mb            = var.cache_size_mb
+    performance_config       = var.performance_config
   }
 }
 
 output "backup_configuration" {
   description = "Summary of backup configuration"
   value = {
-    backups_enabled      = var.enable_backups
-    backup_schedules_count = var.enable_backups ? length(var.backup_schedules) : 0
+    backups_enabled         = var.enable_backups
+    backup_schedules_count  = var.enable_backups ? length(var.backup_schedules) : 0
     bigquery_export_enabled = var.enable_bigquery_export
   }
 }
@@ -360,14 +360,14 @@ output "collections_summary" {
 output "module_configuration" {
   description = "Module configuration summary"
   value = {
-    project_id                = var.project_id
-    region                   = var.region
-    environment              = local.environment
-    name_prefix              = local.name_prefix
-    database_name            = google_firestore_database.database.name
-    multi_region_enabled     = var.multi_region_config.enable_multi_region
-    compliance_configured    = var.compliance_config != null
-    development_mode         = var.development_config.enable_emulator
+    project_id            = var.project_id
+    region                = var.region
+    environment           = local.environment
+    name_prefix           = local.name_prefix
+    database_name         = google_firestore_database.database.name
+    multi_region_enabled  = var.multi_region_config.enable_multi_region
+    compliance_configured = var.compliance_config != null
+    development_mode      = var.development_config.enable_emulator
   }
 }
 
@@ -381,18 +381,18 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    databases           = 1
-    service_accounts    = var.create_service_account ? 1 : 0
-    indexes            = length(var.indexes)
-    ttl_fields         = length(var.ttl_policies)
-    backup_schedules   = var.enable_backups ? length(var.backup_schedules) : 0
-    initial_documents  = var.create_initial_documents ? length(var.initial_documents) : 0
-    data_processors    = var.create_data_processors ? length(var.data_processors) : 0
-    alert_policies     = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards         = var.create_monitoring_dashboard ? 1 : 0
-    log_metrics        = var.create_log_metrics ? length(var.log_metrics) : 0
-    iam_bindings       = length(var.database_iam_bindings)
-    bigquery_datasets  = var.enable_bigquery_export ? 1 : 0
+    databases         = 1
+    service_accounts  = var.create_service_account ? 1 : 0
+    indexes           = length(var.indexes)
+    ttl_fields        = length(var.ttl_policies)
+    backup_schedules  = var.enable_backups ? length(var.backup_schedules) : 0
+    initial_documents = var.create_initial_documents ? length(var.initial_documents) : 0
+    data_processors   = var.create_data_processors ? length(var.data_processors) : 0
+    alert_policies    = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards        = var.create_monitoring_dashboard ? 1 : 0
+    log_metrics       = var.create_log_metrics ? length(var.log_metrics) : 0
+    iam_bindings      = length(var.database_iam_bindings)
+    bigquery_datasets = var.enable_bigquery_export ? 1 : 0
   }
 }
 
@@ -400,10 +400,10 @@ output "resource_counts" {
 output "connection_info" {
   description = "Connection information for Firestore"
   value = {
-    project_id   = var.project_id
-    database_id  = google_firestore_database.database.name
-    location_id  = google_firestore_database.database.location_id
-    endpoint     = "https://firestore.googleapis.com"
+    project_id    = var.project_id
+    database_id   = google_firestore_database.database.name
+    location_id   = google_firestore_database.database.location_id
+    endpoint      = "https://firestore.googleapis.com"
     client_config = var.client_config
   }
   sensitive = false

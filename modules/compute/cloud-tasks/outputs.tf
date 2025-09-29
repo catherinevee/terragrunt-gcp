@@ -195,29 +195,29 @@ output "queue_configurations" {
     http = {
       count = length(local.http_queues)
       queues = { for k, v in local.http_queues : k => {
-        location = v.location
-        state    = v.state
-        rate_limits = v.rate_limits
+        location     = v.location
+        state        = v.state
+        rate_limits  = v.rate_limits
         retry_config = v.retry_config
-      }}
+      } }
     }
     app_engine = {
       count = length(local.app_engine_queues)
       queues = { for k, v in local.app_engine_queues : k => {
-        location = v.location
-        state    = v.state
-        rate_limits = v.rate_limits
+        location     = v.location
+        state        = v.state
+        rate_limits  = v.rate_limits
         retry_config = v.retry_config
-      }}
+      } }
     }
     pull = {
       count = length(local.pull_queues)
       queues = { for k, v in local.pull_queues : k => {
-        location = v.location
-        state    = v.state
-        rate_limits = v.rate_limits
+        location     = v.location
+        state        = v.state
+        rate_limits  = v.rate_limits
         retry_config = v.retry_config
-      }}
+      } }
     }
   }
 }
@@ -240,9 +240,9 @@ output "rate_limit_summary" {
   value = {
     for queue_name, queue_config in local.queue_configs : queue_name => {
       max_dispatches_per_second = queue_config.rate_limits.max_dispatches_per_second
-      max_burst_size           = queue_config.rate_limits.max_burst_size
+      max_burst_size            = queue_config.rate_limits.max_burst_size
       max_concurrent_dispatches = queue_config.rate_limits.max_concurrent_dispatches
-      target_type              = queue_config.target_type
+      target_type               = queue_config.target_type
     }
   }
 }
@@ -289,20 +289,20 @@ output "logging_configurations" {
 output "module_configuration" {
   description = "Module configuration summary"
   value = {
-    project_id                = var.project_id
-    region                   = var.region
-    environment              = local.environment
-    name_prefix              = local.name_prefix
-    service_account_created  = var.create_service_account
-    sample_tasks_created     = var.create_sample_tasks
-    processors_created       = var.create_task_processors
-    monitoring_enabled       = var.create_monitoring_alerts
-    dashboard_created        = var.create_monitoring_dashboard
-    log_metrics_enabled      = var.create_log_metrics
-    default_task_timeout     = var.default_task_timeout
-    max_concurrent_tasks     = var.max_concurrent_tasks
-    enable_task_retries      = var.enable_task_retries
-    default_retry_attempts   = var.default_retry_attempts
+    project_id              = var.project_id
+    region                  = var.region
+    environment             = local.environment
+    name_prefix             = local.name_prefix
+    service_account_created = var.create_service_account
+    sample_tasks_created    = var.create_sample_tasks
+    processors_created      = var.create_task_processors
+    monitoring_enabled      = var.create_monitoring_alerts
+    dashboard_created       = var.create_monitoring_dashboard
+    log_metrics_enabled     = var.create_log_metrics
+    default_task_timeout    = var.default_task_timeout
+    max_concurrent_tasks    = var.max_concurrent_tasks
+    enable_task_retries     = var.enable_task_retries
+    default_retry_attempts  = var.default_retry_attempts
   }
 }
 
@@ -334,14 +334,14 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    task_queues         = var.task_queues != null ? length(var.task_queues) : 0
-    service_accounts    = var.create_service_account ? 1 : 0
-    sample_tasks        = var.create_sample_tasks ? length(var.sample_tasks) : 0
-    task_processors     = var.create_task_processors ? length(var.task_processors) : 0
-    alert_policies      = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards          = var.create_monitoring_dashboard ? 1 : 0
-    log_metrics         = var.create_log_metrics ? length(var.log_metrics) : 0
-    iam_bindings        = length(var.queue_iam_bindings)
+    task_queues      = var.task_queues != null ? length(var.task_queues) : 0
+    service_accounts = var.create_service_account ? 1 : 0
+    sample_tasks     = var.create_sample_tasks ? length(var.sample_tasks) : 0
+    task_processors  = var.create_task_processors ? length(var.task_processors) : 0
+    alert_policies   = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards       = var.create_monitoring_dashboard ? 1 : 0
+    log_metrics      = var.create_log_metrics ? length(var.log_metrics) : 0
+    iam_bindings     = length(var.queue_iam_bindings)
   }
 }
 

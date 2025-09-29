@@ -273,11 +273,11 @@ output "log_metric_names" {
 output "nat_configuration_summary" {
   description = "Summary of NAT configuration"
   value = {
-    total_routers     = length(local.cloud_routers)
+    total_routers      = length(local.cloud_routers)
     total_nat_gateways = length(local.nat_gateways)
-    total_nat_ips     = length(local.nat_ips)
-    total_interfaces  = length(local.router_interfaces)
-    total_bgp_peers   = length(local.bgp_peers)
+    total_nat_ips      = length(local.nat_ips)
+    total_interfaces   = length(local.router_interfaces)
+    total_bgp_peers    = length(local.bgp_peers)
 
     nat_gateways_by_type = {
       auto_ip   = length([for k, v in local.nat_gateways : k if v.nat_ip_allocate_option == "AUTO_ONLY" || v.nat_ip_allocate_option == null])
@@ -299,7 +299,7 @@ output "nat_configuration_summary" {
       ])
     }
 
-    logging_enabled = length([for k, v in local.nat_gateways : k if v.enable_logging != false])
+    logging_enabled         = length([for k, v in local.nat_gateways : k if v.enable_logging != false])
     dynamic_port_allocation = length([for k, v in local.nat_gateways : k if v.enable_dynamic_port_allocation == true])
   }
 }
@@ -311,10 +311,10 @@ output "router_configuration_summary" {
     routers_with_bgp = length([for k, v in local.cloud_routers : k if v.bgp_config != null])
     routers_by_region = {
       for region in distinct([for v in local.cloud_routers : v.region]) :
-        region => length([
-          for k, v in local.cloud_routers : k
-          if v.region == region
-        ])
+      region => length([
+        for k, v in local.cloud_routers : k
+        if v.region == region
+      ])
     }
     encrypted_interconnect_routers = length([for k, v in local.cloud_routers : k if v.encrypted_interconnect_router == true])
   }
@@ -324,9 +324,9 @@ output "router_configuration_summary" {
 output "bgp_configuration_summary" {
   description = "Summary of BGP configuration"
   value = {
-    total_bgp_peers = length(local.bgp_peers)
-    bgp_peers_enabled = length([for k, v in local.bgp_peers : k if v.enable != false])
-    bgp_peers_with_bfd = length([for k, v in local.bgp_peers : k if v.bfd_config != null])
+    total_bgp_peers     = length(local.bgp_peers)
+    bgp_peers_enabled   = length([for k, v in local.bgp_peers : k if v.enable != false])
+    bgp_peers_with_bfd  = length([for k, v in local.bgp_peers : k if v.bfd_config != null])
     bgp_peers_with_ipv6 = length([for k, v in local.bgp_peers : k if v.enable_ipv6 == true])
   }
 }
@@ -335,7 +335,7 @@ output "bgp_configuration_summary" {
 output "network_configuration_summary" {
   description = "Summary of network configuration"
   value = {
-    total_custom_routes = length(var.custom_routes)
+    total_custom_routes  = length(var.custom_routes)
     total_firewall_rules = length(var.firewall_rules)
 
     firewall_rules_by_direction = {
@@ -343,7 +343,7 @@ output "network_configuration_summary" {
       egress  = length([for k, v in var.firewall_rules : k if v.direction == "EGRESS"])
     }
 
-    firewall_rules_enabled = length([for k, v in var.firewall_rules : k if v.disabled != true])
+    firewall_rules_enabled      = length([for k, v in var.firewall_rules : k if v.disabled != true])
     firewall_rules_with_logging = length([for k, v in var.firewall_rules : k if v.enable_logging != false])
   }
 }
@@ -361,10 +361,10 @@ output "ip_address_summary" {
 
     ips_by_region = {
       for region in distinct([for v in local.nat_ips : v.region != null ? v.region : var.region]) :
-        region => length([
-          for k, v in local.nat_ips : k
-          if (v.region != null ? v.region : var.region) == region
-        ])
+      region => length([
+        for k, v in local.nat_ips : k
+        if(v.region != null ? v.region : var.region) == region
+      ])
     }
   }
 }
@@ -374,9 +374,9 @@ output "port_allocation_summary" {
   description = "Summary of port allocation configuration"
   value = {
     for k, v in local.nat_gateways : k => {
-      min_ports_per_vm = v.min_ports_per_vm != null ? v.min_ports_per_vm : 64
-      max_ports_per_vm = v.max_ports_per_vm
-      dynamic_port_allocation = v.enable_dynamic_port_allocation
+      min_ports_per_vm             = v.min_ports_per_vm != null ? v.min_ports_per_vm : 64
+      max_ports_per_vm             = v.max_ports_per_vm
+      dynamic_port_allocation      = v.enable_dynamic_port_allocation
       endpoint_independent_mapping = v.enable_endpoint_independent_mapping != null ? v.enable_endpoint_independent_mapping : true
     }
   }
@@ -434,10 +434,10 @@ output "connection_info" {
 
     routers = {
       for k, v in google_compute_router.routers : k => {
-        id       = v.id
-        name     = v.name
-        network  = v.network
-        region   = v.region
+        id        = v.id
+        name      = v.name
+        network   = v.network
+        region    = v.region
         self_link = v.self_link
       }
     }
@@ -488,17 +488,17 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    cloud_routers      = length(var.cloud_routers)
-    nat_gateways       = length(var.nat_gateways)
-    nat_ip_addresses   = length(var.nat_ip_addresses)
-    router_interfaces  = length(var.router_interfaces)
-    bgp_peers          = length(var.bgp_peers)
-    custom_routes      = length(var.custom_routes)
-    firewall_rules     = length(var.firewall_rules)
-    service_accounts   = var.create_service_account ? 1 : 0
-    alert_policies     = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards         = var.create_monitoring_dashboard ? 1 : 0
-    log_sinks          = var.enable_log_export ? 1 : 0
-    log_metrics        = var.create_log_metrics ? length(var.log_metrics) : 0
+    cloud_routers     = length(var.cloud_routers)
+    nat_gateways      = length(var.nat_gateways)
+    nat_ip_addresses  = length(var.nat_ip_addresses)
+    router_interfaces = length(var.router_interfaces)
+    bgp_peers         = length(var.bgp_peers)
+    custom_routes     = length(var.custom_routes)
+    firewall_rules    = length(var.firewall_rules)
+    service_accounts  = var.create_service_account ? 1 : 0
+    alert_policies    = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards        = var.create_monitoring_dashboard ? 1 : 0
+    log_sinks         = var.enable_log_export ? 1 : 0
+    log_metrics       = var.create_log_metrics ? length(var.log_metrics) : 0
   }
 }

@@ -38,7 +38,7 @@ locals {
     },
     var.ingress == "internal" ? {
       "run.googleapis.com/ingress" = "internal"
-    } : {
+      } : {
       "run.googleapis.com/ingress" = var.ingress
     },
     var.binary_authorization ? {
@@ -56,7 +56,7 @@ locals {
         REGION       = var.region
       },
       var.environment_variables
-    ) : {
+      ) : {
       name  = k
       value = v
     }
@@ -82,21 +82,22 @@ locals {
   ]
 
   volumes = [
-    for v in var.volumes : {
-      name = v.name
-      dynamic "secret" {
-        for_each = v.secret != null ? [v.secret] : []
-        content {
-          secret_name = secret.value.secret_name
+    for v in var.volumes : merge(
+      {
+        name = v.name
+      },
+      v.secret != null ? {
+        secret = {
+          secret_name = v.secret.secret_name
           items = [
-            for item in try(secret.value.items, []) : {
+            for item in try(v.secret.items, []) : {
               key  = item.key
               path = item.path
             }
           ]
         }
-      }
-    }
+      } : {}
+    )
   ]
 }
 
@@ -115,7 +116,7 @@ resource "google_service_account_key" "service_sa_key" {
   count = var.create_service_account && var.create_service_account_key ? 1 : 0
 
   service_account_id = google_service_account.service_sa[0].name
-  key_algorithm     = "KEY_ALG_RSA_2048"
+  key_algorithm      = "KEY_ALG_RSA_2048"
 }
 
 # IAM Roles for Service Account
@@ -138,10 +139,10 @@ resource "google_cloud_run_v2_service" "service" {
   description = var.description
   labels      = local.labels
 
-  ingress                = var.ingress
-  launch_stage          = var.launch_stage
-  binary_authorization  = var.binary_authorization ? {
-    use_default         = true
+  ingress      = var.ingress
+  launch_stage = var.launch_stage
+  binary_authorization = var.binary_authorization ? {
+    use_default              = true
     breakglass_justification = var.binary_authorization_breakglass
   } : null
 
@@ -154,12 +155,12 @@ resource "google_cloud_run_v2_service" "service" {
       max_instance_count = var.max_instances
     }
 
-    service_account = local.service_account_email
-    execution_environment = var.execution_environment
-    encryption_key        = var.encryption_key
+    service_account                  = local.service_account_email
+    execution_environment            = var.execution_environment
+    encryption_key                   = var.encryption_key
     max_instance_request_concurrency = var.max_concurrency
-    timeout               = "${var.timeout}s"
-    session_affinity      = var.session_affinity
+    timeout                          = "${var.timeout}s"
+    session_affinity                 = var.session_affinity
 
     dynamic "vpc_access" {
       for_each = var.vpc_connector != null || var.vpc_network != null ? [1] : []
@@ -182,8 +183,8 @@ resource "google_cloud_run_v2_service" "service" {
       name  = var.container_name != null ? var.container_name : local.service_name
       image = var.container_image
 
-      command = var.container_command
-      args    = var.container_args
+      command     = var.container_command
+      args        = var.container_args
       working_dir = var.container_working_dir
 
       dynamic "ports" {
@@ -239,9 +240,9 @@ resource "google_cloud_run_v2_service" "service" {
         for_each = var.startup_probe != null ? [var.startup_probe] : []
         content {
           initial_delay_seconds = try(startup_probe.value.initial_delay_seconds, 0)
-          timeout_seconds      = try(startup_probe.value.timeout_seconds, 1)
-          period_seconds       = try(startup_probe.value.period_seconds, 10)
-          failure_threshold    = try(startup_probe.value.failure_threshold, 3)
+          timeout_seconds       = try(startup_probe.value.timeout_seconds, 1)
+          period_seconds        = try(startup_probe.value.period_seconds, 10)
+          failure_threshold     = try(startup_probe.value.failure_threshold, 3)
 
           dynamic "http_get" {
             for_each = try(startup_probe.value.http_get, null) != null ? [startup_probe.value.http_get] : []
@@ -279,9 +280,9 @@ resource "google_cloud_run_v2_service" "service" {
         for_each = var.liveness_probe != null ? [var.liveness_probe] : []
         content {
           initial_delay_seconds = try(liveness_probe.value.initial_delay_seconds, 0)
-          timeout_seconds      = try(liveness_probe.value.timeout_seconds, 1)
-          period_seconds       = try(liveness_probe.value.period_seconds, 10)
-          failure_threshold    = try(liveness_probe.value.failure_threshold, 3)
+          timeout_seconds       = try(liveness_probe.value.timeout_seconds, 1)
+          period_seconds        = try(liveness_probe.value.period_seconds, 10)
+          failure_threshold     = try(liveness_probe.value.failure_threshold, 3)
 
           dynamic "http_get" {
             for_each = try(liveness_probe.value.http_get, null) != null ? [liveness_probe.value.http_get] : []
@@ -453,15 +454,15 @@ resource "google_cloud_run_v2_job" "job" {
     labels      = local.labels
     annotations = local.annotations
 
-    parallelism   = var.job_parallelism
-    task_count    = var.job_task_count
-    task_timeout  = "${var.job_task_timeout}s"
+    parallelism  = var.job_parallelism
+    task_count   = var.job_task_count
+    task_timeout = "${var.job_task_timeout}s"
 
     template {
       service_account       = local.service_account_email
       execution_environment = var.execution_environment
-      encryption_key       = var.encryption_key
-      max_retries          = var.job_max_retries
+      encryption_key        = var.encryption_key
+      max_retries           = var.job_max_retries
 
       dynamic "vpc_access" {
         for_each = var.vpc_connector != null || var.vpc_network != null ? [1] : []
@@ -578,8 +579,8 @@ resource "google_cloud_scheduler_job" "job_scheduler" {
   name     = var.job_scheduler_name != null ? var.job_scheduler_name : "${var.job_name != null ? var.job_name : "${local.service_name}-job"}-scheduler"
   schedule = var.job_scheduler_schedule
 
-  description     = var.job_scheduler_description
-  time_zone      = var.job_scheduler_time_zone
+  description      = var.job_scheduler_description
+  time_zone        = var.job_scheduler_time_zone
   attempt_deadline = var.job_scheduler_attempt_deadline
 
   retry_config {
@@ -599,7 +600,7 @@ resource "google_cloud_scheduler_job" "job_scheduler" {
 
     oauth_token {
       service_account_email = local.service_account_email
-      scope                = "https://www.googleapis.com/auth/cloud-platform"
+      scope                 = "https://www.googleapis.com/auth/cloud-platform"
     }
   }
 }
@@ -665,7 +666,7 @@ resource "google_monitoring_alert_policy" "service_alerts" {
 resource "google_monitoring_dashboard" "service_dashboard" {
   count = var.deploy_service && var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.service_name} Dashboard"
     mosaicLayout = {

@@ -32,21 +32,21 @@ variable "name_prefix" {
 variable "environment_config" {
   description = "Cloud Composer environment configuration"
   type = object({
-    name                    = optional(string)
-    node_count             = optional(number)
-    machine_type           = optional(string)
-    disk_size_gb           = optional(number)
-    composer_version       = optional(string)
-    python_version         = optional(string)
-    airflow_config_overrides = optional(map(string))
-    pypi_packages          = optional(map(string))
-    env_variables          = optional(map(string))
+    name                            = optional(string)
+    node_count                      = optional(number)
+    machine_type                    = optional(string)
+    disk_size_gb                    = optional(number)
+    composer_version                = optional(string)
+    python_version                  = optional(string)
+    airflow_config_overrides        = optional(map(string))
+    pypi_packages                   = optional(map(string))
+    env_variables                   = optional(map(string))
     enable_private_ip_google_access = optional(bool)
-    enable_ip_alias        = optional(bool)
-    enable_private_endpoint = optional(bool)
-    master_ipv4_cidr_block = optional(string)
-    database_machine_type  = optional(string)
-    web_server_machine_type = optional(string)
+    enable_ip_alias                 = optional(bool)
+    enable_private_endpoint         = optional(bool)
+    master_ipv4_cidr_block          = optional(string)
+    database_machine_type           = optional(string)
+    web_server_machine_type         = optional(string)
   })
   default = {}
 }
@@ -69,11 +69,11 @@ variable "software_config" {
       storage = optional(number)
     }))
     worker = optional(object({
-      cpu        = optional(number)
-      memory     = optional(number)
-      storage    = optional(number)
-      min_count  = optional(number)
-      max_count  = optional(number)
+      cpu       = optional(number)
+      memory    = optional(number)
+      storage   = optional(number)
+      min_count = optional(number)
+      max_count = optional(number)
     }))
   })
   default = {}
@@ -122,7 +122,7 @@ variable "private_cluster_config" {
   description = "Private cluster configuration"
   type = object({
     enable_private_nodes    = optional(bool)
-    master_ipv4_cidr_block = optional(string)
+    master_ipv4_cidr_block  = optional(string)
     enable_private_endpoint = optional(bool)
   })
   default = {}
@@ -175,7 +175,7 @@ variable "database_config" {
   description = "Database configuration"
   type = object({
     machine_type = optional(string)
-    zone        = optional(string)
+    zone         = optional(string)
   })
   default = {}
 }
@@ -340,27 +340,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -381,7 +381,7 @@ variable "create_log_metrics" {
 variable "log_metrics" {
   description = "Log-based metrics configuration"
   type = map(object({
-    filter = string
+    filter           = string
     label_extractors = optional(map(string))
 
     metric_descriptor = optional(object({
@@ -455,11 +455,11 @@ variable "enable_deferrable_operators" {
 variable "high_availability_config" {
   description = "High availability configuration"
   type = object({
-    enable_multi_zone     = optional(bool)
-    enable_auto_scaling   = optional(bool)
-    min_workers          = optional(number)
-    max_workers          = optional(number)
-    scheduler_count      = optional(number)
+    enable_multi_zone   = optional(bool)
+    enable_auto_scaling = optional(bool)
+    min_workers         = optional(number)
+    max_workers         = optional(number)
+    scheduler_count     = optional(number)
   })
   default = {
     enable_multi_zone = false
@@ -470,10 +470,10 @@ variable "high_availability_config" {
 variable "security_config" {
   description = "Security configuration"
   type = object({
-    enable_rbac              = optional(bool)
+    enable_rbac                = optional(bool)
     enable_pod_security_policy = optional(bool)
-    enable_network_policy    = optional(bool)
-    enable_workload_identity = optional(bool)
+    enable_network_policy      = optional(bool)
+    enable_workload_identity   = optional(bool)
   })
   default = {
     enable_rbac = true
@@ -484,9 +484,9 @@ variable "security_config" {
 variable "performance_config" {
   description = "Performance configuration"
   type = object({
-    parallelism              = optional(number)
-    dag_concurrency         = optional(number)
-    max_active_runs_per_dag = optional(number)
+    parallelism               = optional(number)
+    dag_concurrency           = optional(number)
+    max_active_runs_per_dag   = optional(number)
     celery_worker_concurrency = optional(number)
   })
   default = {}
@@ -497,8 +497,8 @@ variable "cost_optimization_config" {
   description = "Cost optimization configuration"
   type = object({
     enable_preemptible_nodes = optional(bool)
-    enable_auto_pause       = optional(bool)
-    idle_timeout_minutes    = optional(number)
+    enable_auto_pause        = optional(bool)
+    idle_timeout_minutes     = optional(number)
   })
   default = {
     enable_preemptible_nodes = false
@@ -528,9 +528,9 @@ variable "labels" {
 variable "lifecycle_config" {
   description = "Lifecycle configuration for resources"
   type = object({
-    prevent_destroy          = optional(bool)
-    ignore_changes          = optional(list(string))
-    create_before_destroy   = optional(bool)
+    prevent_destroy       = optional(bool)
+    ignore_changes        = optional(list(string))
+    create_before_destroy = optional(bool)
   })
   default = {
     prevent_destroy = true

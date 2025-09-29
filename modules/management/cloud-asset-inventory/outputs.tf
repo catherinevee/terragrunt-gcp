@@ -12,13 +12,13 @@ output "project_feed_details" {
   description = "Detailed information about project-level asset feeds"
   value = {
     for k, v in google_cloud_asset_project_feed.asset_feeds : k => {
-      name         = v.name
-      feed_id      = v.feed_id
-      content_type = v.content_type
-      asset_types  = v.asset_types
-      asset_names  = v.asset_names
-      pubsub_topic = v.feed_output_config[0].pubsub_destination[0].topic
-      condition    = v.condition
+      name               = v.name
+      feed_id            = v.feed_id
+      content_type       = v.content_type
+      asset_types        = v.asset_types
+      asset_names        = v.asset_names
+      pubsub_topic       = v.feed_output_config[0].pubsub_destination[0].topic
+      condition          = v.condition
       relationship_types = v.relationship_types
     }
   }
@@ -35,14 +35,14 @@ output "org_feed_details" {
   description = "Detailed information about organization-level asset feeds"
   value = {
     for k, v in google_cloud_asset_organization_feed.org_asset_feeds : k => {
-      name         = v.name
-      feed_id      = v.feed_id
-      org_id       = v.org_id
-      content_type = v.content_type
-      asset_types  = v.asset_types
-      asset_names  = v.asset_names
-      pubsub_topic = v.feed_output_config[0].pubsub_destination[0].topic
-      condition    = v.condition
+      name               = v.name
+      feed_id            = v.feed_id
+      org_id             = v.org_id
+      content_type       = v.content_type
+      asset_types        = v.asset_types
+      asset_names        = v.asset_names
+      pubsub_topic       = v.feed_output_config[0].pubsub_destination[0].topic
+      condition          = v.condition
       relationship_types = v.relationship_types
     }
   }
@@ -59,14 +59,14 @@ output "folder_feed_details" {
   description = "Detailed information about folder-level asset feeds"
   value = {
     for k, v in google_cloud_asset_folder_feed.folder_asset_feeds : k => {
-      name         = v.name
-      feed_id      = v.feed_id
-      folder       = v.folder
-      content_type = v.content_type
-      asset_types  = v.asset_types
-      asset_names  = v.asset_names
-      pubsub_topic = v.feed_output_config[0].pubsub_destination[0].topic
-      condition    = v.condition
+      name               = v.name
+      feed_id            = v.feed_id
+      folder             = v.folder
+      content_type       = v.content_type
+      asset_types        = v.asset_types
+      asset_names        = v.asset_names
+      pubsub_topic       = v.feed_output_config[0].pubsub_destination[0].topic
+      condition          = v.condition
       relationship_types = v.relationship_types
     }
   }
@@ -92,11 +92,11 @@ output "pubsub_topic_details" {
   value = {
     for k, v in google_pubsub_topic.asset_feed_topics : k => {
       name                       = v.name
-      id                        = v.id
+      id                         = v.id
       message_retention_duration = v.message_retention_duration
-      kms_key_name              = v.kms_key_name
-      labels                    = v.labels
-      message_storage_policy    = v.message_storage_policy
+      kms_key_name               = v.kms_key_name
+      labels                     = v.labels
+      message_storage_policy     = v.message_storage_policy
     }
   }
 }
@@ -120,18 +120,18 @@ output "pubsub_subscription_details" {
   value = {
     for k, v in google_pubsub_subscription.asset_feed_subscriptions : k => {
       name                       = v.name
-      id                        = v.id
-      topic                     = v.topic
-      ack_deadline_seconds      = v.ack_deadline_seconds
+      id                         = v.id
+      topic                      = v.topic
+      ack_deadline_seconds       = v.ack_deadline_seconds
       message_retention_duration = v.message_retention_duration
-      retain_acked_messages     = v.retain_acked_messages
-      enable_message_ordering   = v.enable_message_ordering
-      filter                    = v.filter
-      push_config              = v.push_config
-      retry_policy             = v.retry_policy
-      dead_letter_policy       = v.dead_letter_policy
-      expiration_policy        = v.expiration_policy
-      labels                   = v.labels
+      retain_acked_messages      = v.retain_acked_messages
+      enable_message_ordering    = v.enable_message_ordering
+      filter                     = v.filter
+      push_config                = v.push_config
+      retry_policy               = v.retry_policy
+      dead_letter_policy         = v.dead_letter_policy
+      expiration_policy          = v.expiration_policy
+      labels                     = v.labels
     }
   }
 }
@@ -151,15 +151,15 @@ output "bigquery_dataset_details" {
   description = "Detailed information about the BigQuery dataset"
   value = var.enable_bigquery_export ? {
     dataset_id                      = google_bigquery_dataset.asset_inventory_dataset[0].dataset_id
-    project                        = google_bigquery_dataset.asset_inventory_dataset[0].project
-    location                       = google_bigquery_dataset.asset_inventory_dataset[0].location
-    description                    = google_bigquery_dataset.asset_inventory_dataset[0].description
-    default_table_expiration_ms    = google_bigquery_dataset.asset_inventory_dataset[0].default_table_expiration_ms
+    project                         = google_bigquery_dataset.asset_inventory_dataset[0].project
+    location                        = google_bigquery_dataset.asset_inventory_dataset[0].location
+    description                     = google_bigquery_dataset.asset_inventory_dataset[0].description
+    default_table_expiration_ms     = google_bigquery_dataset.asset_inventory_dataset[0].default_table_expiration_ms
     default_partition_expiration_ms = google_bigquery_dataset.asset_inventory_dataset[0].default_partition_expiration_ms
-    creation_time                  = google_bigquery_dataset.asset_inventory_dataset[0].creation_time
-    last_modified_time             = google_bigquery_dataset.asset_inventory_dataset[0].last_modified_time
-    labels                         = google_bigquery_dataset.asset_inventory_dataset[0].labels
-    access                         = google_bigquery_dataset.asset_inventory_dataset[0].access
+    creation_time                   = google_bigquery_dataset.asset_inventory_dataset[0].creation_time
+    last_modified_time              = google_bigquery_dataset.asset_inventory_dataset[0].last_modified_time
+    labels                          = google_bigquery_dataset.asset_inventory_dataset[0].labels
+    access                          = google_bigquery_dataset.asset_inventory_dataset[0].access
   } : null
 }
 
@@ -174,20 +174,20 @@ output "bigquery_table_details" {
   description = "Detailed information about BigQuery tables"
   value = {
     for k, v in google_bigquery_table.asset_tables : k => {
-      table_id          = v.table_id
-      dataset_id        = v.dataset_id
-      project          = v.project
-      description      = v.description
-      schema           = v.schema
-      time_partitioning = v.time_partitioning
-      range_partitioning = v.range_partitioning
-      clustering       = v.clustering
-      creation_time    = v.creation_time
-      last_modified_time = v.last_modified_time
-      labels           = v.labels
-      num_bytes        = v.num_bytes
+      table_id            = v.table_id
+      dataset_id          = v.dataset_id
+      project             = v.project
+      description         = v.description
+      schema              = v.schema
+      time_partitioning   = v.time_partitioning
+      range_partitioning  = v.range_partitioning
+      clustering          = v.clustering
+      creation_time       = v.creation_time
+      last_modified_time  = v.last_modified_time
+      labels              = v.labels
+      num_bytes           = v.num_bytes
       num_long_term_bytes = v.num_long_term_bytes
-      num_rows         = v.num_rows
+      num_rows            = v.num_rows
     }
   }
 }
@@ -293,15 +293,15 @@ output "scheduler_job_details" {
   description = "Detailed information about Cloud Scheduler jobs"
   value = {
     for k, v in google_cloud_scheduler_job.asset_export_jobs : k => {
-      name         = v.name
-      description  = v.description
-      schedule     = v.schedule
-      time_zone    = v.time_zone
-      region       = v.region
+      name          = v.name
+      description   = v.description
+      schedule      = v.schedule
+      time_zone     = v.time_zone
+      region        = v.region
       pubsub_target = v.pubsub_target
-      http_target  = v.http_target
-      retry_config = v.retry_config
-      state        = v.state
+      http_target   = v.http_target
+      retry_config  = v.retry_config
+      state         = v.state
     }
   }
 }
@@ -337,14 +337,14 @@ output "alert_policy_details" {
   description = "Detailed information about alert policies"
   value = {
     for k, v in google_monitoring_alert_policy.asset_inventory_alerts : k => {
-      name              = v.name
-      display_name      = v.display_name
-      combiner          = v.combiner
-      enabled           = v.enabled
-      conditions        = v.conditions
+      name                  = v.name
+      display_name          = v.display_name
+      combiner              = v.combiner
+      enabled               = v.enabled
+      conditions            = v.conditions
       notification_channels = v.notification_channels
-      alert_strategy    = v.alert_strategy
-      documentation     = v.documentation
+      alert_strategy        = v.alert_strategy
+      documentation         = v.documentation
     }
   }
 }
@@ -370,26 +370,26 @@ output "configuration_metadata" {
   description = "Metadata about the Cloud Asset Inventory configuration"
   value = {
     project_id                    = var.project_id
-    org_id                       = var.org_id
-    project_feeds_count          = length(google_cloud_asset_project_feed.asset_feeds)
-    org_feeds_count              = length(google_cloud_asset_organization_feed.org_asset_feeds)
-    folder_feeds_count           = length(google_cloud_asset_folder_feed.folder_asset_feeds)
-    pubsub_topics_count          = length(google_pubsub_topic.asset_feed_topics)
-    pubsub_subscriptions_count   = length(google_pubsub_subscription.asset_feed_subscriptions)
-    bigquery_export_enabled      = var.enable_bigquery_export
-    storage_export_enabled       = var.enable_storage_export
-    bigquery_tables_count        = length(google_bigquery_table.asset_tables)
-    cloud_functions_count        = length(google_cloudfunctions_function.asset_processor)
-    scheduled_jobs_count         = length(google_cloud_scheduler_job.asset_export_jobs)
-    monitoring_enabled           = var.enable_monitoring
-    security_center_enabled      = var.enable_security_center_integration
-    audit_logging_enabled        = var.enable_audit_logging
+    org_id                        = var.org_id
+    project_feeds_count           = length(google_cloud_asset_project_feed.asset_feeds)
+    org_feeds_count               = length(google_cloud_asset_organization_feed.org_asset_feeds)
+    folder_feeds_count            = length(google_cloud_asset_folder_feed.folder_asset_feeds)
+    pubsub_topics_count           = length(google_pubsub_topic.asset_feed_topics)
+    pubsub_subscriptions_count    = length(google_pubsub_subscription.asset_feed_subscriptions)
+    bigquery_export_enabled       = var.enable_bigquery_export
+    storage_export_enabled        = var.enable_storage_export
+    bigquery_tables_count         = length(google_bigquery_table.asset_tables)
+    cloud_functions_count         = length(google_cloudfunctions_function.asset_processor)
+    scheduled_jobs_count          = length(google_cloud_scheduler_job.asset_export_jobs)
+    monitoring_enabled            = var.enable_monitoring
+    security_center_enabled       = var.enable_security_center_integration
+    audit_logging_enabled         = var.enable_audit_logging
     compliance_monitoring_enabled = var.enable_compliance_monitoring
-    data_governance_enabled      = var.enable_data_governance
-    cost_analysis_enabled        = var.enable_cost_analysis
-    security_insights_enabled    = var.enable_security_insights
-    automation_enabled           = var.enable_automation
-    total_alert_policies         = length(google_monitoring_alert_policy.asset_inventory_alerts)
+    data_governance_enabled       = var.enable_data_governance
+    cost_analysis_enabled         = var.enable_cost_analysis
+    security_insights_enabled     = var.enable_security_insights
+    automation_enabled            = var.enable_automation
+    total_alert_policies          = length(google_monitoring_alert_policy.asset_inventory_alerts)
   }
 }
 
@@ -420,25 +420,25 @@ output "export_configuration_summary" {
   description = "Summary of export configurations"
   value = {
     bigquery = {
-      enabled           = var.enable_bigquery_export
-      dataset_id        = var.bigquery_dataset_id
-      location         = var.bigquery_location
-      tables_count     = length(var.bigquery_tables)
-      table_names      = keys(var.bigquery_tables)
+      enabled      = var.enable_bigquery_export
+      dataset_id   = var.bigquery_dataset_id
+      location     = var.bigquery_location
+      tables_count = length(var.bigquery_tables)
+      table_names  = keys(var.bigquery_tables)
     }
     storage = {
-      enabled          = var.enable_storage_export
-      bucket_name      = var.storage_bucket_name
-      location         = var.storage_bucket_location
-      versioning       = var.bucket_versioning_enabled
-      lifecycle_rules  = length(var.bucket_lifecycle_rules)
+      enabled         = var.enable_storage_export
+      bucket_name     = var.storage_bucket_name
+      location        = var.storage_bucket_location
+      versioning      = var.bucket_versioning_enabled
+      lifecycle_rules = length(var.bucket_lifecycle_rules)
     }
     formats = {
-      json_enabled     = var.export_formats.enable_json_export
-      csv_enabled      = var.export_formats.enable_csv_export
-      parquet_enabled  = var.export_formats.enable_parquet_export
-      avro_enabled     = var.export_formats.enable_avro_export
-      compression      = var.export_formats.compression_enabled
+      json_enabled    = var.export_formats.enable_json_export
+      csv_enabled     = var.export_formats.enable_csv_export
+      parquet_enabled = var.export_formats.enable_parquet_export
+      avro_enabled    = var.export_formats.enable_avro_export
+      compression     = var.export_formats.compression_enabled
     }
   }
 }
@@ -453,15 +453,15 @@ output "automation_summary" {
       function_names  = keys(var.cloud_functions)
     }
     scheduled_exports = {
-      enabled     = var.enable_scheduled_exports
-      jobs_count  = length(var.scheduled_export_jobs)
-      job_names   = keys(var.scheduled_export_jobs)
+      enabled    = var.enable_scheduled_exports
+      jobs_count = length(var.scheduled_export_jobs)
+      job_names  = keys(var.scheduled_export_jobs)
     }
     automation_features = {
-      auto_remediation      = var.automation_config.enable_auto_remediation
-      policy_enforcement    = var.automation_config.enable_policy_enforcement
-      automated_tagging     = var.automation_config.enable_automated_tagging
-      lifecycle_management  = var.automation_config.enable_lifecycle_management
+      auto_remediation     = var.automation_config.enable_auto_remediation
+      policy_enforcement   = var.automation_config.enable_policy_enforcement
+      automated_tagging    = var.automation_config.enable_automated_tagging
+      lifecycle_management = var.automation_config.enable_lifecycle_management
     }
   }
 }
@@ -471,22 +471,22 @@ output "security_compliance_summary" {
   description = "Summary of security and compliance features"
   value = {
     compliance_monitoring = {
-      enabled         = var.enable_compliance_monitoring
-      policies_count  = length(var.compliance_policies)
-      policy_names    = keys(var.compliance_policies)
+      enabled        = var.enable_compliance_monitoring
+      policies_count = length(var.compliance_policies)
+      policy_names   = keys(var.compliance_policies)
     }
     data_governance = {
-      enabled               = var.enable_data_governance
-      classification        = var.data_governance_config.enable_data_classification
-      lineage              = var.data_governance_config.enable_data_lineage
-      access_monitoring    = var.data_governance_config.enable_access_monitoring
+      enabled           = var.enable_data_governance
+      classification    = var.data_governance_config.enable_data_classification
+      lineage           = var.data_governance_config.enable_data_lineage
+      access_monitoring = var.data_governance_config.enable_access_monitoring
     }
     security_insights = {
-      enabled                  = var.enable_security_insights
-      vulnerability_scanning   = var.security_insights_config.enable_vulnerability_scanning
-      misconfig_detection     = var.security_insights_config.enable_misconfig_detection
-      access_analysis         = var.security_insights_config.enable_access_analysis
-      threat_detection        = var.security_insights_config.enable_threat_detection
+      enabled                = var.enable_security_insights
+      vulnerability_scanning = var.security_insights_config.enable_vulnerability_scanning
+      misconfig_detection    = var.security_insights_config.enable_misconfig_detection
+      access_analysis        = var.security_insights_config.enable_access_analysis
+      threat_detection       = var.security_insights_config.enable_threat_detection
     }
     security_center_integration = var.enable_security_center_integration
   }
@@ -511,7 +511,7 @@ output "data_lifecycle_summary" {
     } : null
     storage_lifecycle = var.enable_storage_export ? {
       lifecycle_rules_count = length(var.bucket_lifecycle_rules)
-      versioning_enabled   = var.bucket_versioning_enabled
+      versioning_enabled    = var.bucket_versioning_enabled
     } : null
   }
 }
@@ -523,8 +523,8 @@ output "integration_status" {
     integrations_count = length(var.integration_configs)
     integrations = {
       for k, v in var.integration_configs : k => {
-        type     = v.integration_type
-        enabled  = v.enabled
+        type      = v.integration_type
+        enabled   = v.enabled
         frequency = v.sync_frequency
       }
     }
@@ -541,14 +541,14 @@ output "management_urls" {
   description = "URLs for managing Cloud Asset Inventory resources"
   value = {
     asset_inventory_console = "https://console.cloud.google.com/security/asset-inventory?project=${var.project_id}"
-    bigquery_console = var.enable_bigquery_export ? "https://console.cloud.google.com/bigquery?project=${var.project_id}" : null
-    storage_console = var.enable_storage_export ? "https://console.cloud.google.com/storage/browser?project=${var.project_id}" : null
-    pubsub_console = var.create_pubsub_topics ? "https://console.cloud.google.com/cloudpubsub?project=${var.project_id}" : null
+    bigquery_console        = var.enable_bigquery_export ? "https://console.cloud.google.com/bigquery?project=${var.project_id}" : null
+    storage_console         = var.enable_storage_export ? "https://console.cloud.google.com/storage/browser?project=${var.project_id}" : null
+    pubsub_console          = var.create_pubsub_topics ? "https://console.cloud.google.com/cloudpubsub?project=${var.project_id}" : null
     cloud_functions_console = var.enable_cloud_functions ? "https://console.cloud.google.com/functions?project=${var.project_id}" : null
-    scheduler_console = var.enable_scheduled_exports ? "https://console.cloud.google.com/cloudscheduler?project=${var.project_id}" : null
-    monitoring_console = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
+    scheduler_console       = var.enable_scheduled_exports ? "https://console.cloud.google.com/cloudscheduler?project=${var.project_id}" : null
+    monitoring_console      = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
     security_center_console = var.enable_security_center_integration && var.org_id != null ? "https://console.cloud.google.com/security/command-center?organizationId=${var.org_id}" : null
-    logs_console = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
+    logs_console            = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
   }
 }
 
@@ -568,9 +568,9 @@ output "resource_identifiers" {
     pubsub_topic_resources = {
       for k, v in google_pubsub_topic.asset_feed_topics : k => v.name
     }
-    bigquery_dataset_resource = var.enable_bigquery_export ? google_bigquery_dataset.asset_inventory_dataset[0].id : null
-    storage_bucket_resource = var.enable_storage_export ? google_storage_bucket.asset_export_bucket[0].name : null
-    service_account_resource = var.create_service_account ? google_service_account.asset_inventory_sa[0].email : null
+    bigquery_dataset_resource       = var.enable_bigquery_export ? google_bigquery_dataset.asset_inventory_dataset[0].id : null
+    storage_bucket_resource         = var.enable_storage_export ? google_storage_bucket.asset_export_bucket[0].name : null
+    service_account_resource        = var.create_service_account ? google_service_account.asset_inventory_sa[0].email : null
     security_center_source_resource = var.enable_security_center_integration ? google_security_center_source.asset_inventory_source[0].name : null
   }
 }

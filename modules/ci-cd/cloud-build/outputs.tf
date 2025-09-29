@@ -230,20 +230,20 @@ output "budget_name" {
 output "build_configuration_summary" {
   description = "Summary of Cloud Build configuration"
   value = {
-    total_triggers      = length(local.build_triggers)
-    total_worker_pools  = length(local.worker_pools)
-    total_repositories  = length(var.source_repositories)
-    total_registries    = length(local.artifact_registries)
+    total_triggers     = length(local.build_triggers)
+    total_worker_pools = length(local.worker_pools)
+    total_repositories = length(var.source_repositories)
+    total_registries   = length(local.artifact_registries)
 
     triggers_by_type = {
-      github    = length([for k, v in local.build_triggers : k if v.github != null])
-      repo      = length([for k, v in local.build_triggers : k if v.repository_event_config != null])
-      webhook   = length([for k, v in local.build_triggers : k if v.webhook_config != null])
-      pubsub    = length([for k, v in local.build_triggers : k if v.pubsub_config != null])
-      manual    = length([for k, v in local.build_triggers : k if v.github == null && v.repository_event_config == null && v.webhook_config == null && v.pubsub_config == null])
+      github  = length([for k, v in local.build_triggers : k if v.github != null])
+      repo    = length([for k, v in local.build_triggers : k if v.repository_event_config != null])
+      webhook = length([for k, v in local.build_triggers : k if v.webhook_config != null])
+      pubsub  = length([for k, v in local.build_triggers : k if v.pubsub_config != null])
+      manual  = length([for k, v in local.build_triggers : k if v.github == null && v.repository_event_config == null && v.webhook_config == null && v.pubsub_config == null])
     }
 
-    enabled_triggers = length([for k, v in local.build_triggers : k if v.disabled != true])
+    enabled_triggers  = length([for k, v in local.build_triggers : k if v.disabled != true])
     disabled_triggers = length([for k, v in local.build_triggers : k if v.disabled == true])
   }
 }
@@ -280,10 +280,10 @@ output "worker_pool_configuration_summary" {
   value = {
     pools_by_location = {
       for location in distinct([for v in local.worker_pools : v.location != null ? v.location : var.region]) :
-        location => length([
-          for k, v in local.worker_pools : k
-          if (v.location != null ? v.location : var.region) == location
-        ])
+      location => length([
+        for k, v in local.worker_pools : k
+        if(v.location != null ? v.location : var.region) == location
+      ])
     }
 
     pools_with_private_network = length([
@@ -331,8 +331,8 @@ output "monitoring_configuration_summary" {
     budget_enabled    = var.create_budget_alert
 
     alert_policies_count = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    budget_amount       = var.create_budget_alert ? var.budget_amount : null
-    budget_currency     = var.create_budget_alert ? var.budget_currency : null
+    budget_amount        = var.create_budget_alert ? var.budget_amount : null
+    budget_currency      = var.create_budget_alert ? var.budget_currency : null
   }
 }
 
@@ -428,7 +428,7 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    build_triggers       = length(var.build_triggers)
+    build_triggers      = length(var.build_triggers)
     worker_pools        = length(var.worker_pools)
     source_repositories = length(var.source_repositories)
     artifact_registries = length(var.artifact_registries)

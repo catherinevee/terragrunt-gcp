@@ -204,9 +204,9 @@ resource "google_compute_external_vpn_gateway" "external_gateways" {
     for_each = each.value.interfaces != null ? each.value.interfaces : []
 
     content {
-      id              = interface.value.id
-      ip_address      = interface.value.ip_address
-      ipv6_address    = interface.value.ipv6_address
+      id                      = interface.value.id
+      ip_address              = interface.value.ip_address
+      ipv6_address            = interface.value.ipv6_address
       interconnect_attachment = interface.value.interconnect_attachment
     }
   }
@@ -223,34 +223,34 @@ resource "google_compute_external_vpn_gateway" "external_gateways" {
 resource "google_compute_vpn_tunnel" "vpn_tunnels" {
   for_each = local.vpn_tunnels
 
-  name                            = each.value.name
-  description                     = each.value.description
-  region                          = each.value.region != null ? each.value.region : var.region
-  project                         = var.project_id
+  name        = each.value.name
+  description = each.value.description
+  region      = each.value.region != null ? each.value.region : var.region
+  project     = var.project_id
 
   # Gateway configuration
-  vpn_gateway                     = each.value.vpn_gateway_key != null ? (
+  vpn_gateway = each.value.vpn_gateway_key != null ? (
     each.value.vpn_gateway_type == "HA" ?
     google_compute_ha_vpn_gateway.ha_gateways[each.value.vpn_gateway_key].id :
     google_compute_vpn_gateway.classic_gateways[each.value.vpn_gateway_key].id
   ) : each.value.vpn_gateway
 
-  peer_external_gateway           = each.value.peer_external_gateway_key != null ? (
+  peer_external_gateway = each.value.peer_external_gateway_key != null ? (
     google_compute_external_vpn_gateway.external_gateways[each.value.peer_external_gateway_key].id
   ) : each.value.peer_external_gateway
 
   peer_external_gateway_interface = each.value.peer_external_gateway_interface
-  peer_gcp_gateway               = each.value.peer_gcp_gateway
-  vpn_gateway_interface          = each.value.vpn_gateway_interface
+  peer_gcp_gateway                = each.value.peer_gcp_gateway
+  vpn_gateway_interface           = each.value.vpn_gateway_interface
 
   # Tunnel configuration
   shared_secret = each.value.shared_secret != null ? each.value.shared_secret : (
     each.value.generate_shared_secret != false ? random_password.vpn_shared_secrets[each.key].result : null
   )
 
-  ike_version                    = each.value.ike_version != null ? each.value.ike_version : 2
-  peer_ip                        = each.value.peer_ip
-  router                         = each.value.router_key != null ? (
+  ike_version = each.value.ike_version != null ? each.value.ike_version : 2
+  peer_ip     = each.value.peer_ip
+  router = each.value.router_key != null ? (
     google_compute_router.routers[each.value.router_key].id
   ) : each.value.router
 
@@ -285,10 +285,10 @@ resource "google_compute_router" "routers" {
     for_each = each.value.bgp_config != null ? [each.value.bgp_config] : []
 
     content {
-      asn                   = bgp.value.asn
-      advertise_mode        = bgp.value.advertise_mode
-      advertised_groups     = bgp.value.advertised_groups
-      keepalive_interval    = bgp.value.keepalive_interval
+      asn                = bgp.value.asn
+      advertise_mode     = bgp.value.advertise_mode
+      advertised_groups  = bgp.value.advertised_groups
+      keepalive_interval = bgp.value.keepalive_interval
 
       dynamic "advertised_ip_ranges" {
         for_each = bgp.value.advertised_ip_ranges != null ? bgp.value.advertised_ip_ranges : []
@@ -312,22 +312,22 @@ resource "google_compute_router" "routers" {
 resource "google_compute_router_interface" "interfaces" {
   for_each = local.router_interfaces
 
-  name                   = each.value.name
-  router                 = each.value.router_key != null ? (
+  name = each.value.name
+  router = each.value.router_key != null ? (
     google_compute_router.routers[each.value.router_key].name
   ) : each.value.router
-  region                 = each.value.region != null ? each.value.region : var.region
-  project                = var.project_id
+  region  = each.value.region != null ? each.value.region : var.region
+  project = var.project_id
 
-  ip_range               = each.value.ip_range
-  vpn_tunnel            = each.value.vpn_tunnel_key != null ? (
+  ip_range = each.value.ip_range
+  vpn_tunnel = each.value.vpn_tunnel_key != null ? (
     google_compute_vpn_tunnel.vpn_tunnels[each.value.vpn_tunnel_key].name
   ) : each.value.vpn_tunnel
 
   interconnect_attachment = each.value.interconnect_attachment
-  subnetwork             = each.value.subnetwork
-  private_ip_address     = each.value.private_ip_address
-  redundant_interface    = each.value.redundant_interface
+  subnetwork              = each.value.subnetwork
+  private_ip_address      = each.value.private_ip_address
+  redundant_interface     = each.value.redundant_interface
 
   depends_on = [
     google_compute_router.routers,
@@ -339,22 +339,22 @@ resource "google_compute_router_interface" "interfaces" {
 resource "google_compute_router_peer" "bgp_peers" {
   for_each = local.bgp_peers
 
-  name                      = each.value.name
-  router                    = each.value.router_key != null ? (
+  name = each.value.name
+  router = each.value.router_key != null ? (
     google_compute_router.routers[each.value.router_key].name
   ) : each.value.router
-  region                    = each.value.region != null ? each.value.region : var.region
-  project                   = var.project_id
+  region  = each.value.region != null ? each.value.region : var.region
+  project = var.project_id
 
-  interface                 = each.value.interface_key != null ? (
+  interface = each.value.interface_key != null ? (
     google_compute_router_interface.interfaces[each.value.interface_key].name
   ) : each.value.interface
 
-  peer_ip_address          = each.value.peer_ip_address
-  peer_asn                 = each.value.peer_asn
+  peer_ip_address           = each.value.peer_ip_address
+  peer_asn                  = each.value.peer_asn
   advertised_route_priority = each.value.advertised_route_priority != null ? each.value.advertised_route_priority : 100
-  advertise_mode           = each.value.advertise_mode
-  advertised_groups        = each.value.advertised_groups
+  advertise_mode            = each.value.advertise_mode
+  advertised_groups         = each.value.advertised_groups
 
   dynamic "advertised_ip_ranges" {
     for_each = each.value.advertised_ip_ranges != null ? each.value.advertised_ip_ranges : []
@@ -376,13 +376,13 @@ resource "google_compute_router_peer" "bgp_peers" {
     }
   }
 
-  enable                   = each.value.enable != null ? each.value.enable : true
-  enable_ipv6             = each.value.enable_ipv6
-  ipv6_nexthop_address    = each.value.ipv6_nexthop_address
+  enable                    = each.value.enable != null ? each.value.enable : true
+  enable_ipv6               = each.value.enable_ipv6
+  ipv6_nexthop_address      = each.value.ipv6_nexthop_address
   peer_ipv6_nexthop_address = each.value.peer_ipv6_nexthop_address
   router_appliance_instance = each.value.router_appliance_instance
-  ip_address              = each.value.ip_address
-  management_type         = each.value.management_type
+  ip_address                = each.value.ip_address
+  management_type           = each.value.management_type
 
   dynamic "md5_authentication_key" {
     for_each = each.value.md5_authentication_key != null ? [each.value.md5_authentication_key] : []
@@ -403,16 +403,16 @@ resource "google_compute_router_peer" "bgp_peers" {
 resource "google_compute_route" "vpn_routes" {
   for_each = var.static_routes
 
-  name                   = each.value.name != null ? each.value.name : "${local.name_prefix}-${each.key}-route"
-  description           = each.value.description
-  network               = each.value.network
-  dest_range            = each.value.dest_range
-  next_hop_vpn_tunnel   = each.value.next_hop_vpn_tunnel_key != null ? (
+  name        = each.value.name != null ? each.value.name : "${local.name_prefix}-${each.key}-route"
+  description = each.value.description
+  network     = each.value.network
+  dest_range  = each.value.dest_range
+  next_hop_vpn_tunnel = each.value.next_hop_vpn_tunnel_key != null ? (
     google_compute_vpn_tunnel.vpn_tunnels[each.value.next_hop_vpn_tunnel_key].id
   ) : each.value.next_hop_vpn_tunnel
-  priority              = each.value.priority != null ? each.value.priority : 1000
-  tags                  = each.value.tags
-  project               = var.project_id
+  priority = each.value.priority != null ? each.value.priority : 1000
+  tags     = each.value.tags
+  project  = var.project_id
 
   depends_on = [google_compute_vpn_tunnel.vpn_tunnels]
 }
@@ -426,12 +426,12 @@ resource "google_compute_firewall" "vpn_firewall_rules" {
   network     = each.value.network
   project     = var.project_id
 
-  priority         = each.value.priority != null ? each.value.priority : 1000
-  direction        = each.value.direction != null ? each.value.direction : "INGRESS"
-  source_ranges    = each.value.source_ranges
-  destination_ranges = each.value.destination_ranges
-  source_tags      = each.value.source_tags
-  target_tags      = each.value.target_tags
+  priority                = each.value.priority != null ? each.value.priority : 1000
+  direction               = each.value.direction != null ? each.value.direction : "INGRESS"
+  source_ranges           = each.value.source_ranges
+  destination_ranges      = each.value.destination_ranges
+  source_tags             = each.value.source_tags
+  target_tags             = each.value.target_tags
   source_service_accounts = each.value.source_service_accounts
   target_service_accounts = each.value.target_service_accounts
 
@@ -549,7 +549,7 @@ resource "google_monitoring_alert_policy" "vpn_alerts" {
 resource "google_monitoring_dashboard" "vpn_dashboard" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.name_prefix}-vpn-dashboard"
     mosaicLayout = {
@@ -598,7 +598,7 @@ resource "google_monitoring_dashboard" "vpn_dashboard" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 },
                 {
@@ -613,7 +613,7 @@ resource "google_monitoring_dashboard" "vpn_dashboard" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y2"
                 }
               ]
@@ -696,13 +696,13 @@ resource "google_monitoring_dashboard" "vpn_dashboard" {
               }
               thresholds = [
                 {
-                  value = 0.5
-                  color = "RED"
+                  value     = 0.5
+                  color     = "RED"
                   direction = "BELOW"
                 },
                 {
-                  value = 1
-                  color = "GREEN"
+                  value     = 1
+                  color     = "GREEN"
                   direction = "ABOVE"
                 }
               ]
@@ -730,13 +730,13 @@ resource "google_monitoring_dashboard" "vpn_dashboard" {
               }
               thresholds = [
                 {
-                  value = 0.5
-                  color = "YELLOW"
+                  value     = 0.5
+                  color     = "YELLOW"
                   direction = "BELOW"
                 },
                 {
-                  value = 1
-                  color = "GREEN"
+                  value     = 1
+                  color     = "GREEN"
                   direction = "ABOVE"
                 }
               ]

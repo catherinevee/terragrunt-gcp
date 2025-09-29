@@ -26,13 +26,13 @@ import (
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/logging"
-	"cloud.google.com/go/resourcemanager/apiv1/resourcemanagerpb"
-	"cloud.google.com/go/serviceusage/apiv1/serviceusagepb"
+	// "cloud.google.com/go/resourcemanager/apiv1/resourcemanagerpb"
+	// "cloud.google.com/go/serviceusage/apiv1/serviceusagepb"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/option"
 	"google.golang.org/api/serviceusage/v1"
-	"google.golang.org/protobuf/types/known/fieldmaskpb"
+	// "google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
 type UtilsService struct {

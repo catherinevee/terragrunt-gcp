@@ -191,13 +191,13 @@ output "dags_bucket_iam_members" {
 output "environment_details" {
   description = "Detailed information about the Composer environment"
   value = {
-    name                = google_composer_environment.composer.name
-    state              = google_composer_environment.composer.state
-    create_time        = google_composer_environment.composer.create_time
-    update_time        = google_composer_environment.composer.update_time
-    labels             = google_composer_environment.composer.labels
-    project            = var.project_id
-    region             = var.region
+    name        = google_composer_environment.composer.name
+    state       = google_composer_environment.composer.state
+    create_time = google_composer_environment.composer.create_time
+    update_time = google_composer_environment.composer.update_time
+    labels      = google_composer_environment.composer.labels
+    project     = var.project_id
+    region      = var.region
   }
 }
 
@@ -217,12 +217,12 @@ output "gke_cluster_info" {
 output "software_info" {
   description = "Information about software configuration"
   value = {
-    image_version    = google_composer_environment.composer.config[0].software_config[0].image_version
-    python_version   = google_composer_environment.composer.config[0].software_config[0].python_version
-    scheduler_count  = try(google_composer_environment.composer.config[0].software_config[0].scheduler_count[0].count, null)
+    image_version            = google_composer_environment.composer.config[0].software_config[0].image_version
+    python_version           = google_composer_environment.composer.config[0].software_config[0].python_version
+    scheduler_count          = try(google_composer_environment.composer.config[0].software_config[0].scheduler_count[0].count, null)
     airflow_config_overrides = google_composer_environment.composer.config[0].software_config[0].airflow_config_overrides
-    pypi_packages    = google_composer_environment.composer.config[0].software_config[0].pypi_packages
-    env_variables    = google_composer_environment.composer.config[0].software_config[0].env_variables
+    pypi_packages            = google_composer_environment.composer.config[0].software_config[0].pypi_packages
+    env_variables            = google_composer_environment.composer.config[0].software_config[0].env_variables
   }
 }
 
@@ -232,10 +232,10 @@ output "security_info" {
   value = {
     private_environment = var.enable_private_environment
     encryption_enabled  = var.encryption_config != null
-    kms_key_name       = var.encryption_config != null ? var.encryption_config.kms_key_name : null
-    service_account    = google_composer_environment.composer.config[0].node_config[0].service_account
-    oauth_scopes       = google_composer_environment.composer.config[0].node_config[0].oauth_scopes
-    tags              = google_composer_environment.composer.config[0].node_config[0].tags
+    kms_key_name        = var.encryption_config != null ? var.encryption_config.kms_key_name : null
+    service_account     = google_composer_environment.composer.config[0].node_config[0].service_account
+    oauth_scopes        = google_composer_environment.composer.config[0].node_config[0].oauth_scopes
+    tags                = google_composer_environment.composer.config[0].node_config[0].tags
   }
 }
 
@@ -243,13 +243,13 @@ output "security_info" {
 output "network_info" {
   description = "Network configuration information"
   value = {
-    network                = google_composer_environment.composer.config[0].node_config[0].network
-    subnetwork            = google_composer_environment.composer.config[0].node_config[0].subnetwork
-    enable_ip_alias       = google_composer_environment.composer.config[0].node_config[0].enable_ip_alias
-    max_pods_per_node     = google_composer_environment.composer.config[0].node_config[0].max_pods_per_node
+    network           = google_composer_environment.composer.config[0].node_config[0].network
+    subnetwork        = google_composer_environment.composer.config[0].node_config[0].subnetwork
+    enable_ip_alias   = google_composer_environment.composer.config[0].node_config[0].enable_ip_alias
+    max_pods_per_node = google_composer_environment.composer.config[0].node_config[0].max_pods_per_node
     private_cluster_config = var.enable_private_environment ? {
       enable_private_endpoint = var.private_cluster_config.enable_private_endpoint
-      master_ipv4_cidr_block = var.private_cluster_config.master_ipv4_cidr_block
+      master_ipv4_cidr_block  = var.private_cluster_config.master_ipv4_cidr_block
     } : null
   }
 }
@@ -258,11 +258,11 @@ output "network_info" {
 output "connection_info" {
   description = "Connection information for the Composer environment"
   value = {
-    airflow_uri        = google_composer_environment.composer.config[0].airflow_uri
-    dag_gcs_prefix     = google_composer_environment.composer.config[0].dag_gcs_prefix
-    gke_cluster        = google_composer_environment.composer.config[0].gke_cluster
-    environment_name   = google_composer_environment.composer.name
-    environment_uuid   = google_composer_environment.composer.uuid
+    airflow_uri      = google_composer_environment.composer.config[0].airflow_uri
+    dag_gcs_prefix   = google_composer_environment.composer.config[0].dag_gcs_prefix
+    gke_cluster      = google_composer_environment.composer.config[0].gke_cluster
+    environment_name = google_composer_environment.composer.name
+    environment_uuid = google_composer_environment.composer.uuid
   }
   sensitive = false
 }
@@ -271,15 +271,15 @@ output "connection_info" {
 output "configuration_summary" {
   description = "Summary of environment configuration"
   value = {
-    environment_size        = var.environment_size
-    composer_version       = local.software_config.image_version
-    python_version         = local.software_config.python_version
-    node_machine_type      = local.node_config.machine_type
-    node_disk_size_gb      = local.node_config.disk_size_gb
-    private_environment    = var.enable_private_environment
-    high_availability      = var.high_availability_config.enable_multi_zone
-    auto_scaling_enabled   = var.high_availability_config.enable_auto_scaling
-    workloads_config_enabled = var.enable_workloads_config
+    environment_size           = var.environment_size
+    composer_version           = local.software_config.image_version
+    python_version             = local.software_config.python_version
+    node_machine_type          = local.node_config.machine_type
+    node_disk_size_gb          = local.node_config.disk_size_gb
+    private_environment        = var.enable_private_environment
+    high_availability          = var.high_availability_config.enable_multi_zone
+    auto_scaling_enabled       = var.high_availability_config.enable_auto_scaling
+    workloads_config_enabled   = var.enable_workloads_config
     cloud_data_lineage_enabled = var.enable_cloud_data_lineage
   }
 }
@@ -295,11 +295,11 @@ output "performance_summary" {
       count   = local.software_config.scheduler.count
     } : null
     worker_resources = var.enable_workloads_config ? {
-      cpu        = local.software_config.worker.cpu
-      memory     = local.software_config.worker.memory
-      storage    = local.software_config.worker.storage
-      min_count  = local.software_config.worker.min_count
-      max_count  = local.software_config.worker.max_count
+      cpu       = local.software_config.worker.cpu
+      memory    = local.software_config.worker.memory
+      storage   = local.software_config.worker.storage
+      min_count = local.software_config.worker.min_count
+      max_count = local.software_config.worker.max_count
     } : null
     web_server_resources = var.enable_workloads_config ? {
       cpu     = local.software_config.web_server.cpu
@@ -314,11 +314,11 @@ output "cost_summary" {
   description = "Summary of cost-related configuration"
   value = {
     environment_size          = var.environment_size
-    node_machine_type        = local.node_config.machine_type
+    node_machine_type         = local.node_config.machine_type
     preemptible_nodes_enabled = var.cost_optimization_config.enable_preemptible_nodes
-    auto_pause_enabled       = var.cost_optimization_config.enable_auto_pause
-    database_machine_type    = var.enable_database_config ? local.database_config.machine_type : null
-    web_server_machine_type  = var.enable_web_server_config ? local.web_server_config.machine_type : null
+    auto_pause_enabled        = var.cost_optimization_config.enable_auto_pause
+    database_machine_type     = var.enable_database_config ? local.database_config.machine_type : null
+    web_server_machine_type   = var.enable_web_server_config ? local.web_server_config.machine_type : null
   }
 }
 
@@ -326,16 +326,16 @@ output "cost_summary" {
 output "module_configuration" {
   description = "Module configuration summary"
   value = {
-    project_id                = var.project_id
-    region                   = var.region
-    zone                     = var.zone
-    environment              = local.environment
-    name_prefix              = local.name_prefix
-    service_account_created  = var.create_service_account
-    bucket_created           = var.create_composer_bucket
-    monitoring_enabled       = var.create_monitoring_alerts
-    dashboard_created        = var.create_monitoring_dashboard
-    log_metrics_enabled      = var.create_log_metrics
+    project_id              = var.project_id
+    region                  = var.region
+    zone                    = var.zone
+    environment             = local.environment
+    name_prefix             = local.name_prefix
+    service_account_created = var.create_service_account
+    bucket_created          = var.create_composer_bucket
+    monitoring_enabled      = var.create_monitoring_alerts
+    dashboard_created       = var.create_monitoring_dashboard
+    log_metrics_enabled     = var.create_log_metrics
   }
 }
 
@@ -349,14 +349,14 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    composer_environments = 1
-    service_accounts     = var.create_service_account ? 1 : 0
-    storage_buckets      = var.create_composer_bucket ? 1 : 0
-    alert_policies       = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards          = var.create_monitoring_dashboard ? 1 : 0
-    log_metrics         = var.create_log_metrics ? length(var.log_metrics) : 0
+    composer_environments    = 1
+    service_accounts         = var.create_service_account ? 1 : 0
+    storage_buckets          = var.create_composer_bucket ? 1 : 0
+    alert_policies           = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards               = var.create_monitoring_dashboard ? 1 : 0
+    log_metrics              = var.create_log_metrics ? length(var.log_metrics) : 0
     environment_iam_bindings = length(var.environment_iam_bindings)
-    bucket_iam_bindings = length(var.dags_bucket_iam_bindings)
+    bucket_iam_bindings      = length(var.dags_bucket_iam_bindings)
   }
 }
 
@@ -364,9 +364,9 @@ output "resource_counts" {
 output "deployment_status" {
   description = "Status of the deployment"
   value = {
-    environment_state    = google_composer_environment.composer.state
-    create_time         = google_composer_environment.composer.create_time
-    update_time         = google_composer_environment.composer.update_time
-    ready_for_use       = google_composer_environment.composer.state == "RUNNING"
+    environment_state = google_composer_environment.composer.state
+    create_time       = google_composer_environment.composer.create_time
+    update_time       = google_composer_environment.composer.update_time
+    ready_for_use     = google_composer_environment.composer.state == "RUNNING"
   }
 }

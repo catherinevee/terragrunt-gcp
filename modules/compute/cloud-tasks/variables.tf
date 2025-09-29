@@ -26,14 +26,14 @@ variable "name_prefix" {
 variable "task_queues" {
   description = "Map of task queue configurations"
   type = map(object({
-    target_type = string  # "http", "app_engine", "pull"
+    target_type = string # "http", "app_engine", "pull"
     location    = optional(string)
-    state       = optional(string)  # "RUNNING", "PAUSED", "DISABLED"
+    state       = optional(string) # "RUNNING", "PAUSED", "DISABLED"
 
     # Rate limiting configuration
     rate_limits = optional(object({
       max_dispatches_per_second = optional(number)
-      max_burst_size           = optional(number)
+      max_burst_size            = optional(number)
       max_concurrent_dispatches = optional(number)
     }))
 
@@ -135,12 +135,12 @@ variable "sample_tasks" {
 
       oauth_token = optional(object({
         service_account_email = string
-        scope                = string
+        scope                 = string
       }))
 
       oidc_token = optional(object({
         service_account_email = string
-        audience             = string
+        audience              = string
       }))
     }))
 
@@ -173,27 +173,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -214,7 +214,7 @@ variable "create_log_metrics" {
 variable "log_metrics" {
   description = "Log-based metrics configuration"
   type = map(object({
-    filter = string
+    filter           = string
     label_extractors = optional(map(string))
 
     metric_descriptor = optional(object({
@@ -256,16 +256,16 @@ variable "create_task_processors" {
 variable "task_processors" {
   description = "Cloud Function task processors configuration"
   type = map(object({
-    runtime          = string
-    entry_point      = string
-    source_bucket    = string
-    source_object    = string
-    trigger_type     = string  # "http", "firestore", "pubsub"
-    trigger_resource = optional(string)
-    memory_mb        = optional(number)
-    timeout_seconds  = optional(number)
+    runtime               = string
+    entry_point           = string
+    source_bucket         = string
+    source_object         = string
+    trigger_type          = string # "http", "firestore", "pubsub"
+    trigger_resource      = optional(string)
+    memory_mb             = optional(number)
+    timeout_seconds       = optional(number)
     environment_variables = optional(map(string))
-    labels          = optional(map(string))
+    labels                = optional(map(string))
   }))
   default = {}
 }
@@ -283,25 +283,25 @@ variable "default_queues_config" {
     high_priority = optional(object({
       max_dispatches_per_second = optional(number)
       max_concurrent_dispatches = optional(number)
-      max_retry_duration       = optional(string)
+      max_retry_duration        = optional(string)
     }))
 
     normal_priority = optional(object({
       max_dispatches_per_second = optional(number)
       max_concurrent_dispatches = optional(number)
-      max_retry_duration       = optional(string)
+      max_retry_duration        = optional(string)
     }))
 
     low_priority = optional(object({
       max_dispatches_per_second = optional(number)
       max_concurrent_dispatches = optional(number)
-      max_retry_duration       = optional(string)
+      max_retry_duration        = optional(string)
     }))
 
     batch_processing = optional(object({
       max_dispatches_per_second = optional(number)
       max_concurrent_dispatches = optional(number)
-      max_retry_duration       = optional(string)
+      max_retry_duration        = optional(string)
     }))
   })
   default = {}
@@ -311,9 +311,9 @@ variable "default_queues_config" {
 variable "dead_letter_queue_config" {
   description = "Dead letter queue configuration"
   type = object({
-    enabled              = bool
+    enabled               = bool
     max_delivery_attempts = optional(number)
-    dead_letter_topic    = optional(string)
+    dead_letter_topic     = optional(string)
   })
   default = {
     enabled = false
@@ -362,9 +362,9 @@ variable "performance_config" {
   description = "Performance configuration for queues"
   type = object({
     high_throughput_mode = optional(bool)
-    batch_size          = optional(number)
-    prefetch_count      = optional(number)
-    ack_deadline        = optional(number)
+    batch_size           = optional(number)
+    prefetch_count       = optional(number)
+    ack_deadline         = optional(number)
   })
   default = {}
 }
@@ -373,10 +373,10 @@ variable "performance_config" {
 variable "security_config" {
   description = "Security configuration for queues"
   type = object({
-    encryption_key     = optional(string)
-    require_ssl       = optional(bool)
-    allowed_origins   = optional(list(string))
-    ip_restrictions   = optional(list(string))
+    encryption_key  = optional(string)
+    require_ssl     = optional(bool)
+    allowed_origins = optional(list(string))
+    ip_restrictions = optional(list(string))
   })
   default = {}
 }
@@ -402,8 +402,8 @@ variable "pubsub_integration" {
     enabled      = bool
     topic_prefix = optional(string)
     subscription_config = optional(object({
-      ack_deadline_seconds = optional(number)
-      retain_acked_messages = optional(bool)
+      ack_deadline_seconds       = optional(number)
+      retain_acked_messages      = optional(bool)
       message_retention_duration = optional(string)
     }))
   })
@@ -415,10 +415,10 @@ variable "pubsub_integration" {
 variable "firestore_integration" {
   description = "Firestore integration configuration"
   type = object({
-    enabled        = bool
-    database_id    = optional(string)
-    collection_id  = optional(string)
-    document_mask  = optional(list(string))
+    enabled       = bool
+    database_id   = optional(string)
+    collection_id = optional(string)
+    document_mask = optional(list(string))
   })
   default = {
     enabled = false
@@ -429,13 +429,13 @@ variable "firestore_integration" {
 variable "alerting_thresholds" {
   description = "Alerting thresholds for queue metrics"
   type = object({
-    queue_depth_threshold     = optional(number)
-    task_failure_rate        = optional(number)
-    task_latency_threshold   = optional(number)
-    dispatch_rate_threshold  = optional(number)
+    queue_depth_threshold   = optional(number)
+    task_failure_rate       = optional(number)
+    task_latency_threshold  = optional(number)
+    dispatch_rate_threshold = optional(number)
   })
   default = {
-    queue_depth_threshold    = 1000
+    queue_depth_threshold   = 1000
     task_failure_rate       = 0.1
     task_latency_threshold  = 30
     dispatch_rate_threshold = 500

@@ -74,11 +74,11 @@ locals {
   # Vulnerability scanning integration
   vulnerability_policies = {
     for name, policy in var.vulnerability_policies : name => {
-      maximum_severity         = policy.maximum_severity
+      maximum_severity           = policy.maximum_severity
       maximum_unfixable_severity = policy.maximum_unfixable_severity
-      allowlisted_cves         = policy.allowlisted_cves
-      blocklisted_cves         = policy.blocklisted_cves
-      cve_expiry_time          = policy.cve_expiry_time
+      allowlisted_cves           = policy.allowlisted_cves
+      blocklisted_cves           = policy.blocklisted_cves
+      cve_expiry_time            = policy.cve_expiry_time
     }
   }
 
@@ -94,11 +94,11 @@ locals {
   # KMS key configurations for attestation signing
   kms_configs = {
     for name, config in var.kms_crypto_key_configs : name => {
-      location     = config.location
-      key_ring     = config.key_ring
-      crypto_key   = config.crypto_key
-      purpose      = config.purpose
-      algorithm    = config.algorithm
+      location        = config.location
+      key_ring        = config.key_ring
+      crypto_key      = config.crypto_key
+      purpose         = config.purpose
+      algorithm       = config.algorithm
       rotation_period = config.rotation_period
     }
   }
@@ -106,9 +106,9 @@ locals {
   # Container Analysis notes for attestations
   analysis_notes = {
     for name, config in var.container_analysis_notes : name => {
-      note_id      = "${var.project_id}-${name}-note"
-      description  = config.description
-      related_urls = config.related_urls
+      note_id         = "${var.project_id}-${name}-note"
+      description     = config.description
+      related_urls    = config.related_urls
       expiration_time = config.expiration_time
       attestation_authority = {
         hint = config.attestation_hint
@@ -130,7 +130,7 @@ resource "google_project_service" "binary_authorization_apis" {
 
   project                    = var.project_id
   service                    = each.value
-  disable_on_destroy        = false
+  disable_on_destroy         = false
   disable_dependent_services = false
 }
 
@@ -139,7 +139,7 @@ resource "google_binary_authorization_policy" "policy" {
   provider = google-beta
   project  = var.project_id
 
-  description           = var.policy_description
+  description                   = var.policy_description
   global_policy_evaluation_mode = var.global_policy_evaluation_mode
 
   # Default admission rule
@@ -275,8 +275,8 @@ resource "google_binary_authorization_attestor" "attestors" {
           dynamic "pkix_public_key" {
             for_each = public_keys.value.pkix_public_key != null ? [public_keys.value.pkix_public_key] : []
             content {
-              public_key_pem       = pkix_public_key.value.public_key_pem
-              signature_algorithm  = pkix_public_key.value.signature_algorithm
+              public_key_pem      = pkix_public_key.value.public_key_pem
+              signature_algorithm = pkix_public_key.value.signature_algorithm
             }
           }
         }
@@ -376,9 +376,9 @@ resource "google_project_iam_member" "attestation_sa_roles" {
 resource "google_container_analysis_occurrence" "attestation_occurrences" {
   for_each = var.create_sample_attestations ? var.sample_attestations : {}
 
-  project  = var.project_id
+  project      = var.project_id
   resource_uri = each.value.resource_uri
-  note_name = google_container_analysis_note.attestor_notes[each.value.attestor].id
+  note_name    = google_container_analysis_note.attestor_notes[each.value.attestor].id
 
   attestation {
     serialized_payload = base64encode(jsonencode({
@@ -480,7 +480,7 @@ resource "google_cloudbuild_trigger" "attestation_trigger" {
 
     options {
       substitution_option = "ALLOW_LOOSE"
-      logging            = "CLOUD_LOGGING_ONLY"
+      logging             = "CLOUD_LOGGING_ONLY"
     }
   }
 

@@ -36,13 +36,13 @@ variable "admission_whitelist_patterns" {
 variable "default_admission_rule" {
   description = "Default admission rule configuration"
   type = object({
-    evaluation_mode  = string
-    enforcement_mode = string
+    evaluation_mode         = string
+    enforcement_mode        = string
     require_attestations_by = list(string)
   })
   default = {
-    evaluation_mode  = "REQUIRE_ATTESTATION"
-    enforcement_mode = "ENFORCED_BLOCK_AND_AUDIT_LOG"
+    evaluation_mode         = "REQUIRE_ATTESTATION"
+    enforcement_mode        = "ENFORCED_BLOCK_AND_AUDIT_LOG"
     require_attestations_by = []
   }
 }
@@ -50,9 +50,9 @@ variable "default_admission_rule" {
 variable "cluster_admission_rules" {
   description = "Admission rules for specific GKE clusters"
   type = map(object({
-    cluster_resource_name = string
-    evaluation_mode       = string
-    enforcement_mode      = string
+    cluster_resource_name   = string
+    evaluation_mode         = string
+    enforcement_mode        = string
     require_attestations_by = list(string)
   }))
   default = {}
@@ -61,10 +61,10 @@ variable "cluster_admission_rules" {
 variable "kubernetes_namespace_admission_rules" {
   description = "Admission rules for specific Kubernetes namespaces"
   type = map(object({
-    cluster_resource_name = string
-    namespace_name        = string
-    evaluation_mode       = string
-    enforcement_mode      = string
+    cluster_resource_name   = string
+    namespace_name          = string
+    evaluation_mode         = string
+    enforcement_mode        = string
     require_attestations_by = list(string)
   }))
   default = {}
@@ -73,11 +73,11 @@ variable "kubernetes_namespace_admission_rules" {
 variable "kubernetes_service_account_admission_rules" {
   description = "Admission rules for specific Kubernetes service accounts"
   type = map(object({
-    cluster_resource_name = string
-    namespace_name        = string
-    service_account_name  = string
-    evaluation_mode       = string
-    enforcement_mode      = string
+    cluster_resource_name   = string
+    namespace_name          = string
+    service_account_name    = string
+    evaluation_mode         = string
+    enforcement_mode        = string
     require_attestations_by = list(string)
   }))
   default = {}
@@ -86,10 +86,10 @@ variable "kubernetes_service_account_admission_rules" {
 variable "cloud_run_admission_rules" {
   description = "Admission rules for Cloud Run services"
   type = map(object({
-    location         = string
-    service_name     = string
-    evaluation_mode  = string
-    enforcement_mode = string
+    location                = string
+    service_name            = string
+    evaluation_mode         = string
+    enforcement_mode        = string
     require_attestations_by = list(string)
   }))
   default = {}
@@ -105,7 +105,7 @@ variable "attestors" {
         id                = string
         ascii_armored_pgp = optional(string)
         pkix_public_key = optional(object({
-          public_key_pem     = string
+          public_key_pem      = string
           signature_algorithm = string
         }))
         comment = optional(string)
@@ -118,7 +118,7 @@ variable "attestors" {
         id                = string
         ascii_armored_pgp = optional(string)
         pkix_public_key = optional(object({
-          public_key_pem     = string
+          public_key_pem      = string
           signature_algorithm = string
         }))
         comment = optional(string)
@@ -158,20 +158,20 @@ variable "enable_vulnerability_scanning" {
 variable "vulnerability_scanning_config" {
   description = "Configuration for vulnerability scanning"
   type = object({
-    severity_threshold   = string
-    cvss_threshold      = number
+    severity_threshold     = string
+    cvss_threshold         = number
     max_unfixable_severity = string
-    allowed_cve_ids     = list(string)
-    blocked_cve_ids     = list(string)
-    scan_timeout        = string
+    allowed_cve_ids        = list(string)
+    blocked_cve_ids        = list(string)
+    scan_timeout           = string
   })
   default = {
-    severity_threshold   = "MEDIUM"
-    cvss_threshold      = 7.0
+    severity_threshold     = "MEDIUM"
+    cvss_threshold         = 7.0
     max_unfixable_severity = "MEDIUM"
-    allowed_cve_ids     = []
-    blocked_cve_ids     = []
-    scan_timeout        = "300s"
+    allowed_cve_ids        = []
+    blocked_cve_ids        = []
+    scan_timeout           = "300s"
   }
 }
 
@@ -184,17 +184,17 @@ variable "enable_continuous_validation" {
 variable "continuous_validation_config" {
   description = "Configuration for continuous validation"
   type = object({
-    enabled                        = bool
-    check_frequency               = string
-    enforce_policy               = bool
+    enabled         = bool
+    check_frequency = string
+    enforce_policy  = bool
     notification_config = optional(object({
       pubsub_topic = string
     }))
   })
   default = {
-    enabled                        = true
-    check_frequency               = "86400s"
-    enforce_policy               = true
+    enabled             = true
+    check_frequency     = "86400s"
+    enforce_policy      = true
     notification_config = null
   }
 }
@@ -209,36 +209,36 @@ variable "platform_policies" {
   description = "Platform-specific Binary Authorization policies"
   type = object({
     gke = optional(object({
-      enabled                = bool
-      deployment_platforms   = list(string)
-      required_attestations  = list(string)
+      enabled               = bool
+      deployment_platforms  = list(string)
+      required_attestations = list(string)
     }))
     cloud_run = optional(object({
-      enabled                = bool
-      deployment_platforms   = list(string)
-      required_attestations  = list(string)
+      enabled               = bool
+      deployment_platforms  = list(string)
+      required_attestations = list(string)
     }))
     compute_engine = optional(object({
-      enabled                = bool
-      deployment_platforms   = list(string)
-      required_attestations  = list(string)
+      enabled               = bool
+      deployment_platforms  = list(string)
+      required_attestations = list(string)
     }))
   })
   default = {
     gke = {
-      enabled                = true
-      deployment_platforms   = ["GKE"]
-      required_attestations  = []
+      enabled               = true
+      deployment_platforms  = ["GKE"]
+      required_attestations = []
     }
     cloud_run = {
-      enabled                = true
-      deployment_platforms   = ["CLOUD_RUN"]
-      required_attestations  = []
+      enabled               = true
+      deployment_platforms  = ["CLOUD_RUN"]
+      required_attestations = []
     }
     compute_engine = {
-      enabled                = false
-      deployment_platforms   = []
-      required_attestations  = []
+      enabled               = false
+      deployment_platforms  = []
+      required_attestations = []
     }
   }
 }
@@ -279,17 +279,17 @@ variable "breakglass_config" {
   description = "Configuration for break-glass access"
   type = object({
     justification_required = bool
-    audit_logging         = bool
-    notification_emails   = list(string)
-    allowed_users        = list(string)
-    expiration_duration  = string
+    audit_logging          = bool
+    notification_emails    = list(string)
+    allowed_users          = list(string)
+    expiration_duration    = string
   })
   default = {
     justification_required = true
-    audit_logging         = true
-    notification_emails   = []
-    allowed_users        = []
-    expiration_duration  = "3600s"
+    audit_logging          = true
+    notification_emails    = []
+    allowed_users          = []
+    expiration_duration    = "3600s"
   }
 }
 
@@ -306,28 +306,28 @@ variable "trusted_registries" {
 variable "blocked_registries" {
   description = "List of blocked container registries"
   type        = list(string)
-  default = []
+  default     = []
 }
 
 variable "trusted_directory_patterns" {
   description = "List of trusted directory patterns for images"
   type        = list(string)
-  default = []
+  default     = []
 }
 
 variable "image_signing_config" {
   description = "Configuration for image signing requirements"
   type = object({
     require_signed_images = bool
-    allowed_signers      = list(string)
-    signature_algorithms = list(string)
-    key_versions        = list(string)
+    allowed_signers       = list(string)
+    signature_algorithms  = list(string)
+    key_versions          = list(string)
   })
   default = {
     require_signed_images = true
-    allowed_signers      = []
-    signature_algorithms = ["RSA_PSS", "ECDSA_P256_SHA256"]
-    key_versions        = []
+    allowed_signers       = []
+    signature_algorithms  = ["RSA_PSS", "ECDSA_P256_SHA256"]
+    key_versions          = []
   }
 }
 
@@ -356,7 +356,7 @@ variable "monitoring_config" {
     enable_logging      = true
     log_severity_filter = "WARNING"
     metrics_namespace   = "binary_authorization"
-    alert_policies     = []
+    alert_policies      = []
   }
 }
 
@@ -394,7 +394,7 @@ variable "supply_chain_validation_config" {
     trusted_builders   = list(string)
     verification_config = object({
       signature_algorithm = string
-      public_key         = string
+      public_key          = string
     })
   })
   default = {
@@ -403,7 +403,7 @@ variable "supply_chain_validation_config" {
     trusted_builders   = ["cloud-build"]
     verification_config = {
       signature_algorithm = "RSA_PSS"
-      public_key         = ""
+      public_key          = ""
     }
   }
 }
@@ -421,7 +421,7 @@ variable "admission_webhook_config" {
     timeout_seconds = number
     failure_policy  = string
     namespace_selector = object({
-      match_labels      = map(string)
+      match_labels = map(string)
       match_expressions = list(object({
         key      = string
         operator = string
@@ -449,8 +449,8 @@ variable "cloud_build_config" {
       branch = string
     }))
     build_config = object({
-      attestor_name = string
-      kms_key      = string
+      attestor_name   = string
+      kms_key         = string
       notes_reference = string
     })
     included_files = list(string)
@@ -475,26 +475,26 @@ variable "dry_run_config" {
   description = "Configuration for dry-run mode"
   type = object({
     log_violations_only = bool
-    test_namespaces    = list(string)
-    test_clusters      = list(string)
-    duration           = string
+    test_namespaces     = list(string)
+    test_clusters       = list(string)
+    duration            = string
   })
   default = {
     log_violations_only = true
-    test_namespaces    = ["test", "staging"]
-    test_clusters      = []
-    duration           = "86400s"
+    test_namespaces     = ["test", "staging"]
+    test_clusters       = []
+    duration            = "86400s"
   }
 }
 
 variable "compliance_standards" {
   description = "Compliance standards to enforce"
   type = object({
-    cis_benchmark    = bool
-    pci_dss         = bool
-    hipaa           = bool
-    nist_800_53     = bool
-    iso_27001       = bool
+    cis_benchmark = bool
+    pci_dss       = bool
+    hipaa         = bool
+    nist_800_53   = bool
+    iso_27001     = bool
     custom_policies = list(object({
       name        = string
       description = string
@@ -502,7 +502,7 @@ variable "compliance_standards" {
     }))
   })
   default = {
-    cis_benchmark    = false
+    cis_benchmark   = false
     pci_dss         = false
     hipaa           = false
     nist_800_53     = false
@@ -514,16 +514,16 @@ variable "compliance_standards" {
 variable "image_freshness_config" {
   description = "Configuration for image freshness validation"
   type = object({
-    enabled               = bool
-    max_image_age_days    = number
-    exempted_images      = list(string)
-    check_frequency      = string
+    enabled            = bool
+    max_image_age_days = number
+    exempted_images    = list(string)
+    check_frequency    = string
   })
   default = {
-    enabled               = false
-    max_image_age_days    = 30
-    exempted_images      = []
-    check_frequency      = "86400s"
+    enabled            = false
+    max_image_age_days = 30
+    exempted_images    = []
+    check_frequency    = "86400s"
   }
 }
 
@@ -549,9 +549,9 @@ variable "policy_data_sync_config" {
   description = "Configuration for policy data synchronization"
   type = object({
     destination_bucket = string
-    sync_frequency    = string
+    sync_frequency     = string
     include_audit_logs = bool
-    retention_days    = number
+    retention_days     = number
   })
   default = null
 }
@@ -559,18 +559,18 @@ variable "policy_data_sync_config" {
 variable "exemption_config" {
   description = "Configuration for policy exemptions"
   type = object({
-    enabled              = bool
+    enabled                = bool
     max_exemption_duration = string
-    require_approval     = bool
-    approvers           = list(string)
-    exemption_reasons   = list(string)
+    require_approval       = bool
+    approvers              = list(string)
+    exemption_reasons      = list(string)
   })
   default = {
-    enabled              = false
+    enabled                = false
     max_exemption_duration = "604800s"
-    require_approval     = true
-    approvers           = []
-    exemption_reasons   = ["EMERGENCY_FIX", "SECURITY_PATCH", "ROLLBACK"]
+    require_approval       = true
+    approvers              = []
+    exemption_reasons      = ["EMERGENCY_FIX", "SECURITY_PATCH", "ROLLBACK"]
   }
 }
 
@@ -583,14 +583,14 @@ variable "enable_cross_project_attestation" {
 variable "cross_project_config" {
   description = "Configuration for cross-project attestation"
   type = object({
-    trusted_projects = list(string)
+    trusted_projects  = list(string)
     attestor_projects = map(string)
-    shared_kms_keys  = list(string)
+    shared_kms_keys   = list(string)
   })
   default = {
-    trusted_projects = []
+    trusted_projects  = []
     attestor_projects = {}
-    shared_kms_keys  = []
+    shared_kms_keys   = []
   }
 }
 
@@ -603,13 +603,13 @@ variable "enable_automated_remediation" {
 variable "remediation_config" {
   description = "Configuration for automated remediation"
   type = object({
-    auto_quarantine     = bool
+    auto_quarantine    = bool
     auto_patch         = bool
     notification_topic = string
-    remediation_steps  = list(object({
+    remediation_steps = list(object({
       violation_type = string
-      action        = string
-      parameters    = map(string)
+      action         = string
+      parameters     = map(string)
     }))
   })
   default = null
@@ -619,24 +619,24 @@ variable "network_policy_config" {
   description = "Network policy configuration for Binary Authorization"
   type = object({
     enable_private_endpoints = bool
-    allowed_networks        = list(string)
-    denied_networks         = list(string)
-    enable_vpc_flow_logs    = bool
+    allowed_networks         = list(string)
+    denied_networks          = list(string)
+    enable_vpc_flow_logs     = bool
   })
   default = {
     enable_private_endpoints = false
-    allowed_networks        = []
-    denied_networks         = []
-    enable_vpc_flow_logs    = false
+    allowed_networks         = []
+    denied_networks          = []
+    enable_vpc_flow_logs     = false
   }
 }
 
 variable "custom_attestor_validation_rules" {
   description = "Custom validation rules for attestors"
   type = map(object({
-    rule_name   = string
-    description = string
-    expression  = string
+    rule_name     = string
+    description   = string
+    expression    = string
     error_message = string
   }))
   default = {}
@@ -651,17 +651,17 @@ variable "enable_cost_optimization" {
 variable "cost_optimization_config" {
   description = "Configuration for cost optimization"
   type = object({
-    cache_attestations     = bool
-    cache_duration        = string
-    batch_verification    = bool
-    batch_size           = number
-    optimize_kms_calls    = bool
+    cache_attestations = bool
+    cache_duration     = string
+    batch_verification = bool
+    batch_size         = number
+    optimize_kms_calls = bool
   })
   default = {
-    cache_attestations     = true
-    cache_duration        = "3600s"
-    batch_verification    = true
-    batch_size           = 10
-    optimize_kms_calls    = true
+    cache_attestations = true
+    cache_duration     = "3600s"
+    batch_verification = true
+    batch_size         = 10
+    optimize_kms_calls = true
   }
 }

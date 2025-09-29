@@ -71,8 +71,8 @@ output "container_analysis_note_details" {
       id                = v.id
       short_description = v.short_description
       long_description  = v.long_description
-      kind             = v.kind
-      project          = v.project
+      kind              = v.kind
+      project           = v.project
     }
   }
 }
@@ -173,19 +173,19 @@ output "alert_policy_names" {
 output "configuration_metadata" {
   description = "Metadata about the Binary Authorization configuration"
   value = {
-    project_id                    = var.project_id
-    global_policy_evaluation_mode = var.global_policy_evaluation_mode
-    total_attestors              = length(google_binary_authorization_attestor.attestors)
-    total_container_analysis_notes = length(google_container_analysis_note.attestation_notes)
-    kms_signing_enabled          = var.enable_kms_signing
-    vulnerability_scanning_enabled = var.enable_vulnerability_scanning
-    continuous_validation_enabled = var.continuous_validation_config.enabled
-    monitoring_enabled           = var.enable_monitoring
-    breakglass_enabled          = var.enable_breakglass
+    project_id                      = var.project_id
+    global_policy_evaluation_mode   = var.global_policy_evaluation_mode
+    total_attestors                 = length(google_binary_authorization_attestor.attestors)
+    total_container_analysis_notes  = length(google_container_analysis_note.attestation_notes)
+    kms_signing_enabled             = var.enable_kms_signing
+    vulnerability_scanning_enabled  = var.enable_vulnerability_scanning
+    continuous_validation_enabled   = var.continuous_validation_config.enabled
+    monitoring_enabled              = var.enable_monitoring
+    breakglass_enabled              = var.enable_breakglass
     supply_chain_validation_enabled = var.enable_supply_chain_validation
     cloud_build_integration_enabled = var.enable_cloud_build_integration
-    total_cloud_build_triggers   = length(google_cloudbuild_trigger.attestation_triggers)
-    total_alert_policies         = length(google_monitoring_alert_policy.binary_auth_alerts)
+    total_cloud_build_triggers      = length(google_cloudbuild_trigger.attestation_triggers)
+    total_alert_policies            = length(google_monitoring_alert_policy.binary_auth_alerts)
   }
 }
 
@@ -285,34 +285,34 @@ output "security_configuration" {
   description = "Summary of security configuration"
   value = {
     policy_enforcement = {
-      global_mode = var.global_policy_evaluation_mode
-      dry_run_enabled = var.enable_dry_run
+      global_mode        = var.global_policy_evaluation_mode
+      dry_run_enabled    = var.enable_dry_run
       breakglass_enabled = var.enable_breakglass
     }
     vulnerability_protection = {
-      scanning_enabled = var.enable_vulnerability_scanning
-      severity_threshold = var.vulnerability_scanning_config.severity_threshold
-      cvss_threshold = var.vulnerability_scanning_config.cvss_threshold
+      scanning_enabled      = var.enable_vulnerability_scanning
+      severity_threshold    = var.vulnerability_scanning_config.severity_threshold
+      cvss_threshold        = var.vulnerability_scanning_config.cvss_threshold
       continuous_validation = var.continuous_validation_config.enabled
     }
     image_verification = {
       require_signed_images = var.image_signing_config.require_signed_images
-      trusted_registries = length(var.trusted_registries)
-      blocked_registries = length(var.blocked_registries)
-      kms_signing_enabled = var.enable_kms_signing
+      trusted_registries    = length(var.trusted_registries)
+      blocked_registries    = length(var.blocked_registries)
+      kms_signing_enabled   = var.enable_kms_signing
     }
     supply_chain = {
-      validation_enabled = var.enable_supply_chain_validation
+      validation_enabled  = var.enable_supply_chain_validation
       provenance_required = var.supply_chain_validation_config.require_provenance
-      sbom_required = var.supply_chain_validation_config.require_sbom
-      trusted_builders = length(var.supply_chain_validation_config.trusted_builders)
+      sbom_required       = var.supply_chain_validation_config.require_sbom
+      trusted_builders    = length(var.supply_chain_validation_config.trusted_builders)
     }
     compliance = {
-      cis_benchmark = var.compliance_standards.cis_benchmark
-      pci_dss = var.compliance_standards.pci_dss
-      hipaa = var.compliance_standards.hipaa
-      nist_800_53 = var.compliance_standards.nist_800_53
-      iso_27001 = var.compliance_standards.iso_27001
+      cis_benchmark   = var.compliance_standards.cis_benchmark
+      pci_dss         = var.compliance_standards.pci_dss
+      hipaa           = var.compliance_standards.hipaa
+      nist_800_53     = var.compliance_standards.nist_800_53
+      iso_27001       = var.compliance_standards.iso_27001
       custom_policies = length(var.compliance_standards.custom_policies)
     }
   }
@@ -323,18 +323,18 @@ output "platform_integration" {
   description = "Platform integration status"
   value = {
     gke = {
-      enabled = var.platform_policies.gke != null ? var.platform_policies.gke.enabled : false
-      platforms = var.platform_policies.gke != null ? var.platform_policies.gke.deployment_platforms : []
+      enabled      = var.platform_policies.gke != null ? var.platform_policies.gke.enabled : false
+      platforms    = var.platform_policies.gke != null ? var.platform_policies.gke.deployment_platforms : []
       attestations = var.platform_policies.gke != null ? length(var.platform_policies.gke.required_attestations) : 0
     }
     cloud_run = {
-      enabled = var.platform_policies.cloud_run != null ? var.platform_policies.cloud_run.enabled : false
-      platforms = var.platform_policies.cloud_run != null ? var.platform_policies.cloud_run.deployment_platforms : []
+      enabled      = var.platform_policies.cloud_run != null ? var.platform_policies.cloud_run.enabled : false
+      platforms    = var.platform_policies.cloud_run != null ? var.platform_policies.cloud_run.deployment_platforms : []
       attestations = var.platform_policies.cloud_run != null ? length(var.platform_policies.cloud_run.required_attestations) : 0
     }
     compute_engine = {
-      enabled = var.platform_policies.compute_engine != null ? var.platform_policies.compute_engine.enabled : false
-      platforms = var.platform_policies.compute_engine != null ? var.platform_policies.compute_engine.deployment_platforms : []
+      enabled      = var.platform_policies.compute_engine != null ? var.platform_policies.compute_engine.enabled : false
+      platforms    = var.platform_policies.compute_engine != null ? var.platform_policies.compute_engine.deployment_platforms : []
       attestations = var.platform_policies.compute_engine != null ? length(var.platform_policies.compute_engine.required_attestations) : 0
     }
   }
@@ -345,23 +345,23 @@ output "operational_configuration" {
   description = "Operational configuration details"
   value = {
     monitoring = {
-      enabled = var.enable_monitoring
-      metrics_enabled = var.monitoring_config.enable_metrics
-      logging_enabled = var.monitoring_config.enable_logging
-      log_severity = var.monitoring_config.log_severity_filter
+      enabled              = var.enable_monitoring
+      metrics_enabled      = var.monitoring_config.enable_metrics
+      logging_enabled      = var.monitoring_config.enable_logging
+      log_severity         = var.monitoring_config.log_severity_filter
       alert_policies_count = length(var.monitoring_config.alert_policies)
     }
     automation = {
-      cloud_build_enabled = var.enable_cloud_build_integration
+      cloud_build_enabled   = var.enable_cloud_build_integration
       automated_remediation = var.enable_automated_remediation
       continuous_validation = var.continuous_validation_config.enabled
-      policy_sync_enabled = var.enable_policy_data_sync
+      policy_sync_enabled   = var.enable_policy_data_sync
     }
     cost_optimization = {
-      enabled = var.enable_cost_optimization
-      cache_enabled = var.cost_optimization_config.cache_attestations
+      enabled            = var.enable_cost_optimization
+      cache_enabled      = var.cost_optimization_config.cache_attestations
       batch_verification = var.cost_optimization_config.batch_verification
-      kms_optimization = var.cost_optimization_config.optimize_kms_calls
+      kms_optimization   = var.cost_optimization_config.optimize_kms_calls
     }
   }
 }
@@ -370,10 +370,10 @@ output "operational_configuration" {
 output "iam_configuration" {
   description = "IAM configuration for Binary Authorization"
   value = {
-    service_account_email = google_service_account.attestation_sa.email
-    policy_bindings_count = length(var.policy_bindings)
-    attestor_iam_bindings = length(var.attestation_authority_iam_bindings)
-    cross_project_enabled = var.enable_cross_project_attestation
+    service_account_email  = google_service_account.attestation_sa.email
+    policy_bindings_count  = length(var.policy_bindings)
+    attestor_iam_bindings  = length(var.attestation_authority_iam_bindings)
+    cross_project_enabled  = var.enable_cross_project_attestation
     trusted_projects_count = length(var.cross_project_config.trusted_projects)
   }
 }
@@ -382,12 +382,12 @@ output "iam_configuration" {
 output "api_status" {
   description = "Status of enabled APIs and services"
   value = {
-    apis_enabled = var.enable_apis
+    apis_enabled             = var.enable_apis
     binary_authorization_api = var.enable_apis
-    container_analysis_api = var.enable_apis
-    cloud_kms_api = var.enable_kms_signing
-    cloud_build_api = var.enable_cloud_build_integration
-    monitoring_api = var.enable_monitoring
+    container_analysis_api   = var.enable_apis
+    cloud_kms_api            = var.enable_kms_signing
+    cloud_build_api          = var.enable_cloud_build_integration
+    monitoring_api           = var.enable_monitoring
   }
 }
 
@@ -396,12 +396,12 @@ output "policy_validation" {
   description = "Policy validation and compliance status"
   value = {
     admission_whitelist_patterns = length(var.admission_whitelist_patterns)
-    trusted_registries_count = length(var.trusted_registries)
-    blocked_registries_count = length(var.blocked_registries)
-    image_freshness_enabled = var.image_freshness_config.enabled
-    max_image_age_days = var.image_freshness_config.max_image_age_days
-    exemption_config_enabled = var.exemption_config.enabled
-    custom_validation_rules = length(var.custom_attestor_validation_rules)
+    trusted_registries_count     = length(var.trusted_registries)
+    blocked_registries_count     = length(var.blocked_registries)
+    image_freshness_enabled      = var.image_freshness_config.enabled
+    max_image_age_days           = var.image_freshness_config.max_image_age_days
+    exemption_config_enabled     = var.exemption_config.enabled
+    custom_validation_rules      = length(var.custom_attestor_validation_rules)
   }
 }
 
@@ -410,9 +410,9 @@ output "network_security" {
   description = "Network security configuration"
   value = {
     private_endpoints_enabled = var.network_policy_config.enable_private_endpoints
-    allowed_networks_count = length(var.network_policy_config.allowed_networks)
-    denied_networks_count = length(var.network_policy_config.denied_networks)
-    vpc_flow_logs_enabled = var.network_policy_config.enable_vpc_flow_logs
+    allowed_networks_count    = length(var.network_policy_config.allowed_networks)
+    denied_networks_count     = length(var.network_policy_config.denied_networks)
+    vpc_flow_logs_enabled     = var.network_policy_config.enable_vpc_flow_logs
   }
 }
 
@@ -420,10 +420,10 @@ output "network_security" {
 output "quota_configuration" {
   description = "Quota and rate limiting configuration"
   value = {
-    rate_limit_configs = length(var.rate_limit_configs)
-    cors_configs = length(var.cors_configs)
-    backend_service_configs = length(var.backend_service_configs)
-    vulnerability_scan_timeout = var.vulnerability_scanning_config.scan_timeout
+    rate_limit_configs              = length(var.rate_limit_configs)
+    cors_configs                    = length(var.cors_configs)
+    backend_service_configs         = length(var.backend_service_configs)
+    vulnerability_scan_timeout      = var.vulnerability_scanning_config.scan_timeout
     continuous_validation_frequency = var.continuous_validation_config.check_frequency
   }
 }
@@ -433,11 +433,11 @@ output "management_urls" {
   description = "URLs for managing Binary Authorization resources"
   value = {
     binary_authorization_console = "https://console.cloud.google.com/security/binary-authorization?project=${var.project_id}"
-    container_analysis_console = "https://console.cloud.google.com/gcr/images?project=${var.project_id}"
-    kms_console = var.enable_kms_signing ? "https://console.cloud.google.com/security/kms?project=${var.project_id}" : null
-    cloud_build_console = var.enable_cloud_build_integration ? "https://console.cloud.google.com/cloud-build?project=${var.project_id}" : null
-    monitoring_console = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
-    audit_logs_console = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
+    container_analysis_console   = "https://console.cloud.google.com/gcr/images?project=${var.project_id}"
+    kms_console                  = var.enable_kms_signing ? "https://console.cloud.google.com/security/kms?project=${var.project_id}" : null
+    cloud_build_console          = var.enable_cloud_build_integration ? "https://console.cloud.google.com/cloud-build?project=${var.project_id}" : null
+    monitoring_console           = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
+    audit_logs_console           = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
   }
 }
 
@@ -449,7 +449,7 @@ output "resource_identifiers" {
     attestor_resource_names = {
       for k, v in google_binary_authorization_attestor.attestors : k => v.id
     }
-    kms_key_resource_name = var.enable_kms_signing ? google_kms_crypto_key.attestation_key[0].id : null
+    kms_key_resource_name         = var.enable_kms_signing ? google_kms_crypto_key.attestation_key[0].id : null
     service_account_resource_name = google_service_account.attestation_sa.id
     container_analysis_note_names = {
       for k, v in google_container_analysis_note.attestation_notes : k => v.id

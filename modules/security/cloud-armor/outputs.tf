@@ -200,26 +200,26 @@ output "security_response_function_trigger_urls" {
 output "security_configuration_summary" {
   description = "Summary of security configuration"
   value = {
-    total_security_policies     = length(local.security_policies)
-    edge_security_policies     = length(local.edge_security_policies)
-    waf_exclusion_policies     = length(var.waf_exclusion_policies)
-    policy_attachments         = length(local.policy_attachments)
+    total_security_policies = length(local.security_policies)
+    edge_security_policies  = length(local.edge_security_policies)
+    waf_exclusion_policies  = length(var.waf_exclusion_policies)
+    policy_attachments      = length(local.policy_attachments)
 
     features_enabled = {
       ddos_protection     = var.enable_ddos_protection
       bot_management      = var.enable_bot_management
       rate_limiting       = var.enable_rate_limiting
       geo_blocking        = var.enable_geo_blocking
-      owasp_rules        = var.enable_owasp_rules
+      owasp_rules         = var.enable_owasp_rules
       adaptive_protection = var.advanced_security_config.enable_adaptive_protection
     }
 
     compliance_features = {
       pci_dss_compliance = var.compliance_config.pci_dss_compliance
-      gdpr_compliance   = var.compliance_config.gdpr_compliance
-      hipaa_compliance  = var.compliance_config.hipaa_compliance
-      sox_compliance    = var.compliance_config.sox_compliance
-      audit_logging     = var.compliance_config.audit_logging_enabled
+      gdpr_compliance    = var.compliance_config.gdpr_compliance
+      hipaa_compliance   = var.compliance_config.hipaa_compliance
+      sox_compliance     = var.compliance_config.sox_compliance
+      audit_logging      = var.compliance_config.audit_logging_enabled
     }
   }
 }
@@ -229,22 +229,22 @@ output "security_rules_summary" {
   description = "Summary of security rules by policy"
   value = {
     for policy_name, policy in local.security_policies : policy_name => {
-      default_action           = policy.default_rule.action
-      rate_limit_rules_count  = length(policy.rate_limit_rules)
-      geo_rules_count         = length(policy.geo_rules)
-      ip_rules_count          = length(policy.ip_rules)
-      custom_rules_count      = length(policy.custom_rules)
-      owasp_rules_count       = length(policy.owasp_rules)
+      default_action             = policy.default_rule.action
+      rate_limit_rules_count     = length(policy.rate_limit_rules)
+      geo_rules_count            = length(policy.geo_rules)
+      ip_rules_count             = length(policy.ip_rules)
+      custom_rules_count         = length(policy.custom_rules)
+      owasp_rules_count          = length(policy.owasp_rules)
       bot_management_rules_count = length(policy.bot_management_rules)
 
       adaptive_protection = {
         layer_7_ddos_enabled = policy.adaptive_protection_config.layer_7_ddos_defense_config.enable
-        rule_visibility     = policy.adaptive_protection_config.layer_7_ddos_defense_config.rule_visibility
+        rule_visibility      = policy.adaptive_protection_config.layer_7_ddos_defense_config.rule_visibility
       }
 
       advanced_options = {
         json_parsing = policy.advanced_options_config.json_parsing
-        log_level   = policy.advanced_options_config.log_level
+        log_level    = policy.advanced_options_config.log_level
       }
     }
   }
@@ -256,7 +256,7 @@ output "ip_management_summary" {
   value = {
     allowlists = {
       for name, config in var.ip_allowlists : name => {
-        priority  = config.priority
+        priority = config.priority
         ip_count = length(config.ip_ranges)
         action   = config.action
       }
@@ -264,14 +264,14 @@ output "ip_management_summary" {
 
     blocklists = {
       for name, config in var.ip_blocklists : name => {
-        priority  = config.priority
+        priority = config.priority
         ip_count = length(config.ip_ranges)
         action   = config.action
       }
     }
 
     geographic_blocking = {
-      enabled          = var.enable_geo_blocking
+      enabled           = var.enable_geo_blocking
       blocked_countries = var.blocked_countries
       allowed_countries = var.allowed_countries
     }
@@ -285,8 +285,8 @@ output "rate_limiting_summary" {
     enabled = var.enable_rate_limiting
     default_config = {
       requests_per_minute = var.default_rate_limit.requests_per_minute
-      burst_capacity     = var.default_rate_limit.burst_capacity
-      ban_duration_sec   = var.default_rate_limit.ban_duration_sec
+      burst_capacity      = var.default_rate_limit.burst_capacity
+      ban_duration_sec    = var.default_rate_limit.ban_duration_sec
     }
 
     custom_rate_limits = {
@@ -294,8 +294,8 @@ output "rate_limiting_summary" {
         rate_limit_rules = [
           for rule in policy.rate_limit_rules : {
             priority     = rule.priority
-            action      = rule.action
-            threshold   = rule.rate_limit_options.rate_limit_threshold
+            action       = rule.action
+            threshold    = rule.rate_limit_options.rate_limit_threshold
             ban_duration = rule.rate_limit_options.ban_duration_sec
           }
         ]
@@ -309,19 +309,19 @@ output "rate_limiting_summary" {
 output "security_monitoring_summary" {
   description = "Summary of security monitoring configuration"
   value = {
-    monitoring_enabled = var.create_monitoring_alerts
-    dashboard_created  = var.create_monitoring_dashboard
+    monitoring_enabled  = var.create_monitoring_alerts
+    dashboard_created   = var.create_monitoring_dashboard
     log_metrics_enabled = var.create_log_metrics
 
-    alert_policies_count    = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    log_metrics_count      = var.create_log_metrics ? length(var.log_metrics) : 0
+    alert_policies_count        = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    log_metrics_count           = var.create_log_metrics ? length(var.log_metrics) : 0
     notification_channels_count = length(var.notification_channels)
 
     integration_status = {
-      cloud_logging   = var.integration_config.cloud_logging_enabled
-      cloud_monitoring = var.integration_config.cloud_monitoring_enabled
+      cloud_logging           = var.integration_config.cloud_logging_enabled
+      cloud_monitoring        = var.integration_config.cloud_monitoring_enabled
       security_command_center = var.integration_config.security_command_center
-      third_party_siem = var.integration_config.third_party_siem.enabled
+      third_party_siem        = var.integration_config.third_party_siem.enabled
     }
   }
 }
@@ -378,7 +378,7 @@ output "waf_configuration_summary" {
   description = "Summary of WAF configuration"
   value = {
     owasp_rules_enabled = var.enable_owasp_rules
-    owasp_sensitivity  = var.owasp_rule_sensitivity
+    owasp_sensitivity   = var.owasp_rule_sensitivity
 
     waf_exclusions = {
       for policy_name, policy in var.waf_exclusion_policies : policy_name => {
@@ -401,14 +401,14 @@ output "connection_info" {
   description = "Connection information for Cloud Armor integration"
   value = {
     project_id = var.project_id
-    region    = var.region
+    region     = var.region
 
     security_policies = {
       for k, v in google_compute_security_policy.security_policies : k => {
         policy_id   = v.id
         policy_name = v.name
-        self_link  = v.self_link
-        type       = v.type
+        self_link   = v.self_link
+        type        = v.type
       }
     }
 
@@ -416,8 +416,8 @@ output "connection_info" {
       for k, v in google_compute_security_policy.edge_security_policies : k => {
         policy_id   = v.id
         policy_name = v.name
-        self_link  = v.self_link
-        type       = v.type
+        self_link   = v.self_link
+        type        = v.type
       }
     }
   }
@@ -428,14 +428,14 @@ output "connection_info" {
 output "module_configuration" {
   description = "Module configuration summary"
   value = {
-    project_id               = var.project_id
-    region                  = var.region
-    environment             = local.environment
-    name_prefix             = local.name_prefix
-    service_account_created = var.create_service_account
-    monitoring_enabled      = var.create_monitoring_alerts
-    dashboard_created       = var.create_monitoring_dashboard
-    log_metrics_enabled     = var.create_log_metrics
+    project_id                 = var.project_id
+    region                     = var.region
+    environment                = local.environment
+    name_prefix                = local.name_prefix
+    service_account_created    = var.create_service_account
+    monitoring_enabled         = var.create_monitoring_alerts
+    dashboard_created          = var.create_monitoring_dashboard
+    log_metrics_enabled        = var.create_log_metrics
     response_functions_enabled = var.create_security_response_functions
   }
 }
@@ -450,16 +450,16 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    security_policies           = length(var.security_policies)
-    edge_security_policies     = length(var.edge_security_policies)
-    waf_exclusion_policies     = length(var.waf_exclusion_policies)
+    security_policies              = length(var.security_policies)
+    edge_security_policies         = length(var.edge_security_policies)
+    waf_exclusion_policies         = length(var.waf_exclusion_policies)
     backend_services_with_policies = length(var.policy_attachments)
-    service_accounts           = var.create_service_account ? 1 : 0
-    alert_policies            = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards               = var.create_monitoring_dashboard ? 1 : 0
-    log_metrics              = var.create_log_metrics ? length(var.log_metrics) : 0
-    notification_channels     = length(var.notification_channels)
-    security_response_functions = var.create_security_response_functions ? length(var.security_response_functions) : 0
+    service_accounts               = var.create_service_account ? 1 : 0
+    alert_policies                 = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards                     = var.create_monitoring_dashboard ? 1 : 0
+    log_metrics                    = var.create_log_metrics ? length(var.log_metrics) : 0
+    notification_channels          = length(var.notification_channels)
+    security_response_functions    = var.create_security_response_functions ? length(var.security_response_functions) : 0
   }
 }
 
@@ -483,8 +483,8 @@ output "cost_summary" {
     ])
 
     premium_features = {
-      adaptive_protection = var.advanced_security_config.enable_adaptive_protection
-      bot_management     = var.enable_bot_management
+      adaptive_protection    = var.advanced_security_config.enable_adaptive_protection
+      bot_management         = var.enable_bot_management
       advanced_rate_limiting = var.enable_rate_limiting
     }
   }

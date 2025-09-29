@@ -34,17 +34,17 @@ output "artifact_registry_repositories" {
   description = "Map of Artifact Registry repository details"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k => {
-      id                    = v.id
-      name                  = v.name
-      location              = v.location
-      format                = v.format
-      description           = v.description
-      labels                = v.labels
-      kms_key_name          = v.kms_key_name
-      repository_id         = v.repository_id
-      create_time           = v.create_time
-      update_time           = v.update_time
-      mode                  = v.mode
+      id                     = v.id
+      name                   = v.name
+      location               = v.location
+      format                 = v.format
+      description            = v.description
+      labels                 = v.labels
+      kms_key_name           = v.kms_key_name
+      repository_id          = v.repository_id
+      create_time            = v.create_time
+      update_time            = v.update_time
+      mode                   = v.mode
       cleanup_policy_dry_run = v.cleanup_policy_dry_run
     }
   }
@@ -323,7 +323,7 @@ output "docker_registry_urls" {
   description = "Map of Docker repositories to their registry URLs"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      "${v.location}-docker.pkg.dev/${var.project_id}/${v.repository_id}"
+    "${v.location}-docker.pkg.dev/${var.project_id}/${v.repository_id}"
     if v.format == "DOCKER"
   }
 }
@@ -332,7 +332,7 @@ output "maven_registry_urls" {
   description = "Map of Maven repositories to their registry URLs"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      "https://${v.location}-maven.pkg.dev/${var.project_id}/${v.repository_id}"
+    "https://${v.location}-maven.pkg.dev/${var.project_id}/${v.repository_id}"
     if v.format == "MAVEN"
   }
 }
@@ -341,7 +341,7 @@ output "npm_registry_urls" {
   description = "Map of NPM repositories to their registry URLs"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      "https://${v.location}-npm.pkg.dev/${var.project_id}/${v.repository_id}"
+    "https://${v.location}-npm.pkg.dev/${var.project_id}/${v.repository_id}"
     if v.format == "NPM"
   }
 }
@@ -350,7 +350,7 @@ output "python_registry_urls" {
   description = "Map of Python repositories to their registry URLs"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      "https://${v.location}-python.pkg.dev/${var.project_id}/${v.repository_id}/simple/"
+    "https://${v.location}-python.pkg.dev/${var.project_id}/${v.repository_id}/simple/"
     if v.format == "PYTHON"
   }
 }
@@ -359,7 +359,7 @@ output "go_registry_urls" {
   description = "Map of Go repositories to their registry URLs"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      "${v.location}-go.pkg.dev/${var.project_id}/${v.repository_id}"
+    "${v.location}-go.pkg.dev/${var.project_id}/${v.repository_id}"
     if v.format == "GO"
   }
 }
@@ -368,7 +368,7 @@ output "helm_registry_urls" {
   description = "Map of Helm repositories to their registry URLs"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      "oci://${v.location}-docker.pkg.dev/${var.project_id}/${v.repository_id}"
+    "oci://${v.location}-docker.pkg.dev/${var.project_id}/${v.repository_id}"
     if v.format == "HELM"
   }
 }
@@ -395,7 +395,7 @@ output "repository_immutable_tags" {
   description = "Map of repositories with immutable tag configurations"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      try(v.docker_config[0].immutable_tags, false)
+    try(v.docker_config[0].immutable_tags, false)
     if v.format == "DOCKER" && length(v.docker_config) > 0
   }
 }
@@ -404,7 +404,7 @@ output "repository_public_access" {
   description = "Map of repositories with public access configuration"
   value = {
     for k, v in google_artifact_registry_repository.repositories : k =>
-      contains(try(flatten([for b in google_artifact_registry_repository_iam_binding.bindings : b.members if b.repository == v.id && b.role == "roles/artifactregistry.reader"]), []), "allUsers")
+    contains(try(flatten([for b in google_artifact_registry_repository_iam_binding.bindings : b.members if b.repository == v.id && b.role == "roles/artifactregistry.reader"]), []), "allUsers")
   }
 }
 

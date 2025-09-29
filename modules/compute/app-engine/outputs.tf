@@ -111,8 +111,8 @@ output "domain_mappings" {
   value = {
     for k, v in google_app_engine_domain_mapping.domain :
     k => {
-      id          = v.id
-      domain_name = v.domain_name
+      id               = v.id
+      domain_name      = v.domain_name
       resource_records = try(v.resource_records, [])
     }
   }
@@ -180,15 +180,15 @@ output "gcloud_commands" {
 
     instances_list = "gcloud app instances list --project=${var.project_id} --service=${local.service_name}"
 
-    traffic_split = var.deploy_version ? "gcloud app services set-traffic ${local.service_name} --splits=${var.version_id != null ? var.version_id : \"latest\"}=1 --project=${var.project_id}" : null
+    traffic_split = var.deploy_version ? "gcloud app services set-traffic ${local.service_name} --splits=${var.version_id != null ? var.version_id : "latest"}=1 --project=${var.project_id}" : null
 
-    version_migrate = var.deploy_version ? "gcloud app versions migrate ${var.version_id != null ? var.version_id : \"latest\"} --service=${local.service_name} --project=${var.project_id}" : null
+    version_migrate = var.deploy_version ? "gcloud app versions migrate ${var.version_id != null ? var.version_id : "latest"} --service=${local.service_name} --project=${var.project_id}" : null
 
-    version_start = var.deploy_version ? "gcloud app versions start ${var.version_id != null ? var.version_id : \"latest\"} --service=${local.service_name} --project=${var.project_id}" : null
+    version_start = var.deploy_version ? "gcloud app versions start ${var.version_id != null ? var.version_id : "latest"} --service=${local.service_name} --project=${var.project_id}" : null
 
-    version_stop = var.deploy_version ? "gcloud app versions stop ${var.version_id != null ? var.version_id : \"latest\"} --service=${local.service_name} --project=${var.project_id}" : null
+    version_stop = var.deploy_version ? "gcloud app versions stop ${var.version_id != null ? var.version_id : "latest"} --service=${local.service_name} --project=${var.project_id}" : null
 
-    version_delete = var.deploy_version ? "gcloud app versions delete ${var.version_id != null ? var.version_id : \"latest\"} --service=${local.service_name} --project=${var.project_id}" : null
+    version_delete = var.deploy_version ? "gcloud app versions delete ${var.version_id != null ? var.version_id : "latest"} --service=${local.service_name} --project=${var.project_id}" : null
 
     firewall_update = "gcloud app firewall-rules update PRIORITY --action=ACTION --source-range=RANGE --project=${var.project_id}"
   }

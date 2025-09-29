@@ -5,11 +5,11 @@ output "job_name" {
   description = "Name of the Dataflow job"
   value = var.template_type == "classic" && var.deploy_job ? (
     try(google_dataflow_job.classic_job[0].name, null)
-  ) : var.template_type == "flex" && var.deploy_job ? (
+    ) : var.template_type == "flex" && var.deploy_job ? (
     try(google_dataflow_flex_template_job.flex_job[0].name, null)
-  ) : var.template_type == "sql" && var.deploy_job ? (
+    ) : var.template_type == "sql" && var.deploy_job ? (
     try(google_dataflow_job.sql_job[0].name, null)
-  ) : var.template_type == "python" && var.deploy_job ? (
+    ) : var.template_type == "python" && var.deploy_job ? (
     local.job_name
   ) : null
 }
@@ -18,9 +18,9 @@ output "job_id" {
   description = "ID of the Dataflow job"
   value = var.template_type == "classic" && var.deploy_job ? (
     try(google_dataflow_job.classic_job[0].id, null)
-  ) : var.template_type == "flex" && var.deploy_job ? (
+    ) : var.template_type == "flex" && var.deploy_job ? (
     try(google_dataflow_flex_template_job.flex_job[0].id, null)
-  ) : var.template_type == "sql" && var.deploy_job ? (
+    ) : var.template_type == "sql" && var.deploy_job ? (
     try(google_dataflow_job.sql_job[0].id, null)
   ) : null
 }
@@ -29,9 +29,9 @@ output "job_state" {
   description = "Current state of the Dataflow job"
   value = var.template_type == "classic" && var.deploy_job ? (
     try(google_dataflow_job.classic_job[0].state, null)
-  ) : var.template_type == "flex" && var.deploy_job ? (
+    ) : var.template_type == "flex" && var.deploy_job ? (
     try(google_dataflow_flex_template_job.flex_job[0].state, null)
-  ) : var.template_type == "sql" && var.deploy_job ? (
+    ) : var.template_type == "sql" && var.deploy_job ? (
     try(google_dataflow_job.sql_job[0].state, null)
   ) : null
 }
@@ -40,9 +40,9 @@ output "job_type" {
   description = "Type of the Dataflow job"
   value = var.template_type == "classic" && var.deploy_job ? (
     try(google_dataflow_job.classic_job[0].type, null)
-  ) : var.template_type == "flex" && var.deploy_job ? (
+    ) : var.template_type == "flex" && var.deploy_job ? (
     try(google_dataflow_flex_template_job.flex_job[0].type, null)
-  ) : var.template_type == "sql" && var.deploy_job ? (
+    ) : var.template_type == "sql" && var.deploy_job ? (
     try(google_dataflow_job.sql_job[0].type, null)
   ) : null
 }
@@ -82,14 +82,14 @@ output "classic_job_details" {
 output "flex_job_details" {
   description = "Details of flex template Dataflow job"
   value = var.template_type == "flex" && var.deploy_job ? {
-    id                       = try(google_dataflow_flex_template_job.flex_job[0].id, null)
-    name                     = try(google_dataflow_flex_template_job.flex_job[0].name, null)
-    state                    = try(google_dataflow_flex_template_job.flex_job[0].state, null)
-    type                     = try(google_dataflow_flex_template_job.flex_job[0].type, null)
-    container_spec_gcs_path  = try(google_dataflow_flex_template_job.flex_job[0].container_spec_gcs_path, null)
-    max_workers              = try(google_dataflow_flex_template_job.flex_job[0].max_workers, null)
-    on_delete                = try(google_dataflow_flex_template_job.flex_job[0].on_delete, null)
-    labels                   = try(google_dataflow_flex_template_job.flex_job[0].labels, null)
+    id                      = try(google_dataflow_flex_template_job.flex_job[0].id, null)
+    name                    = try(google_dataflow_flex_template_job.flex_job[0].name, null)
+    state                   = try(google_dataflow_flex_template_job.flex_job[0].state, null)
+    type                    = try(google_dataflow_flex_template_job.flex_job[0].type, null)
+    container_spec_gcs_path = try(google_dataflow_flex_template_job.flex_job[0].container_spec_gcs_path, null)
+    max_workers             = try(google_dataflow_flex_template_job.flex_job[0].max_workers, null)
+    on_delete               = try(google_dataflow_flex_template_job.flex_job[0].on_delete, null)
+    labels                  = try(google_dataflow_flex_template_job.flex_job[0].labels, null)
   } : null
 }
 
@@ -144,14 +144,14 @@ output "temp_bucket_url" {
 
 output "staging_location" {
   description = "GCS staging location"
-  value       = var.staging_location != null ? var.staging_location : (
+  value = var.staging_location != null ? var.staging_location : (
     var.create_staging_bucket ? "gs://${google_storage_bucket.staging_bucket[0].name}/staging" : null
   )
 }
 
 output "temp_location" {
   description = "GCS temp location"
-  value       = var.temp_location != null ? var.temp_location : (
+  value = var.temp_location != null ? var.temp_location : (
     var.create_temp_bucket ? "gs://${google_storage_bucket.temp_bucket[0].name}/temp" : null
   )
 }

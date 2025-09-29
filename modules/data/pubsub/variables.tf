@@ -104,7 +104,7 @@ variable "dead_letter_topic_name" {
 variable "dead_letter_message_retention_duration" {
   description = "Message retention for dead letter topic"
   type        = string
-  default     = "604800s"  # 7 days
+  default     = "604800s" # 7 days
 }
 
 variable "dead_letter_kms_key_name" {
@@ -129,17 +129,17 @@ variable "create_dead_letter_monitoring_subscription" {
 variable "subscriptions" {
   description = "Map of subscriptions to create"
   type = map(object({
-    labels                     = optional(map(string))
-    ack_deadline_seconds       = optional(number)
-    message_retention_duration = optional(string)
-    retain_acked_messages      = optional(bool)
-    ttl                       = optional(string)
-    enable_dead_letter_policy  = optional(bool)
-    dead_letter_topic         = optional(string)
-    max_delivery_attempts     = optional(number)
+    labels                       = optional(map(string))
+    ack_deadline_seconds         = optional(number)
+    message_retention_duration   = optional(string)
+    retain_acked_messages        = optional(bool)
+    ttl                          = optional(string)
+    enable_dead_letter_policy    = optional(bool)
+    dead_letter_topic            = optional(string)
+    max_delivery_attempts        = optional(number)
     enable_exactly_once_delivery = optional(bool)
-    enable_message_ordering   = optional(bool)
-    filter                    = optional(string)
+    enable_message_ordering      = optional(bool)
+    filter                       = optional(string)
 
     retry_policy = optional(object({
       minimum_backoff = optional(string)
@@ -151,7 +151,7 @@ variable "subscriptions" {
       attributes    = optional(map(string))
       oidc_token = optional(object({
         service_account_email = string
-        audience             = optional(string)
+        audience              = optional(string)
       }))
       no_wrapper = optional(object({
         write_metadata = bool
@@ -172,10 +172,10 @@ variable "subscriptions" {
       filename_prefix          = optional(string)
       filename_suffix          = optional(string)
       filename_datetime_format = optional(string)
-      max_duration            = optional(string)
-      max_bytes               = optional(number)
-      state                   = optional(string)
-      service_account_email   = optional(string)
+      max_duration             = optional(string)
+      max_bytes                = optional(number)
+      state                    = optional(string)
+      service_account_email    = optional(string)
       avro_config = optional(object({
         write_metadata   = optional(bool)
         use_topic_schema = optional(bool)
@@ -232,8 +232,8 @@ variable "subscription_iam_members" {
   description = "Individual IAM member bindings for subscriptions"
   type = map(object({
     subscription = string
-    role        = string
-    member      = string
+    role         = string
+    member       = string
     condition = optional(object({
       title       = string
       description = optional(string)
@@ -255,27 +255,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -342,13 +342,13 @@ variable "lite_subscribe_capacity_mib_per_sec" {
 variable "lite_retention_bytes_per_partition" {
   description = "Retention bytes per partition"
   type        = string
-  default     = "32212254720"  # 30 GiB
+  default     = "32212254720" # 30 GiB
 }
 
 variable "lite_retention_period" {
   description = "Retention period for Lite topic"
   type        = string
-  default     = "86400s"  # 1 day
+  default     = "86400s" # 1 day
 }
 
 variable "lite_throughput_reservation" {

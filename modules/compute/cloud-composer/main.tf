@@ -40,16 +40,16 @@ locals {
 
     # Airflow configuration
     airflow_config_overrides = {}
-    pypi_packages           = {}
-    env_variables          = {}
+    pypi_packages            = {}
+    env_variables            = {}
 
     # Network configuration
     enable_private_ip_google_access = true
-    enable_ip_alias                = true
+    enable_ip_alias                 = true
 
     # Security configuration
     enable_private_endpoint = true
-    master_ipv4_cidr_block = "172.16.0.0/28"
+    master_ipv4_cidr_block  = "172.16.0.0/28"
 
     # Web server configuration
     web_server_access_control = {
@@ -68,25 +68,25 @@ locals {
 
   # Software configuration with defaults
   software_config = merge({
-    image_version = "composer-2-airflow-2"
+    image_version  = "composer-2-airflow-2"
     python_version = "3"
     scheduler = {
-      cpu    = 0.5
-      memory = 1.875
+      cpu     = 0.5
+      memory  = 1.875
       storage = 1
-      count  = 1
+      count   = 1
     }
     web_server = {
-      cpu    = 0.5
-      memory = 1.875
+      cpu     = 0.5
+      memory  = 1.875
       storage = 1
     }
     worker = {
-      cpu        = 0.5
-      memory     = 1.875
-      storage    = 1
-      min_count  = 1
-      max_count  = 3
+      cpu       = 0.5
+      memory    = 1.875
+      storage   = 1
+      min_count = 1
+      max_count = 3
     }
   }, var.software_config)
 
@@ -122,7 +122,7 @@ locals {
   # Private cluster configuration
   private_cluster_config = merge({
     enable_private_nodes    = true
-    master_ipv4_cidr_block = "172.16.0.0/28"
+    master_ipv4_cidr_block  = "172.16.0.0/28"
     enable_private_endpoint = true
   }, var.private_cluster_config)
 
@@ -137,7 +137,7 @@ locals {
   # Database configuration
   database_config = merge({
     machine_type = "db-n1-standard-2"
-    zone        = var.zone
+    zone         = var.zone
   }, var.database_config)
 
   # Web server configuration
@@ -172,7 +172,7 @@ resource "google_project_service" "apis" {
   service = each.key
 
   disable_dependent_services = false
-  disable_on_destroy        = false
+  disable_on_destroy         = false
 }
 
 # Service account for Composer environment
@@ -252,10 +252,10 @@ resource "google_composer_environment" "composer" {
 
       service_account = var.create_service_account ? google_service_account.composer[0].email : local.node_config.service_account
       oauth_scopes    = local.node_config.oauth_scopes
-      tags           = local.node_config.tags
+      tags            = local.node_config.tags
 
-      enable_ip_alias      = local.node_config.enable_ip_alias
-      max_pods_per_node    = local.node_config.max_pods_per_node
+      enable_ip_alias   = local.node_config.enable_ip_alias
+      max_pods_per_node = local.node_config.max_pods_per_node
     }
 
     # Software configuration
@@ -298,8 +298,8 @@ resource "google_composer_environment" "composer" {
       for_each = var.enable_private_environment ? [1] : []
       content {
         enable_private_endpoint                = local.private_cluster_config.enable_private_endpoint
-        master_ipv4_cidr_block                = local.private_cluster_config.master_ipv4_cidr_block
-        cloud_sql_ipv4_cidr_block             = var.cloud_sql_ipv4_cidr_block
+        master_ipv4_cidr_block                 = local.private_cluster_config.master_ipv4_cidr_block
+        cloud_sql_ipv4_cidr_block              = var.cloud_sql_ipv4_cidr_block
         cloud_composer_network_ipv4_cidr_block = var.composer_network_ipv4_cidr_block
         enable_privately_used_public_ips       = var.enable_privately_used_public_ips
         cloud_composer_connection_subnetwork   = var.composer_connection_subnetwork
@@ -324,7 +324,7 @@ resource "google_composer_environment" "composer" {
       for_each = var.enable_database_config ? [1] : []
       content {
         machine_type = local.database_config.machine_type
-        zone        = local.database_config.zone
+        zone         = local.database_config.zone
       }
     }
 
@@ -446,9 +446,9 @@ resource "google_monitoring_alert_policy" "composer_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -502,7 +502,7 @@ resource "google_monitoring_alert_policy" "composer_alerts" {
 resource "google_monitoring_dashboard" "composer" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Cloud Composer - ${title(local.environment)}"
     mosaicLayout = {
@@ -626,9 +626,9 @@ resource "google_logging_metric" "composer_metrics" {
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
     content {
-      metric_kind = each.value.metric_descriptor.metric_kind
-      value_type  = each.value.metric_descriptor.value_type
-      unit        = each.value.metric_descriptor.unit
+      metric_kind  = each.value.metric_descriptor.metric_kind
+      value_type   = each.value.metric_descriptor.value_type
+      unit         = each.value.metric_descriptor.unit
       display_name = each.value.metric_descriptor.display_name
 
       dynamic "labels" {

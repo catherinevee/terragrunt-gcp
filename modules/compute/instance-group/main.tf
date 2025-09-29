@@ -61,15 +61,15 @@ resource "google_project_iam_member" "mig_sa" {
 
 # Instance Template
 resource "google_compute_instance_template" "template" {
-  project      = var.project_id
-  name_prefix  = "${var.name}-template-"
-  description  = var.instance_template_description
+  project     = var.project_id
+  name_prefix = "${var.name}-template-"
+  description = var.instance_template_description
 
-  machine_type         = var.machine_type
-  min_cpu_platform    = var.min_cpu_platform
-  can_ip_forward      = var.can_ip_forward
-  enable_display      = var.enable_display
-  resource_policies   = var.resource_policies
+  machine_type      = var.machine_type
+  min_cpu_platform  = var.min_cpu_platform
+  can_ip_forward    = var.can_ip_forward
+  enable_display    = var.enable_display
+  resource_policies = var.resource_policies
 
   # Boot disk
   disk {
@@ -119,9 +119,9 @@ resource "google_compute_instance_template" "template" {
       subnetwork         = lookup(network_interface.value, "subnetwork", null)
       subnetwork_project = lookup(network_interface.value, "subnetwork_project", var.project_id)
       network_ip         = lookup(network_interface.value, "network_ip", null)
-      nic_type          = lookup(network_interface.value, "nic_type", null)
-      stack_type        = lookup(network_interface.value, "stack_type", "IPV4_ONLY")
-      queue_count       = lookup(network_interface.value, "queue_count", null)
+      nic_type           = lookup(network_interface.value, "nic_type", null)
+      stack_type         = lookup(network_interface.value, "stack_type", "IPV4_ONLY")
+      queue_count        = lookup(network_interface.value, "queue_count", null)
 
       dynamic "access_config" {
         for_each = lookup(network_interface.value, "access_config", [])
@@ -180,9 +180,9 @@ resource "google_compute_instance_template" "template" {
   # Scheduling
   scheduling {
     preemptible                 = var.preemptible
-    automatic_restart          = var.preemptible ? false : var.automatic_restart
-    on_host_maintenance        = var.on_host_maintenance
-    provisioning_model         = var.provisioning_model
+    automatic_restart           = var.preemptible ? false : var.automatic_restart
+    on_host_maintenance         = var.on_host_maintenance
+    provisioning_model          = var.provisioning_model
     instance_termination_action = var.instance_termination_action
 
     dynamic "node_affinities" {
@@ -215,8 +215,8 @@ resource "google_compute_instance_template" "template" {
     for_each = var.advanced_machine_features != null ? [var.advanced_machine_features] : []
     content {
       enable_nested_virtualization = lookup(advanced_machine_features.value, "enable_nested_virtualization", null)
-      threads_per_core            = lookup(advanced_machine_features.value, "threads_per_core", null)
-      visible_core_count          = lookup(advanced_machine_features.value, "visible_core_count", null)
+      threads_per_core             = lookup(advanced_machine_features.value, "threads_per_core", null)
+      visible_core_count           = lookup(advanced_machine_features.value, "visible_core_count", null)
     }
   }
 
@@ -266,9 +266,9 @@ resource "google_compute_health_check" "health_check" {
     content {
       port               = var.health_check_port
       request_path       = var.health_check_request_path
-      host              = var.health_check_host
-      response          = var.health_check_response
-      proxy_header      = var.health_check_proxy_header
+      host               = var.health_check_host
+      response           = var.health_check_response
+      proxy_header       = var.health_check_proxy_header
       port_specification = var.health_check_port_specification
     }
   }
@@ -278,9 +278,9 @@ resource "google_compute_health_check" "health_check" {
     content {
       port               = var.health_check_port
       request_path       = var.health_check_request_path
-      host              = var.health_check_host
-      response          = var.health_check_response
-      proxy_header      = var.health_check_proxy_header
+      host               = var.health_check_host
+      response           = var.health_check_response
+      proxy_header       = var.health_check_proxy_header
       port_specification = var.health_check_port_specification
     }
   }
@@ -289,9 +289,9 @@ resource "google_compute_health_check" "health_check" {
     for_each = var.health_check_type == "tcp" ? [1] : []
     content {
       port               = var.health_check_port
-      request           = var.health_check_tcp_request
-      response          = var.health_check_tcp_response
-      proxy_header      = var.health_check_proxy_header
+      request            = var.health_check_tcp_request
+      response           = var.health_check_tcp_response
+      proxy_header       = var.health_check_proxy_header
       port_specification = var.health_check_port_specification
     }
   }
@@ -300,9 +300,9 @@ resource "google_compute_health_check" "health_check" {
     for_each = var.health_check_type == "ssl" ? [1] : []
     content {
       port               = var.health_check_port
-      request           = var.health_check_tcp_request
-      response          = var.health_check_tcp_response
-      proxy_header      = var.health_check_proxy_header
+      request            = var.health_check_tcp_request
+      response           = var.health_check_tcp_response
+      proxy_header       = var.health_check_proxy_header
       port_specification = var.health_check_port_specification
     }
   }
@@ -311,7 +311,7 @@ resource "google_compute_health_check" "health_check" {
     for_each = var.health_check_type == "grpc" ? [1] : []
     content {
       port               = var.health_check_port
-      grpc_service_name = var.health_check_grpc_service_name
+      grpc_service_name  = var.health_check_grpc_service_name
       port_specification = var.health_check_port_specification
     }
   }
@@ -344,7 +344,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
     for_each = var.versions
     content {
       instance_template = version.value.instance_template
-      name             = version.value.name
+      name              = version.value.name
 
       dynamic "target_size" {
         for_each = lookup(version.value, "target_size", null) != null ? [version.value.target_size] : []
@@ -356,8 +356,8 @@ resource "google_compute_region_instance_group_manager" "mig" {
     }
   }
 
-  target_size        = var.target_size
-  target_pools       = var.target_pools
+  target_size               = var.target_size
+  target_pools              = var.target_pools
   distribution_policy_zones = local.distribution_zones
 
   dynamic "distribution_policy_target_shape" {
@@ -432,12 +432,12 @@ resource "google_compute_region_instance_group_manager" "mig" {
     for_each = var.instance_lifecycle_policy != null ? [var.instance_lifecycle_policy] : []
     content {
       default_action_on_failure = lookup(instance_lifecycle_policy.value, "default_action_on_failure", "REPAIR")
-      force_update_on_repair   = lookup(instance_lifecycle_policy.value, "force_update_on_repair", "NO")
+      force_update_on_repair    = lookup(instance_lifecycle_policy.value, "force_update_on_repair", "NO")
     }
   }
 
-  wait_for_instances         = var.wait_for_instances
-  wait_for_instances_status  = var.wait_for_instances_status
+  wait_for_instances        = var.wait_for_instances
+  wait_for_instances_status = var.wait_for_instances_status
 
   timeouts {
     create = var.mig_timeouts.create
@@ -447,7 +447,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes       = var.ignore_changes_list
+    ignore_changes        = var.ignore_changes_list
   }
 }
 
@@ -471,7 +471,7 @@ resource "google_compute_instance_group_manager" "mig" {
     for_each = var.versions
     content {
       instance_template = version.value.instance_template
-      name             = version.value.name
+      name              = version.value.name
 
       dynamic "target_size" {
         for_each = lookup(version.value, "target_size", null) != null ? [version.value.target_size] : []
@@ -550,12 +550,12 @@ resource "google_compute_instance_group_manager" "mig" {
     for_each = var.instance_lifecycle_policy != null ? [var.instance_lifecycle_policy] : []
     content {
       default_action_on_failure = lookup(instance_lifecycle_policy.value, "default_action_on_failure", "REPAIR")
-      force_update_on_repair   = lookup(instance_lifecycle_policy.value, "force_update_on_repair", "NO")
+      force_update_on_repair    = lookup(instance_lifecycle_policy.value, "force_update_on_repair", "NO")
     }
   }
 
-  wait_for_instances         = var.wait_for_instances
-  wait_for_instances_status  = var.wait_for_instances_status
+  wait_for_instances        = var.wait_for_instances
+  wait_for_instances_status = var.wait_for_instances_status
 
   timeouts {
     create = var.mig_timeouts.create
@@ -565,7 +565,7 @@ resource "google_compute_instance_group_manager" "mig" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes       = var.ignore_changes_list
+    ignore_changes        = var.ignore_changes_list
   }
 }
 

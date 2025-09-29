@@ -39,13 +39,13 @@ variable "build_triggers" {
 
       push = optional(object({
         branch       = optional(string)
-        tag         = optional(string)
+        tag          = optional(string)
         invert_regex = optional(bool)
       }))
 
       pull_request = optional(object({
         branch          = optional(string)
-        comment_control = optional(string)  # "COMMENTS_DISABLED", "COMMENTS_ENABLED", "COMMENTS_ENABLED_FOR_EXTERNAL_CONTRIBUTORS_ONLY"
+        comment_control = optional(string) # "COMMENTS_DISABLED", "COMMENTS_ENABLED", "COMMENTS_ENABLED_FOR_EXTERNAL_CONTRIBUTORS_ONLY"
         invert_regex    = optional(bool)
       }))
     }))
@@ -56,7 +56,7 @@ variable "build_triggers" {
 
       push = optional(object({
         branch       = optional(string)
-        tag         = optional(string)
+        tag          = optional(string)
         invert_regex = optional(bool)
       }))
 
@@ -140,7 +140,7 @@ variable "build_triggers" {
         }))
 
         maven_artifacts = optional(list(object({
-          repository   = string
+          repository  = string
           path        = string
           artifact_id = string
           group_id    = string
@@ -161,15 +161,15 @@ variable "build_triggers" {
       options = optional(object({
         source_provenance_hash  = optional(list(string))
         requested_verify_option = optional(string)
-        machine_type           = optional(string)
-        disk_size_gb          = optional(number)
-        substitution_option   = optional(string)
-        dynamic_substitutions = optional(bool)
-        log_streaming_option  = optional(string)
-        worker_pool          = optional(string)
-        logging              = optional(string)
-        env                  = optional(list(string))
-        secret_env           = optional(list(string))
+        machine_type            = optional(string)
+        disk_size_gb            = optional(number)
+        substitution_option     = optional(string)
+        dynamic_substitutions   = optional(bool)
+        log_streaming_option    = optional(string)
+        worker_pool             = optional(string)
+        logging                 = optional(string)
+        env                     = optional(list(string))
+        secret_env              = optional(list(string))
 
         volumes = optional(list(object({
           name = string
@@ -197,7 +197,7 @@ variable "build_triggers" {
     git_file_source = optional(object({
       path                     = string
       uri                      = optional(string)
-      repo_type                = string  # "UNKNOWN", "CLOUD_SOURCE_REPOSITORIES", "GITHUB", "BITBUCKET_SERVER"
+      repo_type                = string # "UNKNOWN", "CLOUD_SOURCE_REPOSITORIES", "GITHUB", "BITBUCKET_SERVER"
       revision                 = optional(string)
       github_enterprise_config = optional(string)
       bitbucket_server_config  = optional(string)
@@ -228,13 +228,13 @@ variable "build_triggers" {
       approval_required = optional(bool)
     }))
 
-    service_account     = optional(string)
-    include_build_logs  = optional(string)  # "INCLUDE_BUILD_LOGS_UNSPECIFIED", "INCLUDE_BUILD_LOGS_WITH_STATUS"
-    substitutions       = optional(map(string))
-    ignored_files       = optional(list(string))
-    included_files      = optional(list(string))
-    filter              = optional(string)
-    tags                = optional(list(string))
+    service_account    = optional(string)
+    include_build_logs = optional(string) # "INCLUDE_BUILD_LOGS_UNSPECIFIED", "INCLUDE_BUILD_LOGS_WITH_STATUS"
+    substitutions      = optional(map(string))
+    ignored_files      = optional(list(string))
+    included_files     = optional(list(string))
+    filter             = optional(string)
+    tags               = optional(list(string))
   }))
   default = {}
 }
@@ -257,7 +257,7 @@ variable "worker_pools" {
     network_config = optional(object({
       peered_network          = string
       peered_network_ip_range = optional(string)
-      egress_option          = optional(string)  # "EGRESS_OPTION_UNSPECIFIED", "NO_PUBLIC_EGRESS", "PUBLIC_EGRESS"
+      egress_option           = optional(string) # "EGRESS_OPTION_UNSPECIFIED", "NO_PUBLIC_EGRESS", "PUBLIC_EGRESS"
     }))
   }))
   default = {}
@@ -284,7 +284,7 @@ variable "source_repositories" {
 
     pubsub_configs = optional(list(object({
       topic                 = string
-      message_format       = optional(string)  # "PROTOBUF", "JSON"
+      message_format        = optional(string) # "PROTOBUF", "JSON"
       service_account_email = optional(string)
     })))
   }))
@@ -297,9 +297,9 @@ variable "artifact_registries" {
   type = map(object({
     repository_id = optional(string)
     description   = optional(string)
-    format        = optional(string)  # "DOCKER", "MAVEN", "NPM", "PYTHON", "APT", "YUM", "HELM", "GO", "GENERIC"
+    format        = optional(string) # "DOCKER", "MAVEN", "NPM", "PYTHON", "APT", "YUM", "HELM", "GO", "GENERIC"
     location      = optional(string)
-    mode          = optional(string)  # "STANDARD_REPOSITORY", "VIRTUAL_REPOSITORY", "REMOTE_REPOSITORY"
+    mode          = optional(string) # "STANDARD_REPOSITORY", "VIRTUAL_REPOSITORY", "REMOTE_REPOSITORY"
     labels        = optional(map(string))
     kms_key_name  = optional(string)
 
@@ -309,7 +309,7 @@ variable "artifact_registries" {
 
     maven_config = optional(object({
       allow_snapshot_overwrites = optional(bool)
-      version_policy           = optional(string)  # "VERSION_POLICY_UNSPECIFIED", "RELEASE", "SNAPSHOT"
+      version_policy            = optional(string) # "VERSION_POLICY_UNSPECIFIED", "RELEASE", "SNAPSHOT"
     }))
 
     virtual_repository_config = optional(object({
@@ -324,19 +324,19 @@ variable "artifact_registries" {
       description = optional(string)
 
       docker_repository = optional(object({
-        public_repository = optional(string)  # "DOCKER_HUB"
+        public_repository = optional(string) # "DOCKER_HUB"
       }))
 
       maven_repository = optional(object({
-        public_repository = optional(string)  # "MAVEN_CENTRAL"
+        public_repository = optional(string) # "MAVEN_CENTRAL"
       }))
 
       npm_repository = optional(object({
-        public_repository = optional(string)  # "NPMJS"
+        public_repository = optional(string) # "NPMJS"
       }))
 
       python_repository = optional(object({
-        public_repository = optional(string)  # "PYPI"
+        public_repository = optional(string) # "PYPI"
       }))
 
       apt_repository = optional(object({
@@ -360,20 +360,20 @@ variable "artifact_registries" {
       id = string
 
       condition = optional(object({
-        tag_state             = optional(string)  # "TAG_STATE_UNSPECIFIED", "TAGGED", "UNTAGGED", "ANY"
-        tag_prefixes         = optional(list(string))
+        tag_state             = optional(string) # "TAG_STATE_UNSPECIFIED", "TAGGED", "UNTAGGED", "ANY"
+        tag_prefixes          = optional(list(string))
         version_name_prefixes = optional(list(string))
         package_name_prefixes = optional(list(string))
-        older_than           = optional(string)
-        newer_than           = optional(string)
+        older_than            = optional(string)
+        newer_than            = optional(string)
       }))
 
       most_recent_versions = optional(object({
         package_name_prefixes = optional(list(string))
-        keep_count           = optional(number)
+        keep_count            = optional(number)
       }))
 
-      action = optional(string)  # "DELETE", "KEEP"
+      action = optional(string) # "DELETE", "KEEP"
     })))
 
     iam_bindings = optional(map(object({
@@ -428,27 +428,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }

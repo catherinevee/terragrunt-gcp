@@ -166,18 +166,18 @@ output "consumer_iam_bindings" {
 output "configuration_metadata" {
   description = "Metadata about the Endpoints configuration"
   value = {
-    project_id                  = var.project_id
-    monitoring_enabled          = var.enable_monitoring
-    logging_enabled            = var.enable_logging
-    api_gateway_enabled        = var.enable_api_gateway
+    project_id                   = var.project_id
+    monitoring_enabled           = var.enable_monitoring
+    logging_enabled              = var.enable_logging
+    api_gateway_enabled          = var.enable_api_gateway
     vpc_service_controls_enabled = var.enable_vpc_service_controls
-    quota_management_enabled    = var.enable_quota
-    controlled_rollout_enabled  = var.enable_controlled_rollout
-    total_openapi_services     = length(google_endpoints_service.openapi_services)
-    total_grpc_services        = length(google_endpoints_service.grpc_services)
-    total_api_gateways         = length(google_api_gateway_gateway.gateway_deployments)
-    total_api_keys            = length(google_apikeys_key.api_keys)
-    total_alert_policies       = length(google_monitoring_alert_policy.api_alerts)
+    quota_management_enabled     = var.enable_quota
+    controlled_rollout_enabled   = var.enable_controlled_rollout
+    total_openapi_services       = length(google_endpoints_service.openapi_services)
+    total_grpc_services          = length(google_endpoints_service.grpc_services)
+    total_api_gateways           = length(google_api_gateway_gateway.gateway_deployments)
+    total_api_keys               = length(google_apikeys_key.api_keys)
+    total_alert_policies         = length(google_monitoring_alert_policy.api_alerts)
   }
 }
 
@@ -185,11 +185,11 @@ output "configuration_metadata" {
 output "management_urls" {
   description = "URLs for managing the endpoints"
   value = {
-    endpoints_console = "https://console.cloud.google.com/endpoints?project=${var.project_id}"
+    endpoints_console   = "https://console.cloud.google.com/endpoints?project=${var.project_id}"
     api_gateway_console = var.enable_api_gateway ? "https://console.cloud.google.com/api-gateway?project=${var.project_id}" : null
-    service_management = "https://console.cloud.google.com/apis/api/servicemanagement.googleapis.com?project=${var.project_id}"
-    api_keys_console = "https://console.cloud.google.com/apis/credentials?project=${var.project_id}"
-    monitoring_console = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
+    service_management  = "https://console.cloud.google.com/apis/api/servicemanagement.googleapis.com?project=${var.project_id}"
+    api_keys_console    = "https://console.cloud.google.com/apis/credentials?project=${var.project_id}"
+    monitoring_console  = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
   }
 }
 
@@ -199,16 +199,16 @@ output "service_discovery" {
   value = {
     openapi_services = {
       for k, v in local.openapi_specs : k => {
-        endpoint     = "https://${v.service_name}"
-        backend_url  = var.openapi_services[k].backend_url
-        api_version  = coalesce(var.openapi_services[k].api_version, "v1")
+        endpoint    = "https://${v.service_name}"
+        backend_url = var.openapi_services[k].backend_url
+        api_version = coalesce(var.openapi_services[k].api_version, "v1")
       }
     }
     grpc_services = {
       for k, v in local.grpc_configs : k => {
-        endpoint         = v.service_name
-        backend_address  = v.service_config.backend_address
-        backend_port     = v.service_config.backend_port
+        endpoint            = v.service_name
+        backend_address     = v.service_config.backend_address
+        backend_port        = v.service_config.backend_port
         transcoding_enabled = v.service_config.transcoding_enabled
       }
     }
@@ -242,9 +242,9 @@ output "security_configuration" {
   value = {
     authentication_enabled = var.authentication_config != null
     vpc_service_controls = var.enable_vpc_service_controls ? {
-      enabled       = true
+      enabled        = true
       perimeter_name = var.vpc_service_perimeter_name
-      access_levels = var.vpc_access_levels
+      access_levels  = var.vpc_access_levels
     } : null
     api_keys_configured = length(var.api_keys) > 0
   }

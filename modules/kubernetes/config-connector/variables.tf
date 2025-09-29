@@ -56,33 +56,33 @@ variable "install_config_connector_operator" {
 variable "config_connector_memberships" {
   description = "Configuration for Config Connector memberships"
   type = map(object({
-    membership_name                      = string
-    config_management_version            = optional(string, "1.15.1")
-    config_sync_enabled                 = optional(bool, true)
-    source_format                       = optional(string, "hierarchy")
-    sync_repo                           = optional(string)
-    sync_branch                         = optional(string, "main")
-    policy_dir                          = optional(string, "config")
-    sync_wait_secs                      = optional(number, 15)
-    secret_type                         = optional(string, "none")
-    https_proxy                         = optional(string)
-    gcp_service_account_email           = optional(string)
-    prevent_drift                       = optional(bool, true)
-    metrics_gcp_service_account_email   = optional(string)
-    policy_controller_enabled           = optional(bool, true)
-    template_library_installed          = optional(bool, true)
-    audit_interval_seconds              = optional(number, 60)
-    exemptable_namespaces              = optional(list(string), ["kube-system"])
-    log_denies_enabled                 = optional(bool, true)
-    mutation_enabled                   = optional(bool, true)
-    referential_rules_enabled          = optional(bool, true)
+    membership_name                   = string
+    config_management_version         = optional(string, "1.15.1")
+    config_sync_enabled               = optional(bool, true)
+    source_format                     = optional(string, "hierarchy")
+    sync_repo                         = optional(string)
+    sync_branch                       = optional(string, "main")
+    policy_dir                        = optional(string, "config")
+    sync_wait_secs                    = optional(number, 15)
+    secret_type                       = optional(string, "none")
+    https_proxy                       = optional(string)
+    gcp_service_account_email         = optional(string)
+    prevent_drift                     = optional(bool, true)
+    metrics_gcp_service_account_email = optional(string)
+    policy_controller_enabled         = optional(bool, true)
+    template_library_installed        = optional(bool, true)
+    audit_interval_seconds            = optional(number, 60)
+    exemptable_namespaces             = optional(list(string), ["kube-system"])
+    log_denies_enabled                = optional(bool, true)
+    mutation_enabled                  = optional(bool, true)
+    referential_rules_enabled         = optional(bool, true)
     policy_controller_monitoring = optional(object({
       backends = list(string)
     }))
-    hierarchy_controller_enabled               = optional(bool, true)
-    enable_pod_tree_labels                    = optional(bool, true)
-    enable_hierarchical_resource_quota        = optional(bool, false)
-    binauthz_enabled                          = optional(bool, false)
+    hierarchy_controller_enabled       = optional(bool, true)
+    enable_pod_tree_labels             = optional(bool, true)
+    enable_hierarchical_resource_quota = optional(bool, false)
+    binauthz_enabled                   = optional(bool, false)
   }))
   default = {}
 }
@@ -180,14 +180,14 @@ variable "watch_fleet_workload_identity" {
 variable "config_connector_contexts" {
   description = "Configuration for Config Connector contexts"
   type = map(object({
-    namespace                   = string
+    namespace                    = string
     google_service_account_email = string
-    billing_project             = optional(string)
-    request_project_policy      = optional(string, "REQUEST_PROJECT_POLICY_UNSPECIFIED")
-    credential_secret_name      = optional(string)
-    state_into_spec            = optional(string, "Absent")
-    actuation_mode             = optional(string, "Reconciling")
-    labels                     = optional(map(string), {})
+    billing_project              = optional(string)
+    request_project_policy       = optional(string, "REQUEST_PROJECT_POLICY_UNSPECIFIED")
+    credential_secret_name       = optional(string)
+    state_into_spec              = optional(string, "Absent")
+    actuation_mode               = optional(string, "Reconciling")
+    labels                       = optional(map(string), {})
   }))
   default = {}
 }
@@ -235,8 +235,8 @@ variable "constraint_templates" {
   type = map(object({
     crd_kind          = string
     validation_schema = any
-    targets          = list(any)
-    labels           = optional(map(string), {})
+    targets           = list(any)
+    labels            = optional(map(string), {})
   }))
   default = {}
 }
@@ -287,9 +287,9 @@ variable "enable_resource_quotas" {
 variable "resource_quotas" {
   description = "Resource quotas to create"
   type = map(object({
-    namespace    = string
-    hard_limits  = map(string)
-    scopes       = optional(list(string))
+    namespace   = string
+    hard_limits = map(string)
+    scopes      = optional(list(string))
     scope_selector_match_expressions = optional(list(object({
       scope_name = string
       operator   = string
@@ -309,9 +309,9 @@ variable "enable_network_policies" {
 variable "network_policies" {
   description = "Network policies to create"
   type = map(object({
-    namespace                   = string
-    pod_selector_match_labels   = map(string)
-    policy_types               = list(string)
+    namespace                 = string
+    pod_selector_match_labels = map(string)
+    policy_types              = list(string)
     ingress_rules = optional(list(object({
       ports = optional(list(object({
         port     = optional(string)
@@ -366,7 +366,7 @@ variable "cluster_roles" {
       api_groups        = optional(list(string))
       resources         = optional(list(string))
       resource_names    = optional(list(string))
-      verbs            = list(string)
+      verbs             = list(string)
       non_resource_urls = optional(list(string))
     }))
   }))
@@ -416,23 +416,23 @@ variable "alert_policies" {
   description = "Alert policies configuration"
   type = map(object({
     display_name           = string
-    combiner              = optional(string, "OR")
-    enabled               = optional(bool, true)
-    documentation         = optional(string)
+    combiner               = optional(string, "OR")
+    enabled                = optional(bool, true)
+    documentation          = optional(string)
     condition_display_name = string
-    filter                = string
-    duration              = string
-    comparison            = string
-    threshold_value       = number
-    alignment_period      = optional(string, "60s")
-    per_series_aligner    = optional(string, "ALIGN_RATE")
-    cross_series_reducer  = optional(string, "REDUCE_SUM")
-    group_by_fields       = optional(list(string), [])
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string), [])
-    auto_close_duration   = optional(string, "86400s")
-    rate_limit           = optional(string)
+    filter                 = string
+    duration               = string
+    comparison             = string
+    threshold_value        = number
+    alignment_period       = optional(string, "60s")
+    per_series_aligner     = optional(string, "ALIGN_RATE")
+    cross_series_reducer   = optional(string, "REDUCE_SUM")
+    group_by_fields        = optional(list(string), [])
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string), [])
+    auto_close_duration    = optional(string, "86400s")
+    rate_limit             = optional(string)
   }))
   default = {}
 }
@@ -486,15 +486,15 @@ variable "drift_detection_config" {
   description = "Drift detection configuration"
   type = object({
     detection_interval_minutes = number
-    auto_remediation          = bool
-    notification_channels     = list(string)
-    excluded_resources        = list(string)
+    auto_remediation           = bool
+    notification_channels      = list(string)
+    excluded_resources         = list(string)
   })
   default = {
     detection_interval_minutes = 60
-    auto_remediation          = false
-    notification_channels     = []
-    excluded_resources        = []
+    auto_remediation           = false
+    notification_channels      = []
+    excluded_resources         = []
   }
 }
 
@@ -509,16 +509,16 @@ variable "resource_validation_config" {
   type = object({
     admission_controller_enabled = bool
     validation_webhook_enabled   = bool
-    dry_run_enabled             = bool
-    fail_on_validation_error    = bool
-    custom_validation_rules     = list(string)
+    dry_run_enabled              = bool
+    fail_on_validation_error     = bool
+    custom_validation_rules      = list(string)
   })
   default = {
     admission_controller_enabled = true
     validation_webhook_enabled   = true
-    dry_run_enabled             = false
-    fail_on_validation_error    = true
-    custom_validation_rules     = []
+    dry_run_enabled              = false
+    fail_on_validation_error     = true
+    custom_validation_rules      = []
   }
 }
 
@@ -532,17 +532,17 @@ variable "multi_tenancy_config" {
   description = "Multi-tenancy configuration"
   type = object({
     tenant_isolation_enabled = bool
-    namespace_quotas        = map(string)
-    rbac_per_tenant        = bool
+    namespace_quotas         = map(string)
+    rbac_per_tenant          = bool
     network_policies_enabled = bool
-    resource_quotas_enabled = bool
+    resource_quotas_enabled  = bool
   })
   default = {
     tenant_isolation_enabled = true
-    namespace_quotas        = {}
-    rbac_per_tenant        = true
+    namespace_quotas         = {}
+    rbac_per_tenant          = true
     network_policies_enabled = true
-    resource_quotas_enabled = true
+    resource_quotas_enabled  = true
   }
 }
 
@@ -555,14 +555,14 @@ variable "enable_disaster_recovery" {
 variable "disaster_recovery_config" {
   description = "Disaster recovery configuration"
   type = object({
-    backup_frequency          = string
+    backup_frequency         = string
     cross_region_replication = bool
     backup_encryption        = bool
     recovery_point_objective = string
     recovery_time_objective  = string
   })
   default = {
-    backup_frequency          = "daily"
+    backup_frequency         = "daily"
     cross_region_replication = false
     backup_encryption        = true
     recovery_point_objective = "1h"
@@ -579,17 +579,17 @@ variable "enable_compliance_monitoring" {
 variable "compliance_config" {
   description = "Compliance monitoring configuration"
   type = object({
-    compliance_standards = list(string)
-    audit_frequency     = string
-    violation_alerts    = bool
-    compliance_reports  = bool
+    compliance_standards   = list(string)
+    audit_frequency        = string
+    violation_alerts       = bool
+    compliance_reports     = bool
     remediation_automation = bool
   })
   default = {
-    compliance_standards = ["CIS", "PCI-DSS", "SOC2"]
-    audit_frequency     = "daily"
-    violation_alerts    = true
-    compliance_reports  = true
+    compliance_standards   = ["CIS", "PCI-DSS", "SOC2"]
+    audit_frequency        = "daily"
+    violation_alerts       = true
+    compliance_reports     = true
     remediation_automation = false
   }
 }
@@ -603,14 +603,14 @@ variable "enable_performance_optimization" {
 variable "performance_config" {
   description = "Performance optimization configuration"
   type = object({
-    controller_replicas       = number
-    resource_limits          = map(string)
-    parallel_workers         = number
-    reconciliation_timeout   = string
-    webhook_timeout_seconds  = number
+    controller_replicas     = number
+    resource_limits         = map(string)
+    parallel_workers        = number
+    reconciliation_timeout  = string
+    webhook_timeout_seconds = number
   })
   default = {
-    controller_replicas      = 3
+    controller_replicas     = 3
     resource_limits         = {}
     parallel_workers        = 10
     reconciliation_timeout  = "300s"
@@ -640,18 +640,18 @@ variable "environment" {
 variable "resource_management_config" {
   description = "Resource management configuration"
   type = object({
-    enable_resource_limits     = bool
-    enable_resource_quotas     = bool
-    enable_priority_classes    = bool
+    enable_resource_limits        = bool
+    enable_resource_quotas        = bool
+    enable_priority_classes       = bool
     enable_pod_disruption_budgets = bool
-    default_resource_limits    = map(string)
+    default_resource_limits       = map(string)
   })
   default = {
-    enable_resource_limits     = true
-    enable_resource_quotas     = true
-    enable_priority_classes    = false
+    enable_resource_limits        = true
+    enable_resource_quotas        = true
+    enable_priority_classes       = false
     enable_pod_disruption_budgets = false
-    default_resource_limits    = {}
+    default_resource_limits       = {}
   }
 }
 
@@ -662,7 +662,7 @@ variable "integration_configs" {
     endpoint_url     = string
     authentication   = map(string)
     sync_frequency   = string
-    enabled         = bool
+    enabled          = bool
   }))
   default = {}
 }
@@ -673,7 +673,7 @@ variable "custom_admission_controllers" {
     webhook_url     = string
     failure_policy  = string
     admission_rules = list(string)
-    namespaces     = list(string)
+    namespaces      = list(string)
   }))
   default = {}
 }
@@ -683,7 +683,7 @@ variable "resource_templates" {
   type = map(object({
     template_type = string
     template_spec = any
-    parameters   = map(string)
+    parameters    = map(string)
   }))
   default = {}
 }

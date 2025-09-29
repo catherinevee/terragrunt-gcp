@@ -157,14 +157,14 @@ resource "google_certificate_manager_certificate_issuance_config" "issuance_conf
   for_each = local.certificate_issuance_configs
   provider = google-beta
 
-  name         = each.value.name
-  description  = each.value.description
-  location     = each.value.location != null ? each.value.location : "global"
-  project      = var.project_id
+  name        = each.value.name
+  description = each.value.description
+  location    = each.value.location != null ? each.value.location : "global"
+  project     = var.project_id
 
   rotation_window_percentage = each.value.rotation_window_percentage != null ? each.value.rotation_window_percentage : 66
-  key_algorithm             = each.value.key_algorithm != null ? each.value.key_algorithm : "RSA_2048"
-  lifetime                  = each.value.lifetime != null ? each.value.lifetime : "2592000s" # 30 days
+  key_algorithm              = each.value.key_algorithm != null ? each.value.key_algorithm : "RSA_2048"
+  lifetime                   = each.value.lifetime != null ? each.value.lifetime : "2592000s" # 30 days
 
   certificate_authority_config {
     dynamic "certificate_authority_service_config" {
@@ -259,7 +259,7 @@ resource "google_certificate_manager_certificate_map_entry" "certificate_map_ent
 
   name        = each.value.name
   description = each.value.description
-  map         = each.value.certificate_map_key != null ? (
+  map = each.value.certificate_map_key != null ? (
     google_certificate_manager_certificate_map.certificate_maps[each.value.certificate_map_key].name
   ) : each.value.certificate_map
 
@@ -269,7 +269,7 @@ resource "google_certificate_manager_certificate_map_entry" "certificate_map_ent
   ] : each.value.certificates
 
   hostname = each.value.hostname
-  matcher  = each.value.matcher != null ? each.value.matcher : (
+  matcher = each.value.matcher != null ? each.value.matcher : (
     each.value.hostname != null ? "PRIMARY" : null
   )
 
@@ -397,7 +397,7 @@ resource "google_compute_target_https_proxy" "proxies_with_cert_maps" {
     google_compute_ssl_policy.ssl_policies[each.value.ssl_policy_key].self_link
   ) : each.value.ssl_policy
 
-  quic_override                = each.value.quic_override
+  quic_override               = each.value.quic_override
   http_keep_alive_timeout_sec = each.value.http_keep_alive_timeout_sec
 
   project = var.project_id
@@ -475,7 +475,7 @@ resource "google_monitoring_alert_policy" "cert_alerts" {
 resource "google_monitoring_dashboard" "cert_dashboard" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.name_prefix}-certificate-dashboard"
     mosaicLayout = {
@@ -609,7 +609,7 @@ resource "google_monitoring_notification_channel" "cert_notifications" {
   for_each = var.notification_channels
 
   display_name = each.value.display_name
-  type         = each.value.type  # "email", "slack", "pagerduty", "webhook"
+  type         = each.value.type # "email", "slack", "pagerduty", "webhook"
   labels       = each.value.labels
   description  = each.value.description
   enabled      = each.value.enabled != null ? each.value.enabled : true
@@ -624,8 +624,8 @@ resource "google_monitoring_notification_channel" "cert_notifications" {
     for_each = each.value.sensitive_labels != null ? [each.value.sensitive_labels] : []
 
     content {
-      auth_token = sensitive_labels.value.auth_token
-      password   = sensitive_labels.value.password
+      auth_token  = sensitive_labels.value.auth_token
+      password    = sensitive_labels.value.password
       service_key = sensitive_labels.value.service_key
     }
   }
@@ -652,7 +652,7 @@ resource "google_cloudfunctions2_function" "cert_rotation" {
     }
 
     environment_variables = {
-      PROJECT_ID = var.project_id
+      PROJECT_ID         = var.project_id
       DAYS_BEFORE_EXPIRY = var.rotation_days_before_expiry != null ? var.rotation_days_before_expiry : "30"
     }
   }
@@ -678,7 +678,7 @@ resource "google_cloud_scheduler_job" "cert_rotation_schedule" {
 
   name        = "${local.name_prefix}-cert-rotation-schedule"
   description = "Schedule for automated certificate rotation"
-  schedule    = var.rotation_schedule != null ? var.rotation_schedule : "0 2 * * *"  # Daily at 2 AM
+  schedule    = var.rotation_schedule != null ? var.rotation_schedule : "0 2 * * *" # Daily at 2 AM
   time_zone   = var.rotation_time_zone != null ? var.rotation_time_zone : "UTC"
   project     = var.project_id
   region      = var.region
@@ -693,10 +693,10 @@ resource "google_cloud_scheduler_job" "cert_rotation_schedule" {
   }
 
   retry_config {
-    retry_count = 3
-    max_retry_duration = "600s"
+    retry_count          = 3
+    max_retry_duration   = "600s"
     min_backoff_duration = "5s"
     max_backoff_duration = "60s"
-    max_doublings = 2
+    max_doublings        = 2
   }
 }

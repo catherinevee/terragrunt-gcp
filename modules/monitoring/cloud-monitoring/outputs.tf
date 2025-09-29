@@ -181,9 +181,9 @@ output "project_id" {
 output "monitoring_scope" {
   description = "The monitoring scope configuration"
   value = {
-    project_id        = var.project_id
+    project_id         = var.project_id
     monitored_projects = var.monitored_projects
-    metrics_scope     = var.metrics_scope
+    metrics_scope      = var.metrics_scope
   }
 }
 
@@ -241,8 +241,8 @@ output "incident_policies" {
   description = "Map of incident management policies"
   value = {
     for k, v in var.incident_policies : k => {
-      severity        = v.severity
-      auto_close      = v.auto_close
+      severity         = v.severity
+      auto_close       = v.auto_close
       escalation_chain = v.escalation_chain
     }
   }
@@ -251,11 +251,11 @@ output "incident_policies" {
 output "monitoring_channels_summary" {
   description = "Summary of all notification channels by type"
   value = {
-    email_channels   = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "email"])
-    sms_channels     = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "sms"])
-    slack_channels   = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "slack"])
+    email_channels     = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "email"])
+    sms_channels       = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "sms"])
+    slack_channels     = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "slack"])
     pagerduty_channels = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "pagerduty"])
-    webhook_channels = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "webhook"])
+    webhook_channels   = length([for k, v in google_monitoring_notification_channel.channels : k if v.type == "webhook"])
   }
 }
 

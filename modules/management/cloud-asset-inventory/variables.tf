@@ -115,8 +115,8 @@ variable "pubsub_topics" {
       allowed_persistence_regions = list(string)
     }))
     message_retention_duration = optional(string, "604800s")
-    kms_key_name              = optional(string)
-    labels                    = optional(map(string), {})
+    kms_key_name               = optional(string)
+    labels                     = optional(map(string), {})
   }))
   default = {}
 }
@@ -133,9 +133,9 @@ variable "pubsub_subscriptions" {
     topic_name                 = string
     ack_deadline_seconds       = optional(number, 20)
     message_retention_duration = optional(string, "604800s")
-    retain_acked_messages     = optional(bool, false)
-    enable_message_ordering   = optional(bool, false)
-    filter                    = optional(string)
+    retain_acked_messages      = optional(bool, false)
+    enable_message_ordering    = optional(bool, false)
+    filter                     = optional(string)
     expiration_policy = optional(object({
       ttl = string
     }))
@@ -144,7 +144,7 @@ variable "pubsub_subscriptions" {
       attributes    = optional(map(string))
       oidc_token = optional(object({
         service_account_email = string
-        audience             = optional(string)
+        audience              = optional(string)
       }))
     }))
     retry_policy = optional(object({
@@ -200,11 +200,11 @@ variable "delete_dataset_on_destroy" {
 variable "bigquery_dataset_access" {
   description = "Access configuration for BigQuery dataset"
   type = list(object({
-    role          = optional(string)
-    user_by_email = optional(string)
+    role           = optional(string)
+    user_by_email  = optional(string)
     group_by_email = optional(string)
-    domain        = optional(string)
-    special_group = optional(string)
+    domain         = optional(string)
+    special_group  = optional(string)
     dataset = optional(object({
       project_id   = string
       dataset_id   = string
@@ -237,8 +237,8 @@ variable "bigquery_tables" {
     schema      = string
     time_partitioning = optional(object({
       type                     = string
-      expiration_ms           = optional(number)
-      field                   = optional(string)
+      expiration_ms            = optional(number)
+      field                    = optional(string)
       require_partition_filter = optional(bool, false)
     }))
     range_partitioning = optional(object({
@@ -303,14 +303,14 @@ variable "bucket_lifecycle_rules" {
     })
     condition = object({
       age                        = optional(number)
-      created_before            = optional(string)
-      with_state                = optional(string)
-      matches_storage_class     = optional(list(string))
-      num_newer_versions        = optional(number)
-      custom_time_before        = optional(string)
-      days_since_custom_time    = optional(number)
+      created_before             = optional(string)
+      with_state                 = optional(string)
+      matches_storage_class      = optional(list(string))
+      num_newer_versions         = optional(number)
+      custom_time_before         = optional(string)
+      days_since_custom_time     = optional(number)
       days_since_noncurrent_time = optional(number)
-      noncurrent_time_before    = optional(string)
+      noncurrent_time_before     = optional(string)
     })
   }))
   default = []
@@ -356,24 +356,24 @@ variable "enable_cloud_functions" {
 variable "cloud_functions" {
   description = "Configuration for Cloud Functions"
   type = map(object({
-    region      = string
-    description = string
-    runtime     = string
-    memory_mb   = optional(number, 256)
-    timeout     = optional(number, 60)
-    entry_point = string
+    region                = string
+    description           = string
+    runtime               = string
+    memory_mb             = optional(number, 256)
+    timeout               = optional(number, 60)
+    entry_point           = string
     service_account_email = optional(string)
-    source_bucket = string
-    source_object = string
+    source_bucket         = string
+    source_object         = string
     event_trigger = optional(object({
-      event_type             = string
-      resource              = string
-      failure_policy_retry  = optional(bool, false)
+      event_type           = string
+      resource             = string
+      failure_policy_retry = optional(bool, false)
     }))
     https_trigger_enabled = optional(bool, false)
     https_security_level  = optional(string, "SECURE_ALWAYS")
     environment_variables = optional(map(string), {})
-    labels               = optional(map(string), {})
+    labels                = optional(map(string), {})
   }))
   default = {}
 }
@@ -404,11 +404,11 @@ variable "scheduled_export_jobs" {
       headers     = optional(map(string))
       oauth_token = optional(object({
         service_account_email = string
-        scope                = optional(string)
+        scope                 = optional(string)
       }))
       oidc_token = optional(object({
         service_account_email = string
-        audience             = optional(string)
+        audience              = optional(string)
       }))
     }))
     retry_config = optional(object({
@@ -451,23 +451,23 @@ variable "alert_policies" {
   description = "Alert policies configuration"
   type = map(object({
     display_name           = string
-    combiner              = optional(string, "OR")
-    enabled               = optional(bool, true)
-    documentation         = optional(string)
+    combiner               = optional(string, "OR")
+    enabled                = optional(bool, true)
+    documentation          = optional(string)
     condition_display_name = string
-    filter                = string
-    duration              = string
-    comparison            = string
-    threshold_value       = number
-    alignment_period      = optional(string, "60s")
-    per_series_aligner    = optional(string, "ALIGN_RATE")
-    cross_series_reducer  = optional(string, "REDUCE_SUM")
-    group_by_fields       = optional(list(string), [])
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string), [])
-    auto_close_duration   = optional(string, "86400s")
-    rate_limit           = optional(string)
+    filter                 = string
+    duration               = string
+    comparison             = string
+    threshold_value        = number
+    alignment_period       = optional(string, "60s")
+    per_series_aligner     = optional(string, "ALIGN_RATE")
+    cross_series_reducer   = optional(string, "REDUCE_SUM")
+    group_by_fields        = optional(list(string), [])
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string), [])
+    auto_close_duration    = optional(string, "86400s")
+    rate_limit             = optional(string)
   }))
   default = {}
 }
@@ -543,16 +543,16 @@ variable "enable_compliance_monitoring" {
 variable "compliance_policies" {
   description = "Compliance policies to monitor"
   type = map(object({
-    policy_name         = string
-    policy_description  = string
+    policy_name        = string
+    policy_description = string
     asset_filters      = list(string)
-    compliance_rules   = list(object({
+    compliance_rules = list(object({
       rule_name       = string
       rule_expression = string
       severity        = string
     }))
     notification_config = optional(object({
-      enable_notifications = bool
+      enable_notifications  = bool
       notification_channels = list(string)
     }))
   }))
@@ -569,24 +569,24 @@ variable "data_governance_config" {
   description = "Configuration for data governance"
   type = object({
     enable_data_classification = bool
-    enable_data_lineage       = bool
-    enable_access_monitoring  = bool
+    enable_data_lineage        = bool
+    enable_access_monitoring   = bool
     classification_rules = optional(list(object({
-      rule_name    = string
-      asset_filter = string
+      rule_name            = string
+      asset_filter         = string
       classification_level = string
-      tags        = map(string)
+      tags                 = map(string)
     })))
     lineage_tracking = optional(object({
-      track_data_movement = bool
+      track_data_movement   = bool
       track_transformations = bool
-      retention_days     = number
+      retention_days        = number
     }))
   })
   default = {
     enable_data_classification = false
-    enable_data_lineage       = false
-    enable_access_monitoring  = false
+    enable_data_lineage        = false
+    enable_access_monitoring   = false
   }
 }
 
@@ -600,9 +600,9 @@ variable "cost_analysis_config" {
   description = "Configuration for cost analysis"
   type = object({
     enable_resource_utilization = bool
-    enable_cost_optimization   = bool
-    enable_rightsizing         = bool
-    analysis_frequency        = optional(string, "DAILY")
+    enable_cost_optimization    = bool
+    enable_rightsizing          = bool
+    analysis_frequency          = optional(string, "DAILY")
     cost_thresholds = optional(object({
       daily_threshold   = optional(number)
       monthly_threshold = optional(number)
@@ -611,8 +611,8 @@ variable "cost_analysis_config" {
   })
   default = {
     enable_resource_utilization = false
-    enable_cost_optimization   = false
-    enable_rightsizing         = false
+    enable_cost_optimization    = false
+    enable_rightsizing          = false
   }
 }
 
@@ -626,18 +626,18 @@ variable "security_insights_config" {
   description = "Configuration for security insights"
   type = object({
     enable_vulnerability_scanning = bool
-    enable_misconfig_detection   = bool
-    enable_access_analysis       = bool
-    enable_threat_detection      = bool
-    security_standards = optional(list(string), [])
-    scan_frequency    = optional(string, "DAILY")
-    severity_levels   = optional(list(string), ["HIGH", "CRITICAL"])
+    enable_misconfig_detection    = bool
+    enable_access_analysis        = bool
+    enable_threat_detection       = bool
+    security_standards            = optional(list(string), [])
+    scan_frequency                = optional(string, "DAILY")
+    severity_levels               = optional(list(string), ["HIGH", "CRITICAL"])
   })
   default = {
     enable_vulnerability_scanning = false
-    enable_misconfig_detection   = false
-    enable_access_analysis       = false
-    enable_threat_detection      = false
+    enable_misconfig_detection    = false
+    enable_access_analysis        = false
+    enable_threat_detection       = false
   }
 }
 
@@ -651,21 +651,21 @@ variable "resource_hierarchy_config" {
   description = "Configuration for resource hierarchy analysis"
   type = object({
     track_organizational_changes = bool
-    track_project_changes       = bool
-    track_folder_changes        = bool
-    track_iam_changes          = bool
+    track_project_changes        = bool
+    track_folder_changes         = bool
+    track_iam_changes            = bool
     change_detection_rules = optional(list(object({
-      rule_name    = string
-      scope        = string
-      event_types  = list(string)
-      conditions   = list(string)
+      rule_name   = string
+      scope       = string
+      event_types = list(string)
+      conditions  = list(string)
     })))
   })
   default = {
     track_organizational_changes = false
-    track_project_changes       = false
-    track_folder_changes        = false
-    track_iam_changes          = false
+    track_project_changes        = false
+    track_folder_changes         = false
+    track_iam_changes            = false
   }
 }
 
@@ -678,9 +678,9 @@ variable "enable_automation" {
 variable "automation_config" {
   description = "Configuration for automation"
   type = object({
-    enable_auto_remediation    = bool
-    enable_policy_enforcement  = bool
-    enable_automated_tagging   = bool
+    enable_auto_remediation     = bool
+    enable_policy_enforcement   = bool
+    enable_automated_tagging    = bool
     enable_lifecycle_management = bool
     remediation_rules = optional(list(object({
       rule_name    = string
@@ -689,16 +689,16 @@ variable "automation_config" {
       target_scope = string
     })))
     tagging_rules = optional(list(object({
-      rule_name = string
-      scope     = string
-      tags      = map(string)
+      rule_name  = string
+      scope      = string
+      tags       = map(string)
       conditions = list(string)
     })))
   })
   default = {
-    enable_auto_remediation    = false
-    enable_policy_enforcement  = false
-    enable_automated_tagging   = false
+    enable_auto_remediation     = false
+    enable_policy_enforcement   = false
+    enable_automated_tagging    = false
     enable_lifecycle_management = false
   }
 }
@@ -706,12 +706,12 @@ variable "automation_config" {
 variable "export_formats" {
   description = "Export formats to support"
   type = object({
-    enable_json_export     = bool
-    enable_csv_export      = bool
-    enable_parquet_export  = bool
-    enable_avro_export     = bool
-    compression_enabled    = optional(bool, true)
-    compression_format     = optional(string, "GZIP")
+    enable_json_export    = bool
+    enable_csv_export     = bool
+    enable_parquet_export = bool
+    enable_avro_export    = bool
+    compression_enabled   = optional(bool, true)
+    compression_format    = optional(string, "GZIP")
   })
   default = {
     enable_json_export    = true
@@ -724,17 +724,17 @@ variable "export_formats" {
 variable "data_retention_config" {
   description = "Configuration for data retention"
   type = object({
-    raw_data_retention_days    = number
+    raw_data_retention_days       = number
     processed_data_retention_days = number
-    audit_log_retention_days  = number
-    enable_automatic_cleanup  = bool
-    cleanup_schedule         = optional(string, "0 2 * * *")
+    audit_log_retention_days      = number
+    enable_automatic_cleanup      = bool
+    cleanup_schedule              = optional(string, "0 2 * * *")
   })
   default = {
-    raw_data_retention_days    = 365
+    raw_data_retention_days       = 365
     processed_data_retention_days = 90
-    audit_log_retention_days  = 30
-    enable_automatic_cleanup  = true
+    audit_log_retention_days      = 30
+    enable_automatic_cleanup      = true
   }
 }
 
@@ -747,9 +747,9 @@ variable "integration_configs" {
       type        = string
       credentials = map(string)
     })
-    data_mapping = optional(map(string))
+    data_mapping   = optional(map(string))
     sync_frequency = optional(string, "HOURLY")
-    enabled       = optional(bool, true)
+    enabled        = optional(bool, true)
   }))
   default = {}
 }
@@ -776,10 +776,10 @@ variable "environment" {
 variable "custom_asset_types" {
   description = "Custom asset types to monitor"
   type = list(object({
-    asset_type     = string
-    description    = string
-    api_version    = string
-    resource_name  = string
+    asset_type        = string
+    description       = string
+    api_version       = string
+    resource_name     = string
     collection_method = string
   }))
   default = []
@@ -788,20 +788,20 @@ variable "custom_asset_types" {
 variable "notification_config" {
   description = "Global notification configuration"
   type = object({
-    enable_email_notifications = bool
-    enable_slack_notifications = bool
+    enable_email_notifications   = bool
+    enable_slack_notifications   = bool
     enable_webhook_notifications = bool
-    email_recipients = optional(list(string))
-    slack_webhook_url = optional(string)
+    email_recipients             = optional(list(string))
+    slack_webhook_url            = optional(string)
     custom_webhooks = optional(list(object({
-      name = string
-      url  = string
+      name    = string
+      url     = string
       headers = optional(map(string))
     })))
   })
   default = {
-    enable_email_notifications = false
-    enable_slack_notifications = false
+    enable_email_notifications   = false
+    enable_slack_notifications   = false
     enable_webhook_notifications = false
   }
 }

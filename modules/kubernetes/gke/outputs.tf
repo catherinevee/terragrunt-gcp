@@ -117,19 +117,19 @@ output "node_pools" {
   description = "List of node pools and their configurations"
   value = [
     for np in google_container_cluster.cluster.node_pool : {
-      name                = np.name
-      initial_node_count  = np.initial_node_count
+      name               = np.name
+      initial_node_count = np.initial_node_count
       node_count         = np.node_count
       version            = np.version
       max_pods_per_node  = np.max_pods_per_node
       node_locations     = np.node_locations
 
       autoscaling = try({
-        min_node_count     = np.autoscaling[0].min_node_count
-        max_node_count     = np.autoscaling[0].max_node_count
+        min_node_count       = np.autoscaling[0].min_node_count
+        max_node_count       = np.autoscaling[0].max_node_count
         total_min_node_count = np.autoscaling[0].total_min_node_count
         total_max_node_count = np.autoscaling[0].total_max_node_count
-        location_policy    = np.autoscaling[0].location_policy
+        location_policy      = np.autoscaling[0].location_policy
       }, null)
 
       node_config = {
@@ -137,13 +137,13 @@ output "node_pools" {
         disk_size_gb    = np.node_config[0].disk_size_gb
         disk_type       = np.node_config[0].disk_type
         preemptible     = np.node_config[0].preemptible
-        spot           = np.node_config[0].spot
-        image_type     = np.node_config[0].image_type
+        spot            = np.node_config[0].spot
+        image_type      = np.node_config[0].image_type
         service_account = np.node_config[0].service_account
-        oauth_scopes   = np.node_config[0].oauth_scopes
-        tags           = np.node_config[0].tags
-        labels         = np.node_config[0].labels
-        metadata       = np.node_config[0].metadata
+        oauth_scopes    = np.node_config[0].oauth_scopes
+        tags            = np.node_config[0].tags
+        labels          = np.node_config[0].labels
+        metadata        = np.node_config[0].metadata
       }
 
       management = {
@@ -343,15 +343,15 @@ output "api_endpoints" {
 output "features" {
   description = "Status of various cluster features"
   value = {
-    autopilot                  = google_container_cluster.cluster.enable_autopilot
-    kubernetes_alpha           = google_container_cluster.cluster.enable_kubernetes_alpha
-    tpu                       = google_container_cluster.cluster.enable_tpu
-    legacy_abac               = google_container_cluster.cluster.enable_legacy_abac
-    intranode_visibility      = google_container_cluster.cluster.enable_intranode_visibility
-    l4_ilb_subsetting         = google_container_cluster.cluster.enable_l4_ilb_subsetting
-    datapath_provider         = google_container_cluster.cluster.datapath_provider
-    network_policy_provider   = try(google_container_cluster.cluster.network_policy[0].provider, null)
-    default_snat_disabled     = try(google_container_cluster.cluster.default_snat_status[0].disabled, false)
+    autopilot               = google_container_cluster.cluster.enable_autopilot
+    kubernetes_alpha        = google_container_cluster.cluster.enable_kubernetes_alpha
+    tpu                     = google_container_cluster.cluster.enable_tpu
+    legacy_abac             = google_container_cluster.cluster.enable_legacy_abac
+    intranode_visibility    = google_container_cluster.cluster.enable_intranode_visibility
+    l4_ilb_subsetting       = google_container_cluster.cluster.enable_l4_ilb_subsetting
+    datapath_provider       = google_container_cluster.cluster.datapath_provider
+    network_policy_provider = try(google_container_cluster.cluster.network_policy[0].provider, null)
+    default_snat_disabled   = try(google_container_cluster.cluster.default_snat_status[0].disabled, false)
   }
 }
 

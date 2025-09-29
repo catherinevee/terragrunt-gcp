@@ -60,7 +60,7 @@ resource "google_pubsub_topic" "repo_event_topics" {
   }
 
   message_retention_duration = each.value.message_retention_duration
-  kms_key_name              = each.value.kms_key_name
+  kms_key_name               = each.value.kms_key_name
 
   labels = merge(var.labels, each.value.labels)
 
@@ -73,14 +73,14 @@ resource "google_pubsub_topic" "repo_event_topics" {
 resource "google_pubsub_subscription" "repo_event_subscriptions" {
   for_each = var.enable_pubsub_notifications ? var.pubsub_subscriptions : {}
 
-  name  = each.key
-  topic = google_pubsub_topic.repo_event_topics[each.value.topic_name].name
+  name    = each.key
+  topic   = google_pubsub_topic.repo_event_topics[each.value.topic_name].name
   project = var.project_id
 
   ack_deadline_seconds       = each.value.ack_deadline_seconds
   message_retention_duration = each.value.message_retention_duration
-  retain_acked_messages     = each.value.retain_acked_messages
-  enable_message_ordering   = each.value.enable_message_ordering
+  retain_acked_messages      = each.value.retain_acked_messages
+  enable_message_ordering    = each.value.enable_message_ordering
 
   dynamic "expiration_policy" {
     for_each = each.value.expiration_policy != null ? [each.value.expiration_policy] : []
@@ -101,7 +101,7 @@ resource "google_pubsub_subscription" "repo_event_subscriptions" {
         for_each = push_config.value.oidc_token != null ? [push_config.value.oidc_token] : []
         content {
           service_account_email = oidc_token.value.service_account_email
-          audience             = oidc_token.value.audience
+          audience              = oidc_token.value.audience
         }
       }
     }
@@ -139,12 +139,12 @@ resource "google_cloudbuild_trigger" "repo_triggers" {
   description = each.value.description
 
   trigger_template {
-    project_id  = var.project_id
-    repo_name   = google_sourcerepo_repository.repositories[each.value.repository_name].name
-    branch_name = each.value.branch_name
-    tag_name    = each.value.tag_name
-    commit_sha  = each.value.commit_sha
-    dir         = each.value.dir
+    project_id   = var.project_id
+    repo_name    = google_sourcerepo_repository.repositories[each.value.repository_name].name
+    branch_name  = each.value.branch_name
+    tag_name     = each.value.tag_name
+    commit_sha   = each.value.commit_sha
+    dir          = each.value.dir
     invert_regex = each.value.invert_regex
   }
 
@@ -175,13 +175,13 @@ resource "google_cloudbuild_trigger" "repo_triggers" {
         }
       }
 
-      timeout         = build.value.timeout
-      images          = build.value.images
-      substitutions   = build.value.substitutions
-      tags            = build.value.tags
-      logs_bucket     = build.value.logs_bucket
-      machine_type    = build.value.machine_type
-      disk_size_gb    = build.value.disk_size_gb
+      timeout                = build.value.timeout
+      images                 = build.value.images
+      substitutions          = build.value.substitutions
+      tags                   = build.value.tags
+      logs_bucket            = build.value.logs_bucket
+      machine_type           = build.value.machine_type
+      disk_size_gb           = build.value.disk_size_gb
       source_provenance_hash = build.value.source_provenance_hash
 
       dynamic "artifacts" {
@@ -202,17 +202,17 @@ resource "google_cloudbuild_trigger" "repo_triggers" {
       dynamic "options" {
         for_each = build.value.options != null ? [build.value.options] : []
         content {
-          disk_size_gb                = options.value.disk_size_gb
-          machine_type               = options.value.machine_type
-          requested_verify_option    = options.value.requested_verify_option
-          source_provenance_hash     = options.value.source_provenance_hash
-          substitution_option        = options.value.substitution_option
-          dynamic_substitutions      = options.value.dynamic_substitutions
-          log_streaming_option       = options.value.log_streaming_option
-          worker_pool                = options.value.worker_pool
-          logging                    = options.value.logging
+          disk_size_gb            = options.value.disk_size_gb
+          machine_type            = options.value.machine_type
+          requested_verify_option = options.value.requested_verify_option
+          source_provenance_hash  = options.value.source_provenance_hash
+          substitution_option     = options.value.substitution_option
+          dynamic_substitutions   = options.value.dynamic_substitutions
+          log_streaming_option    = options.value.log_streaming_option
+          worker_pool             = options.value.worker_pool
+          logging                 = options.value.logging
 
-          env = options.value.env
+          env        = options.value.env
           secret_env = options.value.secret_env
 
           dynamic "volumes" {
@@ -248,10 +248,10 @@ resource "google_cloudbuild_trigger" "repo_triggers" {
     }
   }
 
-  filename = each.value.filename
-  ignored_files = each.value.ignored_files
+  filename       = each.value.filename
+  ignored_files  = each.value.ignored_files
   included_files = each.value.included_files
-  disabled = each.value.disabled
+  disabled       = each.value.disabled
 
   dynamic "substitutions" {
     for_each = each.value.substitutions != null ? [each.value.substitutions] : []
@@ -299,14 +299,14 @@ resource "google_storage_bucket" "build_artifacts_bucket" {
 
       condition {
         age                        = lifecycle_rule.value.condition.age
-        created_before            = lifecycle_rule.value.condition.created_before
-        with_state                = lifecycle_rule.value.condition.with_state
-        matches_storage_class     = lifecycle_rule.value.condition.matches_storage_class
-        num_newer_versions        = lifecycle_rule.value.condition.num_newer_versions
-        custom_time_before        = lifecycle_rule.value.condition.custom_time_before
-        days_since_custom_time    = lifecycle_rule.value.condition.days_since_custom_time
+        created_before             = lifecycle_rule.value.condition.created_before
+        with_state                 = lifecycle_rule.value.condition.with_state
+        matches_storage_class      = lifecycle_rule.value.condition.matches_storage_class
+        num_newer_versions         = lifecycle_rule.value.condition.num_newer_versions
+        custom_time_before         = lifecycle_rule.value.condition.custom_time_before
+        days_since_custom_time     = lifecycle_rule.value.condition.days_since_custom_time
         days_since_noncurrent_time = lifecycle_rule.value.condition.days_since_noncurrent_time
-        noncurrent_time_before    = lifecycle_rule.value.condition.noncurrent_time_before
+        noncurrent_time_before     = lifecycle_rule.value.condition.noncurrent_time_before
       }
     }
   }
@@ -435,10 +435,10 @@ resource "google_cloudfunctions_function" "repo_webhooks" {
   region      = each.value.region
   description = each.value.description
 
-  runtime             = each.value.runtime
-  available_memory_mb = each.value.memory_mb
-  timeout             = each.value.timeout
-  entry_point         = each.value.entry_point
+  runtime               = each.value.runtime
+  available_memory_mb   = each.value.memory_mb
+  timeout               = each.value.timeout
+  entry_point           = each.value.entry_point
   service_account_email = var.create_service_account ? google_service_account.source_repos_sa[0].email : each.value.service_account_email
 
   source_archive_bucket = each.value.source_bucket
@@ -606,10 +606,10 @@ resource "google_monitoring_alert_policy" "source_repos_alerts" {
       threshold_value = each.value.threshold_value
 
       aggregations {
-        alignment_period   = each.value.alignment_period
-        per_series_aligner = each.value.per_series_aligner
+        alignment_period     = each.value.alignment_period
+        per_series_aligner   = each.value.per_series_aligner
         cross_series_reducer = each.value.cross_series_reducer
-        group_by_fields    = each.value.group_by_fields
+        group_by_fields      = each.value.group_by_fields
       }
 
       dynamic "trigger" {
@@ -696,7 +696,7 @@ resource "google_logging_project_sink" "source_repos_audit_sink" {
   ])
 
   unique_writer_identity = true
-  project               = var.project_id
+  project                = var.project_id
 
   depends_on = [
     google_project_service.source_repos_apis
@@ -729,36 +729,36 @@ locals {
     ]
     npm_build = [
       {
-        name = "node:16"
+        name       = "node:16"
         entrypoint = "npm"
-        args = ["install"]
+        args       = ["install"]
       },
       {
-        name = "node:16"
+        name       = "node:16"
         entrypoint = "npm"
-        args = ["run", "build"]
+        args       = ["run", "build"]
       },
       {
-        name = "node:16"
+        name       = "node:16"
         entrypoint = "npm"
-        args = ["test"]
+        args       = ["test"]
       }
     ]
     go_build = [
       {
         name = "gcr.io/cloud-builders/go"
         args = ["mod", "download"]
-        env = ["GO111MODULE=on"]
+        env  = ["GO111MODULE=on"]
       },
       {
         name = "gcr.io/cloud-builders/go"
         args = ["build", "-v", "."]
-        env = ["GO111MODULE=on"]
+        env  = ["GO111MODULE=on"]
       },
       {
         name = "gcr.io/cloud-builders/go"
         args = ["test", "-v", "./..."]
-        env = ["GO111MODULE=on"]
+        env  = ["GO111MODULE=on"]
       }
     ]
   }

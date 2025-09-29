@@ -190,10 +190,10 @@ output "audit_log_config" {
 output "export_destinations" {
   description = "Map of all configured export destinations"
   value = {
-    storage     = var.storage_destination
-    bigquery    = var.bigquery_destination
-    pubsub      = var.pubsub_destination
-    splunk      = var.splunk_destination
-    datadog     = var.datadog_destination
+    storage  = var.storage_destination
+    bigquery = var.bigquery_destination
+    pubsub   = var.pubsub_destination
+    splunk   = var.splunk_destination
+    datadog  = var.datadog_destination
   }
 }

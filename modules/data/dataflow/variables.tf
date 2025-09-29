@@ -553,27 +553,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }

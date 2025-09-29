@@ -55,7 +55,7 @@ resource "google_compute_region_instance_group_manager" "backend_groups" {
     }
   }
 
-  distribution_policy_zones = var.instance_group_config.zone_distribution_policy != null ? var.instance_group_config.zone_distribution_policy.zones : null
+  distribution_policy_zones        = var.instance_group_config.zone_distribution_policy != null ? var.instance_group_config.zone_distribution_policy.zones : null
   distribution_policy_target_shape = var.instance_group_config.zone_distribution_policy != null ? var.instance_group_config.zone_distribution_policy.target_shape : null
 
   lifecycle {

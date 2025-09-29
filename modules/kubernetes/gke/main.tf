@@ -45,24 +45,24 @@ locals {
 
   # Default node pool configuration
   default_node_pool = var.remove_default_node_pool ? {} : {
-    name = "default-pool"
-    initial_node_count = var.initial_node_count
-    min_count = var.min_count
-    max_count = var.max_count
-    machine_type = var.machine_type
-    disk_size_gb = var.disk_size_gb
-    disk_type = var.disk_type
-    preemptible = var.preemptible
-    spot = var.spot
-    auto_repair = var.auto_repair
-    auto_upgrade = var.auto_upgrade
+    name                        = "default-pool"
+    initial_node_count          = var.initial_node_count
+    min_count                   = var.min_count
+    max_count                   = var.max_count
+    machine_type                = var.machine_type
+    disk_size_gb                = var.disk_size_gb
+    disk_type                   = var.disk_type
+    preemptible                 = var.preemptible
+    spot                        = var.spot
+    auto_repair                 = var.auto_repair
+    auto_upgrade                = var.auto_upgrade
     enable_integrity_monitoring = var.enable_integrity_monitoring
-    enable_secure_boot = var.enable_secure_boot
-    tags = var.node_tags
-    labels = var.node_labels
-    metadata = var.node_metadata
-    oauth_scopes = var.oauth_scopes
-    service_account = var.node_service_account
+    enable_secure_boot          = var.enable_secure_boot
+    tags                        = var.node_tags
+    labels                      = var.node_labels
+    metadata                    = var.node_metadata
+    oauth_scopes                = var.oauth_scopes
+    service_account             = var.node_service_account
   }
 
   # Labels with defaults
@@ -78,21 +78,21 @@ locals {
 
   # Cluster autoscaling
   cluster_autoscaling = var.enable_cluster_autoscaling ? [{
-    enabled = true
+    enabled         = true
     resource_limits = var.cluster_autoscaling_resource_limits
     auto_provisioning_defaults = var.auto_provisioning_defaults != null ? [{
       oauth_scopes = lookup(var.auto_provisioning_defaults, "oauth_scopes", [
         "https://www.googleapis.com/auth/cloud-platform"
       ])
-      service_account = lookup(var.auto_provisioning_defaults, "service_account", null)
-      min_cpu_platform = lookup(var.auto_provisioning_defaults, "min_cpu_platform", null)
-      disk_size = lookup(var.auto_provisioning_defaults, "disk_size", 100)
-      disk_type = lookup(var.auto_provisioning_defaults, "disk_type", "pd-standard")
-      image_type = lookup(var.auto_provisioning_defaults, "image_type", "COS_CONTAINERD")
-      boot_disk_kms_key = lookup(var.auto_provisioning_defaults, "boot_disk_kms_key", null)
+      service_account          = lookup(var.auto_provisioning_defaults, "service_account", null)
+      min_cpu_platform         = lookup(var.auto_provisioning_defaults, "min_cpu_platform", null)
+      disk_size                = lookup(var.auto_provisioning_defaults, "disk_size", 100)
+      disk_type                = lookup(var.auto_provisioning_defaults, "disk_type", "pd-standard")
+      image_type               = lookup(var.auto_provisioning_defaults, "image_type", "COS_CONTAINERD")
+      boot_disk_kms_key        = lookup(var.auto_provisioning_defaults, "boot_disk_kms_key", null)
       shielded_instance_config = lookup(var.auto_provisioning_defaults, "shielded_instance_config", null)
-      management = lookup(var.auto_provisioning_defaults, "management", null)
-      upgrade_settings = lookup(var.auto_provisioning_defaults, "upgrade_settings", null)
+      management               = lookup(var.auto_provisioning_defaults, "management", null)
+      upgrade_settings         = lookup(var.auto_provisioning_defaults, "upgrade_settings", null)
     }] : []
   }] : []
 
@@ -203,12 +203,12 @@ resource "google_container_cluster" "cluster" {
       dynamic "auto_provisioning_defaults" {
         for_each = cluster_autoscaling.value.auto_provisioning_defaults
         content {
-          oauth_scopes     = auto_provisioning_defaults.value.oauth_scopes
-          service_account  = auto_provisioning_defaults.value.service_account
-          min_cpu_platform = auto_provisioning_defaults.value.min_cpu_platform
-          disk_size        = auto_provisioning_defaults.value.disk_size
-          disk_type        = auto_provisioning_defaults.value.disk_type
-          image_type       = auto_provisioning_defaults.value.image_type
+          oauth_scopes      = auto_provisioning_defaults.value.oauth_scopes
+          service_account   = auto_provisioning_defaults.value.service_account
+          min_cpu_platform  = auto_provisioning_defaults.value.min_cpu_platform
+          disk_size         = auto_provisioning_defaults.value.disk_size
+          disk_type         = auto_provisioning_defaults.value.disk_type
+          image_type        = auto_provisioning_defaults.value.image_type
           boot_disk_kms_key = auto_provisioning_defaults.value.boot_disk_kms_key
 
           dynamic "shielded_instance_config" {
@@ -383,7 +383,7 @@ resource "google_container_cluster" "cluster" {
       auth     = var.istio_auth
     }
     cloudrun_config {
-      disabled         = !var.enable_cloud_run
+      disabled           = !var.enable_cloud_run
       load_balancer_type = var.cloud_run_load_balancer_type
     }
   }
@@ -508,11 +508,11 @@ resource "google_container_cluster" "cluster" {
   }
 
   # Enable features
-  enable_kubernetes_alpha = var.enable_kubernetes_alpha
-  enable_tpu              = var.enable_tpu
-  enable_legacy_abac      = var.enable_legacy_abac
-  enable_shielded_nodes   = var.enable_shielded_nodes
-  enable_autopilot        = var.enable_autopilot
+  enable_kubernetes_alpha     = var.enable_kubernetes_alpha
+  enable_tpu                  = var.enable_tpu
+  enable_legacy_abac          = var.enable_legacy_abac
+  enable_shielded_nodes       = var.enable_shielded_nodes
+  enable_autopilot            = var.enable_autopilot
   enable_intranode_visibility = var.enable_intranode_visibility
   enable_l4_ilb_subsetting    = var.enable_l4_ilb_subsetting
 
@@ -536,7 +536,7 @@ resource "google_container_cluster" "cluster" {
         for_each = var.enable_advanced_datapath_observability ? [1] : []
         content {
           enable_metrics = var.advanced_datapath_observability_mode == "INTERNAL_VPC" || var.advanced_datapath_observability_mode == "EXTERNAL_LB"
-          relay_mode    = var.advanced_datapath_observability_mode
+          relay_mode     = var.advanced_datapath_observability_mode
         }
       }
     }

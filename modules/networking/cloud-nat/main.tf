@@ -83,7 +83,7 @@ locals {
     for k, v in var.bgp_peers : k => merge(
       v,
       {
-        name                  = v.name != null ? v.name : "${local.name_prefix}-${k}-peer"
+        name                      = v.name != null ? v.name : "${local.name_prefix}-${k}-peer"
         advertised_route_priority = v.advertised_route_priority != null ? v.advertised_route_priority : 100
       }
     )
@@ -104,10 +104,10 @@ resource "google_compute_router" "routers" {
     for_each = each.value.bgp_config != null ? [each.value.bgp_config] : []
 
     content {
-      asn                   = bgp.value.asn
-      advertise_mode        = bgp.value.advertise_mode
-      advertised_groups     = bgp.value.advertised_groups
-      keepalive_interval    = bgp.value.keepalive_interval
+      asn                = bgp.value.asn
+      advertise_mode     = bgp.value.advertise_mode
+      advertised_groups  = bgp.value.advertised_groups
+      keepalive_interval = bgp.value.keepalive_interval
 
       dynamic "advertised_ip_ranges" {
         for_each = bgp.value.advertised_ip_ranges != null ? bgp.value.advertised_ip_ranges : []
@@ -144,10 +144,10 @@ resource "google_compute_address" "nat_ips" {
 resource "google_compute_router_nat" "nat_gateways" {
   for_each = local.nat_gateways
 
-  name                                = each.value.name
-  router                              = each.value.create_router != false ? google_compute_router.routers[each.value.router_key].name : each.value.router_name
-  region                              = each.value.region
-  project                             = var.project_id
+  name    = each.value.name
+  router  = each.value.create_router != false ? google_compute_router.routers[each.value.router_key].name : each.value.router_name
+  region  = each.value.region
+  project = var.project_id
 
   # NAT IP configuration
   nat_ip_allocate_option = each.value.nat_ip_allocate_option != null ? each.value.nat_ip_allocate_option : "AUTO_ONLY"
@@ -166,8 +166,8 @@ resource "google_compute_router_nat" "nat_gateways" {
     for_each = each.value.source_subnetwork_ip_ranges_to_nat == "LIST_OF_SUBNETWORKS" ? each.value.subnetworks != null ? each.value.subnetworks : [] : []
 
     content {
-      name                    = subnetwork.value.name
-      source_ip_ranges_to_nat = subnetwork.value.source_ip_ranges_to_nat != null ? subnetwork.value.source_ip_ranges_to_nat : ["ALL_IP_RANGES"]
+      name                     = subnetwork.value.name
+      source_ip_ranges_to_nat  = subnetwork.value.source_ip_ranges_to_nat != null ? subnetwork.value.source_ip_ranges_to_nat : ["ALL_IP_RANGES"]
       secondary_ip_range_names = subnetwork.value.secondary_ip_range_names
     }
   }
@@ -179,11 +179,11 @@ resource "google_compute_router_nat" "nat_gateways" {
   enable_endpoint_independent_mapping = each.value.enable_endpoint_independent_mapping != null ? each.value.enable_endpoint_independent_mapping : true
 
   # Timeout configuration
-  icmp_idle_timeout_sec              = each.value.icmp_idle_timeout_sec != null ? each.value.icmp_idle_timeout_sec : 30
-  tcp_established_idle_timeout_sec   = each.value.tcp_established_idle_timeout_sec != null ? each.value.tcp_established_idle_timeout_sec : 1200
-  tcp_transitory_idle_timeout_sec    = each.value.tcp_transitory_idle_timeout_sec != null ? each.value.tcp_transitory_idle_timeout_sec : 30
-  tcp_time_wait_timeout_sec          = each.value.tcp_time_wait_timeout_sec != null ? each.value.tcp_time_wait_timeout_sec : 120
-  udp_idle_timeout_sec               = each.value.udp_idle_timeout_sec != null ? each.value.udp_idle_timeout_sec : 30
+  icmp_idle_timeout_sec            = each.value.icmp_idle_timeout_sec != null ? each.value.icmp_idle_timeout_sec : 30
+  tcp_established_idle_timeout_sec = each.value.tcp_established_idle_timeout_sec != null ? each.value.tcp_established_idle_timeout_sec : 1200
+  tcp_transitory_idle_timeout_sec  = each.value.tcp_transitory_idle_timeout_sec != null ? each.value.tcp_transitory_idle_timeout_sec : 30
+  tcp_time_wait_timeout_sec        = each.value.tcp_time_wait_timeout_sec != null ? each.value.tcp_time_wait_timeout_sec : 120
+  udp_idle_timeout_sec             = each.value.udp_idle_timeout_sec != null ? each.value.udp_idle_timeout_sec : 30
 
   # Logging configuration
   dynamic "log_config" {
@@ -235,34 +235,34 @@ resource "google_compute_router_nat" "nat_gateways" {
 resource "google_compute_router_interface" "interfaces" {
   for_each = local.router_interfaces
 
-  name                   = each.value.name
-  router                 = each.value.router_name
-  region                 = each.value.region != null ? each.value.region : var.region
-  project                = var.project_id
+  name    = each.value.name
+  router  = each.value.router_name
+  region  = each.value.region != null ? each.value.region : var.region
+  project = var.project_id
 
-  ip_range                          = each.value.ip_range
-  vpn_tunnel                        = each.value.vpn_tunnel
-  interconnect_attachment           = each.value.interconnect_attachment
-  subnetwork                        = each.value.subnetwork
-  private_ip_address                = each.value.private_ip_address
-  redundant_interface               = each.value.redundant_interface
+  ip_range                = each.value.ip_range
+  vpn_tunnel              = each.value.vpn_tunnel
+  interconnect_attachment = each.value.interconnect_attachment
+  subnetwork              = each.value.subnetwork
+  private_ip_address      = each.value.private_ip_address
+  redundant_interface     = each.value.redundant_interface
 }
 
 # BGP Peers for Cloud Router
 resource "google_compute_router_peer" "bgp_peers" {
   for_each = local.bgp_peers
 
-  name                      = each.value.name
-  router                    = each.value.router_name
-  region                    = each.value.region != null ? each.value.region : var.region
-  project                   = var.project_id
+  name    = each.value.name
+  router  = each.value.router_name
+  region  = each.value.region != null ? each.value.region : var.region
+  project = var.project_id
 
   interface                 = each.value.interface_name
-  peer_ip_address          = each.value.peer_ip_address
-  peer_asn                 = each.value.peer_asn
+  peer_ip_address           = each.value.peer_ip_address
+  peer_asn                  = each.value.peer_asn
   advertised_route_priority = each.value.advertised_route_priority
-  advertise_mode           = each.value.advertise_mode
-  advertised_groups        = each.value.advertised_groups
+  advertise_mode            = each.value.advertise_mode
+  advertised_groups         = each.value.advertised_groups
 
   dynamic "advertised_ip_ranges" {
     for_each = each.value.advertised_ip_ranges != null ? each.value.advertised_ip_ranges : []
@@ -284,9 +284,9 @@ resource "google_compute_router_peer" "bgp_peers" {
     }
   }
 
-  enable                   = each.value.enable != null ? each.value.enable : true
-  enable_ipv6             = each.value.enable_ipv6
-  ipv6_nexthop_address    = each.value.ipv6_nexthop_address
+  enable                    = each.value.enable != null ? each.value.enable : true
+  enable_ipv6               = each.value.enable_ipv6
+  ipv6_nexthop_address      = each.value.ipv6_nexthop_address
   peer_ipv6_nexthop_address = each.value.peer_ipv6_nexthop_address
   router_appliance_instance = each.value.router_appliance_instance
 
@@ -300,18 +300,18 @@ resource "google_compute_router_peer" "bgp_peers" {
 resource "google_compute_route" "custom_routes" {
   for_each = var.custom_routes
 
-  name                   = each.value.name != null ? each.value.name : "${local.name_prefix}-${each.key}-route"
-  description           = each.value.description
-  dest_range            = each.value.dest_range
-  network               = each.value.network
-  next_hop_gateway      = each.value.next_hop_gateway
-  next_hop_instance     = each.value.next_hop_instance
-  next_hop_ip           = each.value.next_hop_ip
-  next_hop_vpn_tunnel   = each.value.next_hop_vpn_tunnel
-  next_hop_ilb          = each.value.next_hop_ilb
-  priority              = each.value.priority != null ? each.value.priority : 1000
-  tags                  = each.value.tags
-  project               = var.project_id
+  name                = each.value.name != null ? each.value.name : "${local.name_prefix}-${each.key}-route"
+  description         = each.value.description
+  dest_range          = each.value.dest_range
+  network             = each.value.network
+  next_hop_gateway    = each.value.next_hop_gateway
+  next_hop_instance   = each.value.next_hop_instance
+  next_hop_ip         = each.value.next_hop_ip
+  next_hop_vpn_tunnel = each.value.next_hop_vpn_tunnel
+  next_hop_ilb        = each.value.next_hop_ilb
+  priority            = each.value.priority != null ? each.value.priority : 1000
+  tags                = each.value.tags
+  project             = var.project_id
 }
 
 # Firewall rules for NAT
@@ -323,12 +323,12 @@ resource "google_compute_firewall" "nat_firewall_rules" {
   network     = each.value.network
   project     = var.project_id
 
-  priority         = each.value.priority != null ? each.value.priority : 1000
-  direction        = each.value.direction != null ? each.value.direction : "INGRESS"
-  source_ranges    = each.value.source_ranges
-  destination_ranges = each.value.destination_ranges
-  source_tags      = each.value.source_tags
-  target_tags      = each.value.target_tags
+  priority                = each.value.priority != null ? each.value.priority : 1000
+  direction               = each.value.direction != null ? each.value.direction : "INGRESS"
+  source_ranges           = each.value.source_ranges
+  destination_ranges      = each.value.destination_ranges
+  source_tags             = each.value.source_tags
+  target_tags             = each.value.target_tags
   source_service_accounts = each.value.source_service_accounts
   target_service_accounts = each.value.target_service_accounts
 
@@ -448,7 +448,7 @@ resource "google_monitoring_alert_policy" "nat_alerts" {
 resource "google_monitoring_dashboard" "nat_dashboard" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.name_prefix}-cloud-nat-dashboard"
     mosaicLayout = {
@@ -570,7 +570,7 @@ resource "google_monitoring_dashboard" "nat_dashboard" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 },
                 {
@@ -585,7 +585,7 @@ resource "google_monitoring_dashboard" "nat_dashboard" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y2"
                 }
               ]

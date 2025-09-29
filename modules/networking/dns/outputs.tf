@@ -230,8 +230,8 @@ output "subdomain_zones" {
   description = "Map of subdomain zones created"
   value = {
     for k, v in google_dns_managed_zone.subdomains : k => {
-      id          = v.id
-      dns_name    = v.dns_name
+      id           = v.id
+      dns_name     = v.dns_name
       name_servers = v.name_servers
     }
   }
@@ -265,11 +265,11 @@ output "zone_type" {
 output "enabled_features" {
   description = "List of enabled DNS features"
   value = {
-    dnssec_enabled         = var.enable_dnssec
-    logging_enabled        = var.enable_logging
-    private_zone           = var.zone_type == "private"
-    forwarding_enabled     = length(var.forwarding_targets) > 0
-    peering_enabled        = var.peering_network != ""
+    dnssec_enabled          = var.enable_dnssec
+    logging_enabled         = var.enable_logging
+    private_zone            = var.zone_type == "private"
+    forwarding_enabled      = length(var.forwarding_targets) > 0
+    peering_enabled         = var.peering_network != ""
     response_policy_enabled = var.enable_response_policy
   }
 }

@@ -217,10 +217,10 @@ output "spark_jobs" {
   value = {
     for job_name, job in google_dataproc_job.spark_job :
     job_name => {
-      id        = job.id
-      status    = job.status[0].state
+      id            = job.id
+      status        = job.status[0].state
       driver_output = try(job.driver_output_resource_uri, null)
-      labels    = job.labels
+      labels        = job.labels
     }
   }
 }
@@ -230,10 +230,10 @@ output "pyspark_jobs" {
   value = {
     for job_name, job in google_dataproc_job.pyspark_job :
     job_name => {
-      id        = job.id
-      status    = job.status[0].state
+      id            = job.id
+      status        = job.status[0].state
       driver_output = try(job.driver_output_resource_uri, null)
-      labels    = job.labels
+      labels        = job.labels
     }
   }
 }
@@ -243,10 +243,10 @@ output "hive_jobs" {
   value = {
     for job_name, job in google_dataproc_job.hive_job :
     job_name => {
-      id        = job.id
-      status    = job.status[0].state
+      id            = job.id
+      status        = job.status[0].state
       driver_output = try(job.driver_output_resource_uri, null)
-      labels    = job.labels
+      labels        = job.labels
     }
   }
 }
@@ -256,10 +256,10 @@ output "pig_jobs" {
   value = {
     for job_name, job in google_dataproc_job.pig_job :
     job_name => {
-      id        = job.id
-      status    = job.status[0].state
+      id            = job.id
+      status        = job.status[0].state
       driver_output = try(job.driver_output_resource_uri, null)
-      labels    = job.labels
+      labels        = job.labels
     }
   }
 }
@@ -269,10 +269,10 @@ output "hadoop_jobs" {
   value = {
     for job_name, job in google_dataproc_job.hadoop_job :
     job_name => {
-      id        = job.id
-      status    = job.status[0].state
+      id            = job.id
+      status        = job.status[0].state
       driver_output = try(job.driver_output_resource_uri, null)
-      labels    = job.labels
+      labels        = job.labels
     }
   }
 }
@@ -282,10 +282,10 @@ output "sparksql_jobs" {
   value = {
     for job_name, job in google_dataproc_job.sparksql_job :
     job_name => {
-      id        = job.id
-      status    = job.status[0].state
+      id            = job.id
+      status        = job.status[0].state
       driver_output = try(job.driver_output_resource_uri, null)
-      labels    = job.labels
+      labels        = job.labels
     }
   }
 }
@@ -295,10 +295,10 @@ output "presto_jobs" {
   value = {
     for job_name, job in google_dataproc_job.presto_job :
     job_name => {
-      id        = job.id
-      status    = job.status[0].state
+      id            = job.id
+      status        = job.status[0].state
       driver_output = try(job.driver_output_resource_uri, null)
-      labels    = job.labels
+      labels        = job.labels
     }
   }
 }

@@ -12,7 +12,7 @@ import (
 	"cloud.google.com/go/compute/apiv1/computepb"
 	networkconnectivity "cloud.google.com/go/networkconnectivity/apiv1"
 	"cloud.google.com/go/networkconnectivity/apiv1/networkconnectivitypb"
-	servicenetworking "cloud.google.com/go/servicenetworking/apiv1"
+	// servicenetworking "cloud.google.com/go/servicenetworking/apiv1"
 	vpcaccess "cloud.google.com/go/vpcaccess/apiv1"
 	"cloud.google.com/go/vpcaccess/apiv1/vpcaccesspb"
 	"go.uber.org/zap"

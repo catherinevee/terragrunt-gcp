@@ -131,13 +131,13 @@ variable "additional_disks" {
   description = "List of additional disks to attach"
   type = list(object({
     auto_delete       = optional(bool)
-    disk_name        = optional(string)
-    disk_size_gb     = optional(number)
-    disk_type        = optional(string)
-    source_image     = optional(string)
-    source           = optional(string)
-    mode             = optional(string)
-    type             = optional(string)
+    disk_name         = optional(string)
+    disk_size_gb      = optional(number)
+    disk_type         = optional(string)
+    source_image      = optional(string)
+    source            = optional(string)
+    mode              = optional(string)
+    type              = optional(string)
     kms_key_self_link = optional(string)
   }))
   default = []
@@ -151,9 +151,9 @@ variable "network_interfaces" {
     subnetwork         = optional(string)
     subnetwork_project = optional(string)
     network_ip         = optional(string)
-    nic_type          = optional(string)
-    stack_type        = optional(string)
-    queue_count       = optional(number)
+    nic_type           = optional(string)
+    stack_type         = optional(string)
+    queue_count        = optional(number)
     access_config = optional(list(object({
       nat_ip       = optional(string)
       network_tier = optional(string)
@@ -316,8 +316,8 @@ variable "advanced_machine_features" {
   description = "Advanced machine features"
   type = object({
     enable_nested_virtualization = optional(bool)
-    threads_per_core            = optional(number)
-    visible_core_count          = optional(number)
+    threads_per_core             = optional(number)
+    visible_core_count           = optional(number)
   })
   default = null
 }
@@ -383,7 +383,7 @@ variable "versions" {
   description = "Additional versions for canary deployments"
   type = list(object({
     instance_template = string
-    name             = string
+    name              = string
     target_size = optional(object({
       fixed   = optional(number)
       percent = optional(number)
@@ -559,7 +559,7 @@ variable "instance_lifecycle_policy" {
   description = "Instance lifecycle policy"
   type = object({
     default_action_on_failure = optional(string)
-    force_update_on_repair   = optional(string)
+    force_update_on_repair    = optional(string)
   })
   default = null
 }

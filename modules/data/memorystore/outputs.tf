@@ -272,11 +272,11 @@ output "redis_connection_info" {
   description = "Connection information for Redis instances"
   value = {
     for k, v in google_redis_instance.redis : k => {
-      host                = v.host
-      port                = v.port
-      auth_enabled        = v.auth_enabled
-      transit_encryption  = v.transit_encryption_mode
-      connection_string   = "redis://${v.host}:${v.port}"
+      host                  = v.host
+      port                  = v.port
+      auth_enabled          = v.auth_enabled
+      transit_encryption    = v.transit_encryption_mode
+      connection_string     = "redis://${v.host}:${v.port}"
       ssl_connection_string = v.transit_encryption_mode == "SERVER_AUTHENTICATION" ? "rediss://${v.host}:${v.port}" : null
     }
   }
@@ -287,7 +287,7 @@ output "memcached_connection_info" {
   value = {
     for k, v in google_memcache_instance.memcached : k => {
       discovery_endpoint = v.discovery_endpoint
-      nodes             = v.memcache_nodes
+      nodes              = v.memcache_nodes
     }
   }
 }
@@ -298,12 +298,12 @@ output "redis_configurations" {
   value = {
     for k, v in local.redis_instances : k => {
       tier                    = v.tier
-      memory_size_gb         = v.memory_size_gb
-      redis_version          = v.redis_version
-      auth_enabled           = v.auth_enabled
+      memory_size_gb          = v.memory_size_gb
+      redis_version           = v.redis_version
+      auth_enabled            = v.auth_enabled
       transit_encryption_mode = v.transit_encryption_mode
-      connect_mode           = v.connect_mode
-      persistence_enabled    = v.persistence_config != null
+      connect_mode            = v.connect_mode
+      persistence_enabled     = v.persistence_config != null
     }
   }
 }
@@ -331,8 +331,8 @@ output "security_summary" {
       for k, v in local.redis_instances : k => v.transit_encryption_mode
     }
     private_service_access_enabled = var.enable_private_service_access
-    firewall_rules_created        = var.create_firewall_rules
-    service_account_created       = var.create_service_account
+    firewall_rules_created         = var.create_firewall_rules
+    service_account_created        = var.create_service_account
   }
 }
 
@@ -348,7 +348,7 @@ output "performance_summary" {
         for node in instance.node_config : node.memory_size_mb
       ])
     ])
-    redis_instances_count    = length(local.redis_instances)
+    redis_instances_count     = length(local.redis_instances)
     memcached_instances_count = length(local.memcached_instances)
     high_availability_instances = length([
       for k, v in local.redis_instances : k if v.tier == "STANDARD_HA"
@@ -391,16 +391,16 @@ output "backup_summary" {
 output "module_configuration" {
   description = "Module configuration summary"
   value = {
-    project_id                    = var.project_id
-    region                       = var.region
-    environment                  = local.environment
-    name_prefix                  = local.name_prefix
-    network_name                 = var.network_name
-    subnetwork_name              = var.subnetwork_name
+    project_id                     = var.project_id
+    region                         = var.region
+    environment                    = local.environment
+    name_prefix                    = local.name_prefix
+    network_name                   = var.network_name
+    subnetwork_name                = var.subnetwork_name
     private_service_access_enabled = var.enable_private_service_access
-    monitoring_enabled           = var.create_monitoring_alerts
-    dashboard_created            = var.create_monitoring_dashboard
-    log_metrics_enabled          = var.create_log_metrics
+    monitoring_enabled             = var.create_monitoring_alerts
+    dashboard_created              = var.create_monitoring_dashboard
+    log_metrics_enabled            = var.create_log_metrics
   }
 }
 
@@ -414,13 +414,13 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    redis_instances       = length(var.redis_instances)
-    memcached_instances   = length(var.memcached_instances)
-    service_accounts      = var.create_service_account ? 1 : 0
-    firewall_rules        = var.create_firewall_rules ? 1 : 0
-    backup_buckets        = var.enable_redis_backups ? length(var.redis_backup_configs) : 0
-    backup_functions      = var.enable_automated_backups ? length(var.backup_functions) : 0
-    alert_policies        = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    redis_instances      = length(var.redis_instances)
+    memcached_instances  = length(var.memcached_instances)
+    service_accounts     = var.create_service_account ? 1 : 0
+    firewall_rules       = var.create_firewall_rules ? 1 : 0
+    backup_buckets       = var.enable_redis_backups ? length(var.redis_backup_configs) : 0
+    backup_functions     = var.enable_automated_backups ? length(var.backup_functions) : 0
+    alert_policies       = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
     dashboards           = var.create_monitoring_dashboard ? 1 : 0
     log_metrics          = var.create_log_metrics ? length(var.log_metrics) : 0
     iam_bindings         = length(var.redis_iam_bindings)

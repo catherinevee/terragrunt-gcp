@@ -56,15 +56,15 @@ locals {
       # Adaptive protection configuration
       adaptive_protection_config = {
         layer_7_ddos_defense_config = {
-          enable                    = false
-          rule_visibility          = "STANDARD"
+          enable            = false
+          rule_visibility   = "STANDARD"
           threshold_configs = []
         }
         auto_deploy_config = {
-          load_threshold            = 0.1
-          confidence_threshold      = 0.5
+          load_threshold              = 0.1
+          confidence_threshold        = 0.5
           impacted_baseline_threshold = 0.01
-          expiration_sec           = 7200
+          expiration_sec              = 7200
         }
       }
 
@@ -74,7 +74,7 @@ locals {
         json_custom_config = {
           content_types = []
         }
-        log_level = "NORMAL"
+        log_level               = "NORMAL"
         user_ip_request_headers = []
       }
 
@@ -105,8 +105,8 @@ locals {
       for policy_name, policy in local.security_policies :
       "${policy_name}_rate_limit" => {
         policy_name = policy_name
-        type       = "rate_limit"
-        rules      = policy.rate_limit_rules
+        type        = "rate_limit"
+        rules       = policy.rate_limit_rules
       }
       if length(policy.rate_limit_rules) > 0
     },
@@ -115,8 +115,8 @@ locals {
       for policy_name, policy in local.security_policies :
       "${policy_name}_geo" => {
         policy_name = policy_name
-        type       = "geo"
-        rules      = policy.geo_rules
+        type        = "geo"
+        rules       = policy.geo_rules
       }
       if length(policy.geo_rules) > 0
     },
@@ -125,8 +125,8 @@ locals {
       for policy_name, policy in local.security_policies :
       "${policy_name}_ip" => {
         policy_name = policy_name
-        type       = "ip"
-        rules      = policy.ip_rules
+        type        = "ip"
+        rules       = policy.ip_rules
       }
       if length(policy.ip_rules) > 0
     },
@@ -135,8 +135,8 @@ locals {
       for policy_name, policy in local.security_policies :
       "${policy_name}_custom" => {
         policy_name = policy_name
-        type       = "custom"
-        rules      = policy.custom_rules
+        type        = "custom"
+        rules       = policy.custom_rules
       }
       if length(policy.custom_rules) > 0
     },
@@ -145,8 +145,8 @@ locals {
       for policy_name, policy in local.security_policies :
       "${policy_name}_owasp" => {
         policy_name = policy_name
-        type       = "owasp"
-        rules      = policy.owasp_rules
+        type        = "owasp"
+        rules       = policy.owasp_rules
       }
       if length(policy.owasp_rules) > 0
     },
@@ -155,8 +155,8 @@ locals {
       for policy_name, policy in local.security_policies :
       "${policy_name}_bot" => {
         policy_name = policy_name
-        type       = "bot"
-        rules      = policy.bot_management_rules
+        type        = "bot"
+        rules       = policy.bot_management_rules
       }
       if length(policy.bot_management_rules) > 0
     }
@@ -207,7 +207,7 @@ resource "google_project_service" "apis" {
   service = each.key
 
   disable_dependent_services = false
-  disable_on_destroy        = false
+  disable_on_destroy         = false
 }
 
 # Service account for Cloud Armor operations
@@ -474,12 +474,12 @@ resource "google_compute_security_policy" "security_policies" {
         dynamic "threshold_config" {
           for_each = each.value.adaptive_protection_config.layer_7_ddos_defense_config.threshold_configs
           content {
-            name                     = threshold_config.value.name
-            threshold_config_type    = threshold_config.value.threshold_config_type
-            auto_deploy_load_threshold = threshold_config.value.auto_deploy_load_threshold
-            auto_deploy_confidence_threshold = threshold_config.value.auto_deploy_confidence_threshold
+            name                                    = threshold_config.value.name
+            threshold_config_type                   = threshold_config.value.threshold_config_type
+            auto_deploy_load_threshold              = threshold_config.value.auto_deploy_load_threshold
+            auto_deploy_confidence_threshold        = threshold_config.value.auto_deploy_confidence_threshold
             auto_deploy_impacted_baseline_threshold = threshold_config.value.auto_deploy_impacted_baseline_threshold
-            auto_deploy_expiration_sec = threshold_config.value.auto_deploy_expiration_sec
+            auto_deploy_expiration_sec              = threshold_config.value.auto_deploy_expiration_sec
           }
         }
       }
@@ -488,7 +488,7 @@ resource "google_compute_security_policy" "security_policies" {
         load_threshold              = each.value.adaptive_protection_config.auto_deploy_config.load_threshold
         confidence_threshold        = each.value.adaptive_protection_config.auto_deploy_config.confidence_threshold
         impacted_baseline_threshold = each.value.adaptive_protection_config.auto_deploy_config.impacted_baseline_threshold
-        expiration_sec             = each.value.adaptive_protection_config.auto_deploy_config.expiration_sec
+        expiration_sec              = each.value.adaptive_protection_config.auto_deploy_config.expiration_sec
       }
     }
   }
@@ -497,8 +497,8 @@ resource "google_compute_security_policy" "security_policies" {
   dynamic "advanced_options_config" {
     for_each = [1]
     content {
-      json_parsing = each.value.advanced_options_config.json_parsing
-      log_level    = each.value.advanced_options_config.log_level
+      json_parsing            = each.value.advanced_options_config.json_parsing
+      log_level               = each.value.advanced_options_config.log_level
       user_ip_request_headers = each.value.advanced_options_config.user_ip_request_headers
 
       dynamic "json_custom_config" {
@@ -565,9 +565,9 @@ resource "google_compute_backend_service" "backend_service_with_security_policy"
 
   # Copy configuration from existing backend service and add security policy
   description           = "Backend service with Cloud Armor security policy"
-  protocol             = "HTTP"
-  timeout_sec          = 30
-  enable_cdn           = false
+  protocol              = "HTTP"
+  timeout_sec           = 30
+  enable_cdn            = false
   load_balancing_scheme = "EXTERNAL"
 
   security_policy = google_compute_security_policy.security_policies[each.value.security_policy].id
@@ -672,9 +672,9 @@ resource "google_monitoring_alert_policy" "armor_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -728,7 +728,7 @@ resource "google_monitoring_alert_policy" "armor_alerts" {
 resource "google_monitoring_dashboard" "armor" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Cloud Armor - ${title(local.environment)}"
     mosaicLayout = {
@@ -852,9 +852,9 @@ resource "google_logging_metric" "security_metrics" {
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
     content {
-      metric_kind = each.value.metric_descriptor.metric_kind
-      value_type  = each.value.metric_descriptor.value_type
-      unit        = each.value.metric_descriptor.unit
+      metric_kind  = each.value.metric_descriptor.metric_kind
+      value_type   = each.value.metric_descriptor.value_type
+      unit         = each.value.metric_descriptor.unit
       display_name = each.value.metric_descriptor.display_name
 
       dynamic "labels" {
@@ -916,8 +916,8 @@ resource "google_cloudfunctions_function" "security_response" {
   region  = var.region
   name    = "${local.name_prefix}-${each.key}-response-${local.environment}"
 
-  runtime     = each.value.runtime
-  entry_point = each.value.entry_point
+  runtime               = each.value.runtime
+  entry_point           = each.value.entry_point
   source_archive_bucket = each.value.source_bucket
   source_archive_object = each.value.source_object
 
@@ -929,13 +929,13 @@ resource "google_cloudfunctions_function" "security_response" {
   environment_variables = merge(
     each.value.environment_variables,
     {
-      PROJECT_ID = var.project_id
+      PROJECT_ID  = var.project_id
       ENVIRONMENT = local.environment
     }
   )
 
   available_memory_mb = each.value.memory_mb
-  timeout            = each.value.timeout_seconds
+  timeout             = each.value.timeout_seconds
 
   labels = merge(local.default_labels, each.value.labels != null ? each.value.labels : {})
 

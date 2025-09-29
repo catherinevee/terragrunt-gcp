@@ -33,9 +33,9 @@ variable "cloud_routers" {
     region      = optional(string)
 
     bgp_config = optional(object({
-      asn               = number
-      advertise_mode    = optional(string)  # "DEFAULT", "CUSTOM"
-      advertised_groups = optional(list(string))
+      asn                = number
+      advertise_mode     = optional(string) # "DEFAULT", "CUSTOM"
+      advertised_groups  = optional(list(string))
       keepalive_interval = optional(number)
 
       advertised_ip_ranges = optional(list(object({
@@ -55,24 +55,24 @@ variable "cloud_routers" {
 variable "nat_gateways" {
   description = "Map of Cloud NAT gateway configurations"
   type = map(object({
-    name         = optional(string)
-    router_name  = optional(string)
-    router_key   = optional(string)  # Reference to cloud_routers key
-    region       = optional(string)
+    name          = optional(string)
+    router_name   = optional(string)
+    router_key    = optional(string) # Reference to cloud_routers key
+    region        = optional(string)
     create_router = optional(bool)
 
     # NAT IP allocation
-    nat_ip_allocate_option = optional(string)  # "AUTO_ONLY", "MANUAL_ONLY"
-    nat_ip_keys           = optional(list(string))  # References to nat_ip_addresses keys
-    drain_nat_ips         = optional(list(string))
+    nat_ip_allocate_option = optional(string)       # "AUTO_ONLY", "MANUAL_ONLY"
+    nat_ip_keys            = optional(list(string)) # References to nat_ip_addresses keys
+    drain_nat_ips          = optional(list(string))
 
     # Source subnet configuration
-    source_subnetwork_ip_ranges_to_nat = optional(string)  # "ALL_SUBNETWORKS_ALL_IP_RANGES", "ALL_SUBNETWORKS_ALL_PRIMARY_IP_RANGES", "LIST_OF_SUBNETWORKS"
+    source_subnetwork_ip_ranges_to_nat = optional(string) # "ALL_SUBNETWORKS_ALL_IP_RANGES", "ALL_SUBNETWORKS_ALL_PRIMARY_IP_RANGES", "LIST_OF_SUBNETWORKS"
 
     subnetworks = optional(list(object({
-      name                       = string
-      source_ip_ranges_to_nat   = optional(list(string))  # ["ALL_IP_RANGES", "PRIMARY_IP_RANGE", "LIST_OF_SECONDARY_IP_RANGES"]
-      secondary_ip_range_names  = optional(list(string))
+      name                     = string
+      source_ip_ranges_to_nat  = optional(list(string)) # ["ALL_IP_RANGES", "PRIMARY_IP_RANGE", "LIST_OF_SECONDARY_IP_RANGES"]
+      secondary_ip_range_names = optional(list(string))
     })))
 
     # Port allocation
@@ -90,19 +90,19 @@ variable "nat_gateways" {
 
     # Logging
     enable_logging = optional(bool)
-    log_filter     = optional(string)  # "ALL", "ERRORS_ONLY", "TRANSLATIONS_ONLY"
+    log_filter     = optional(string) # "ALL", "ERRORS_ONLY", "TRANSLATIONS_ONLY"
 
     # Rules configuration
     rules = optional(list(object({
       rule_number = number
       description = optional(string)
-      match       = string  # CEL expression
+      match       = string # CEL expression
 
       action = optional(object({
-        source_nat_active_ip_keys = optional(list(string))  # References to nat_ip_addresses keys
-        source_nat_drain_ip_keys  = optional(list(string))  # References to nat_ip_addresses keys
-        source_nat_active_ranges   = optional(list(string))
-        source_nat_drain_ranges    = optional(list(string))
+        source_nat_active_ip_keys = optional(list(string)) # References to nat_ip_addresses keys
+        source_nat_drain_ip_keys  = optional(list(string)) # References to nat_ip_addresses keys
+        source_nat_active_ranges  = optional(list(string))
+        source_nat_drain_ranges   = optional(list(string))
       }))
     })))
   }))
@@ -116,7 +116,7 @@ variable "nat_ip_addresses" {
     name         = optional(string)
     description  = optional(string)
     region       = optional(string)
-    network_tier = optional(string)  # "PREMIUM", "STANDARD"
+    network_tier = optional(string) # "PREMIUM", "STANDARD"
     purpose      = optional(string)
     labels       = optional(map(string))
   }))
@@ -133,11 +133,11 @@ variable "router_interfaces" {
     region      = optional(string)
 
     ip_range                = optional(string)
-    vpn_tunnel             = optional(string)
+    vpn_tunnel              = optional(string)
     interconnect_attachment = optional(string)
-    subnetwork             = optional(string)
-    private_ip_address     = optional(string)
-    redundant_interface    = optional(string)
+    subnetwork              = optional(string)
+    private_ip_address      = optional(string)
+    redundant_interface     = optional(string)
   }))
   default = {}
 }
@@ -150,11 +150,11 @@ variable "bgp_peers" {
     router_name               = string
     region                    = optional(string)
     interface_name            = string
-    peer_ip_address          = string
-    peer_asn                 = number
+    peer_ip_address           = string
+    peer_asn                  = number
     advertised_route_priority = optional(number)
-    advertise_mode           = optional(string)  # "DEFAULT", "CUSTOM"
-    advertised_groups        = optional(list(string))
+    advertise_mode            = optional(string) # "DEFAULT", "CUSTOM"
+    advertised_groups         = optional(list(string))
 
     advertised_ip_ranges = optional(list(object({
       range       = string
@@ -165,10 +165,10 @@ variable "bgp_peers" {
       min_receive_interval        = optional(number)
       min_transmit_interval       = optional(number)
       multiplier                  = optional(number)
-      session_initialization_mode = optional(string)  # "ACTIVE", "PASSIVE", "DISABLED"
+      session_initialization_mode = optional(string) # "ACTIVE", "PASSIVE", "DISABLED"
     }))
 
-    enable                     = optional(bool)
+    enable                    = optional(bool)
     enable_ipv6               = optional(bool)
     ipv6_nexthop_address      = optional(string)
     peer_ipv6_nexthop_address = optional(string)
@@ -181,17 +181,17 @@ variable "bgp_peers" {
 variable "custom_routes" {
   description = "Map of custom route configurations"
   type = map(object({
-    name              = optional(string)
-    description       = optional(string)
-    dest_range        = string
-    network           = string
-    next_hop_gateway  = optional(string)
-    next_hop_instance = optional(string)
-    next_hop_ip       = optional(string)
+    name                = optional(string)
+    description         = optional(string)
+    dest_range          = string
+    network             = string
+    next_hop_gateway    = optional(string)
+    next_hop_instance   = optional(string)
+    next_hop_ip         = optional(string)
     next_hop_vpn_tunnel = optional(string)
-    next_hop_ilb      = optional(string)
-    priority          = optional(number)
-    tags              = optional(list(string))
+    next_hop_ilb        = optional(string)
+    priority            = optional(number)
+    tags                = optional(list(string))
   }))
   default = {}
 }
@@ -204,12 +204,12 @@ variable "firewall_rules" {
     description = optional(string)
     network     = string
     priority    = optional(number)
-    direction   = optional(string)  # "INGRESS", "EGRESS"
+    direction   = optional(string) # "INGRESS", "EGRESS"
 
-    source_ranges      = optional(list(string))
-    destination_ranges = optional(list(string))
-    source_tags        = optional(list(string))
-    target_tags        = optional(list(string))
+    source_ranges           = optional(list(string))
+    destination_ranges      = optional(list(string))
+    source_tags             = optional(list(string))
+    target_tags             = optional(list(string))
     source_service_accounts = optional(list(string))
     target_service_accounts = optional(list(string))
 
@@ -224,7 +224,7 @@ variable "firewall_rules" {
     })))
 
     enable_logging = optional(bool)
-    log_metadata   = optional(string)  # "EXCLUDE_ALL_METADATA", "INCLUDE_ALL_METADATA"
+    log_metadata   = optional(string) # "EXCLUDE_ALL_METADATA", "INCLUDE_ALL_METADATA"
     disabled       = optional(bool)
   }))
   default = {}
@@ -272,27 +272,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -338,14 +338,14 @@ variable "create_log_metrics" {
 variable "log_metrics" {
   description = "Log-based metrics configuration"
   type = map(object({
-    name        = optional(string)
-    description = optional(string)
-    filter      = string
+    name             = optional(string)
+    description      = optional(string)
+    filter           = string
     label_extractors = optional(map(string))
 
     metric_descriptor = optional(object({
-      metric_kind  = string  # "GAUGE", "DELTA", "CUMULATIVE"
-      value_type   = string  # "BOOL", "INT64", "DOUBLE", "STRING", "DISTRIBUTION"
+      metric_kind  = string # "GAUGE", "DELTA", "CUMULATIVE"
+      value_type   = string # "BOOL", "INT64", "DOUBLE", "STRING", "DISTRIBUTION"
       unit         = optional(string)
       display_name = optional(string)
       labels = optional(list(object({

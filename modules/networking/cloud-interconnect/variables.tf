@@ -38,7 +38,7 @@ variable "service_account_roles" {
 variable "dedicated_interconnects" {
   description = "Configuration for Dedicated Interconnects"
   type = map(object({
-    description        = string
+    description       = string
     location          = string
     link_count        = number
     link_type         = string
@@ -62,7 +62,7 @@ variable "dedicated_interconnects" {
 variable "partner_interconnects" {
   description = "Configuration for Partner Interconnects"
   type = map(object({
-    description        = string
+    description       = string
     location          = string
     admin_enabled     = optional(bool, true)
     noc_contact_email = optional(string)
@@ -76,15 +76,15 @@ variable "dedicated_attachments" {
   description = "Configuration for Dedicated Interconnect Attachments"
   type = map(object({
     description              = string
-    interconnect_name       = string
-    router_name            = string
-    region                 = string
-    vlan_tag               = number
-    bandwidth              = string
-    candidate_subnets      = optional(list(string))
-    admin_enabled          = optional(bool, true)
+    interconnect_name        = string
+    router_name              = string
+    region                   = string
+    vlan_tag                 = number
+    bandwidth                = string
+    candidate_subnets        = optional(list(string))
+    admin_enabled            = optional(bool, true)
     edge_availability_domain = optional(string)
-    encryption             = optional(string, "IPSEC")
+    encryption               = optional(string, "IPSEC")
     ipsec_internal_addresses = optional(list(string))
   }))
   default = {}
@@ -95,14 +95,14 @@ variable "partner_attachments" {
   description = "Configuration for Partner Interconnect Attachments"
   type = map(object({
     description              = string
-    router_name            = string
-    region                 = string
-    bandwidth              = string
-    admin_enabled          = optional(bool, true)
+    router_name              = string
+    region                   = string
+    bandwidth                = string
+    admin_enabled            = optional(bool, true)
     edge_availability_domain = optional(string)
-    pairing_key            = string
-    partner_asn            = number
-    encryption             = optional(string, "IPSEC")
+    pairing_key              = string
+    partner_asn              = number
+    encryption               = optional(string, "IPSEC")
   }))
   default = {}
 }
@@ -111,17 +111,17 @@ variable "partner_attachments" {
 variable "cloud_routers" {
   description = "Configuration for Cloud Routers"
   type = map(object({
-    region      = string
-    network     = string
-    description = optional(string)
-    bgp_asn     = number
-    advertise_mode = optional(string, "DEFAULT")
+    region            = string
+    network           = string
+    description       = optional(string)
+    bgp_asn           = number
+    advertise_mode    = optional(string, "DEFAULT")
     advertised_groups = optional(list(string))
     advertised_ip_ranges = optional(list(object({
       range       = string
       description = optional(string)
     })))
-    keepalive_interval = optional(number, 20)
+    keepalive_interval            = optional(number, 20)
     encrypted_interconnect_router = optional(bool, false)
   }))
   default = {}
@@ -131,14 +131,14 @@ variable "cloud_routers" {
 variable "router_interfaces" {
   description = "Configuration for Router Interfaces"
   type = map(object({
-    router_name          = string
+    router_name         = string
     region              = string
     ip_range            = optional(string)
     vpn_tunnel          = optional(string)
     attachment_name     = optional(string)
     redundant_interface = optional(string)
-    subnetwork         = optional(string)
-    private_ip_address = optional(string)
+    subnetwork          = optional(string)
+    private_ip_address  = optional(string)
   }))
   default = {}
 }
@@ -148,13 +148,13 @@ variable "bgp_sessions" {
   description = "Configuration for BGP Sessions"
   type = map(object({
     router_name               = string
-    region                   = string
-    peer_ip_address          = string
-    peer_asn                 = number
+    region                    = string
+    peer_ip_address           = string
+    peer_asn                  = number
     advertised_route_priority = optional(number, 100)
-    interface_name           = string
-    advertise_mode           = optional(string, "DEFAULT")
-    advertised_groups        = optional(list(string))
+    interface_name            = string
+    advertise_mode            = optional(string, "DEFAULT")
+    advertised_groups         = optional(list(string))
     advertised_ip_ranges = optional(list(object({
       range       = string
       description = optional(string)
@@ -221,7 +221,7 @@ variable "connectivity_spokes" {
     linked_router_appliance_instances = optional(object({
       instances = list(object({
         virtual_machine = string
-        ip_address     = string
+        ip_address      = string
       }))
       site_to_site_data_transfer = optional(bool, false)
     }))
@@ -262,23 +262,23 @@ variable "alert_policies" {
   description = "Alert policies configuration"
   type = map(object({
     display_name           = string
-    combiner              = optional(string, "OR")
-    enabled               = optional(bool, true)
-    documentation         = optional(string)
+    combiner               = optional(string, "OR")
+    enabled                = optional(bool, true)
+    documentation          = optional(string)
     condition_display_name = string
-    filter                = string
-    duration              = string
-    comparison            = string
-    threshold_value       = number
-    alignment_period      = optional(string, "60s")
-    per_series_aligner    = optional(string, "ALIGN_RATE")
-    cross_series_reducer  = optional(string, "REDUCE_SUM")
-    group_by_fields       = optional(list(string), [])
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string), [])
-    auto_close_duration   = optional(string, "86400s")
-    rate_limit           = optional(string)
+    filter                 = string
+    duration               = string
+    comparison             = string
+    threshold_value        = number
+    alignment_period       = optional(string, "60s")
+    per_series_aligner     = optional(string, "ALIGN_RATE")
+    cross_series_reducer   = optional(string, "REDUCE_SUM")
+    group_by_fields        = optional(list(string), [])
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string), [])
+    auto_close_duration    = optional(string, "86400s")
+    rate_limit             = optional(string)
   }))
   default = {}
 }
@@ -288,8 +288,8 @@ variable "interconnect_iam_bindings" {
   description = "IAM bindings for Interconnect resources"
   type = map(object({
     interconnect_name = string
-    role             = string
-    members          = list(string)
+    role              = string
+    members           = list(string)
   }))
   default = {}
 }
@@ -382,10 +382,10 @@ variable "redundancy_config" {
   type = object({
     enable_dual_interconnects      = bool
     enable_cross_region_redundancy = bool
-    failover_threshold            = optional(number, 5)
-    health_check_interval         = optional(number, 10)
-    preferred_interconnect        = optional(string)
-    backup_interconnect           = optional(string)
+    failover_threshold             = optional(number, 5)
+    health_check_interval          = optional(number, 10)
+    preferred_interconnect         = optional(string)
+    backup_interconnect            = optional(string)
   })
   default = {
     enable_dual_interconnects      = true
@@ -402,12 +402,12 @@ variable "enable_traffic_engineering" {
 variable "traffic_engineering_config" {
   description = "Traffic engineering configuration"
   type = object({
-    enable_load_balancing    = bool
-    load_balancing_algorithm = optional(string, "ECMP")
+    enable_load_balancing           = bool
+    load_balancing_algorithm        = optional(string, "ECMP")
     bandwidth_utilization_threshold = optional(number, 80)
-    enable_path_selection   = optional(bool, false)
-    preferred_paths        = optional(list(string))
-    backup_paths          = optional(list(string))
+    enable_path_selection           = optional(bool, false)
+    preferred_paths                 = optional(list(string))
+    backup_paths                    = optional(list(string))
   })
   default = {
     enable_load_balancing = true
@@ -423,19 +423,19 @@ variable "enable_performance_monitoring" {
 variable "performance_monitoring_config" {
   description = "Performance monitoring configuration"
   type = object({
-    enable_latency_monitoring    = bool
-    enable_throughput_monitoring = bool
+    enable_latency_monitoring     = bool
+    enable_throughput_monitoring  = bool
     enable_packet_loss_monitoring = bool
-    monitoring_interval          = optional(number, 60)
+    monitoring_interval           = optional(number, 60)
     alert_thresholds = optional(object({
-      latency_threshold_ms    = optional(number, 100)
-      throughput_threshold_mbps = optional(number, 1000)
+      latency_threshold_ms          = optional(number, 100)
+      throughput_threshold_mbps     = optional(number, 1000)
       packet_loss_threshold_percent = optional(number, 1)
     }))
   })
   default = {
-    enable_latency_monitoring    = true
-    enable_throughput_monitoring = true
+    enable_latency_monitoring     = true
+    enable_throughput_monitoring  = true
     enable_packet_loss_monitoring = true
   }
 }
@@ -449,10 +449,10 @@ variable "enable_capacity_planning" {
 variable "capacity_planning_config" {
   description = "Capacity planning configuration"
   type = object({
-    enable_usage_forecasting = bool
-    forecasting_period_days = optional(number, 90)
+    enable_usage_forecasting   = bool
+    forecasting_period_days    = optional(number, 90)
     capacity_threshold_percent = optional(number, 80)
-    auto_scaling_enabled    = optional(bool, false)
+    auto_scaling_enabled       = optional(bool, false)
     scaling_policies = optional(list(object({
       metric_name     = string
       threshold_value = number
@@ -474,14 +474,14 @@ variable "cost_optimization_config" {
   description = "Cost optimization configuration"
   type = object({
     enable_commitment_analysis = bool
-    enable_right_sizing       = bool
+    enable_right_sizing        = bool
     usage_efficiency_threshold = optional(number, 70)
     commitment_recommendations = optional(bool, true)
-    idle_resource_detection   = optional(bool, true)
+    idle_resource_detection    = optional(bool, true)
   })
   default = {
     enable_commitment_analysis = true
-    enable_right_sizing       = true
+    enable_right_sizing        = true
   }
 }
 
@@ -494,10 +494,10 @@ variable "enable_compliance_monitoring" {
 variable "compliance_config" {
   description = "Compliance monitoring configuration"
   type = object({
-    compliance_standards = list(string)
-    audit_frequency     = optional(string, "DAILY")
-    compliance_reporting = optional(bool, true)
-    violation_alerts    = optional(bool, true)
+    compliance_standards   = list(string)
+    audit_frequency        = optional(string, "DAILY")
+    compliance_reporting   = optional(bool, true)
+    violation_alerts       = optional(bool, true)
     remediation_automation = optional(bool, false)
   })
   default = {
@@ -514,13 +514,13 @@ variable "enable_disaster_recovery" {
 variable "disaster_recovery_config" {
   description = "Disaster recovery configuration"
   type = object({
-    enable_automated_failover  = bool
-    failover_timeout_seconds  = optional(number, 300)
-    enable_health_checks      = optional(bool, true)
-    health_check_frequency    = optional(number, 30)
+    enable_automated_failover   = bool
+    failover_timeout_seconds    = optional(number, 300)
+    enable_health_checks        = optional(bool, true)
+    health_check_frequency      = optional(number, 30)
     backup_interconnect_regions = optional(list(string))
-    recovery_time_objective   = optional(number, 3600)
-    recovery_point_objective  = optional(number, 900)
+    recovery_time_objective     = optional(number, 3600)
+    recovery_point_objective    = optional(number, 900)
   })
   default = {
     enable_automated_failover = true
@@ -532,10 +532,10 @@ variable "network_telemetry_config" {
   type = object({
     enable_flow_logs        = bool
     enable_packet_mirroring = optional(bool, false)
-    flow_sampling_rate     = optional(number, 0.1)
-    log_format            = optional(string, "JSON")
-    retention_period_days = optional(number, 30)
-    export_destinations   = optional(list(string))
+    flow_sampling_rate      = optional(number, 0.1)
+    log_format              = optional(string, "JSON")
+    retention_period_days   = optional(number, 30)
+    export_destinations     = optional(list(string))
   })
   default = {
     enable_flow_logs = true
@@ -547,13 +547,13 @@ variable "quality_of_service_config" {
   type = object({
     enable_traffic_prioritization = bool
     traffic_classes = optional(list(object({
-      name        = string
-      priority    = number
+      name              = string
+      priority          = number
       bandwidth_percent = number
-      dscp_marking = optional(string)
+      dscp_marking      = optional(string)
     })))
     enable_bandwidth_guarantees = optional(bool, false)
-    congestion_control = optional(string, "BBR")
+    congestion_control          = optional(string, "BBR")
   })
   default = {
     enable_traffic_prioritization = false
@@ -563,10 +563,10 @@ variable "quality_of_service_config" {
 variable "peering_config" {
   description = "Peering configuration for Interconnect"
   type = object({
-    enable_private_peering = bool
+    enable_private_peering   = bool
     enable_microsoft_peering = optional(bool, false)
-    enable_exchange_peering = optional(bool, false)
-    peering_locations = optional(list(string))
+    enable_exchange_peering  = optional(bool, false)
+    peering_locations        = optional(list(string))
     asn_requirements = optional(object({
       customer_asn = number
       google_asn   = number
@@ -585,8 +585,8 @@ variable "maintenance_config" {
       start_time  = string
       duration    = string
     }))
-    enable_automated_maintenance = optional(bool, true)
-    maintenance_notifications = optional(bool, true)
+    enable_automated_maintenance  = optional(bool, true)
+    maintenance_notifications     = optional(bool, true)
     emergency_maintenance_contact = optional(string)
   })
   default = {}
@@ -614,10 +614,10 @@ variable "environment" {
 variable "region_configs" {
   description = "Region-specific configurations"
   type = map(object({
-    primary_region   = bool
-    backup_region    = bool
-    bandwidth_tier   = string
-    latency_requirements = optional(number)
+    primary_region            = bool
+    backup_region             = bool
+    bandwidth_tier            = string
+    latency_requirements      = optional(number)
     availability_requirements = optional(string)
   }))
   default = {}
@@ -646,7 +646,7 @@ variable "cross_cloud_config" {
   description = "Cross-cloud connectivity configuration"
   type = object({
     aws_direct_connect = optional(object({
-      enabled          = bool
+      enabled            = bool
       virtual_interfaces = list(string)
       bgp_configuration = object({
         asn     = number
@@ -654,10 +654,10 @@ variable "cross_cloud_config" {
       })
     }))
     azure_express_route = optional(object({
-      enabled = bool
+      enabled  = bool
       circuits = list(string)
       peering_config = object({
-        asn           = number
+        asn              = number
         primary_subnet   = string
         secondary_subnet = string
       })

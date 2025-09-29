@@ -32,8 +32,8 @@ locals {
 
   # App Engine location mapping
   location_map = {
-    us-central1    = "us-central"
-    europe-west1   = "europe-west"
+    us-central1     = "us-central"
+    europe-west1    = "europe-west"
     asia-northeast1 = "asia-northeast1"
   }
 
@@ -73,19 +73,19 @@ resource "google_app_engine_standard_app_version" "standard" {
   dynamic "automatic_scaling" {
     for_each = var.scaling_type == "automatic" ? [var.automatic_scaling] : []
     content {
-      min_idle_instances       = automatic_scaling.value.min_idle_instances
-      max_idle_instances       = automatic_scaling.value.max_idle_instances
-      min_pending_latency      = automatic_scaling.value.min_pending_latency
-      max_pending_latency      = automatic_scaling.value.max_pending_latency
-      max_concurrent_requests  = automatic_scaling.value.max_concurrent_requests
+      min_idle_instances      = automatic_scaling.value.min_idle_instances
+      max_idle_instances      = automatic_scaling.value.max_idle_instances
+      min_pending_latency     = automatic_scaling.value.min_pending_latency
+      max_pending_latency     = automatic_scaling.value.max_pending_latency
+      max_concurrent_requests = automatic_scaling.value.max_concurrent_requests
 
       dynamic "standard_scheduler_settings" {
         for_each = automatic_scaling.value.standard_scheduler_settings != null ? [automatic_scaling.value.standard_scheduler_settings] : []
         content {
           target_cpu_utilization        = standard_scheduler_settings.value.target_cpu_utilization
           target_throughput_utilization = standard_scheduler_settings.value.target_throughput_utilization
-          min_instances                = standard_scheduler_settings.value.min_instances
-          max_instances                = standard_scheduler_settings.value.max_instances
+          min_instances                 = standard_scheduler_settings.value.min_instances
+          max_instances                 = standard_scheduler_settings.value.max_instances
         }
       }
     }
@@ -138,21 +138,21 @@ resource "google_app_engine_standard_app_version" "standard" {
     for_each = var.handlers
     content {
       url_regex                   = handlers.value.url_regex
-      security_level             = try(handlers.value.security_level, null)
-      login                      = try(handlers.value.login, null)
-      auth_fail_action           = try(handlers.value.auth_fail_action, null)
+      security_level              = try(handlers.value.security_level, null)
+      login                       = try(handlers.value.login, null)
+      auth_fail_action            = try(handlers.value.auth_fail_action, null)
       redirect_http_response_code = try(handlers.value.redirect_http_response_code, null)
 
       dynamic "static_files" {
         for_each = try(handlers.value.static_files, null) != null ? [handlers.value.static_files] : []
         content {
-          path                 = static_files.value.path
-          upload_path_regex    = static_files.value.upload_path_regex
-          http_headers        = try(static_files.value.http_headers, null)
-          mime_type           = try(static_files.value.mime_type, null)
-          expiration          = try(static_files.value.expiration, null)
+          path                  = static_files.value.path
+          upload_path_regex     = static_files.value.upload_path_regex
+          http_headers          = try(static_files.value.http_headers, null)
+          mime_type             = try(static_files.value.mime_type, null)
+          expiration            = try(static_files.value.expiration, null)
           require_matching_file = try(static_files.value.require_matching_file, null)
-          application_readable = try(static_files.value.application_readable, null)
+          application_readable  = try(static_files.value.application_readable, null)
         }
       }
 
@@ -182,17 +182,17 @@ resource "google_app_engine_standard_app_version" "standard" {
 
   # VPC Access Connector
   vpc_access_connector {
-    name          = var.vpc_connector_name
+    name           = var.vpc_connector_name
     egress_setting = var.vpc_egress_setting
   }
 
   # Delete behavior
   delete_service_on_destroy = var.delete_service_on_destroy
-  noop_on_destroy          = var.noop_on_destroy
+  noop_on_destroy           = var.noop_on_destroy
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes       = var.ignore_changes
+    ignore_changes        = var.ignore_changes
   }
 }
 
@@ -212,14 +212,14 @@ resource "google_app_engine_flexible_app_version" "flexible" {
   dynamic "automatic_scaling" {
     for_each = var.scaling_type == "automatic" ? [var.automatic_scaling_flex] : []
     content {
-      min_total_instances   = automatic_scaling.value.min_total_instances
-      max_total_instances   = automatic_scaling.value.max_total_instances
-      cool_down_period      = automatic_scaling.value.cool_down_period
+      min_total_instances = automatic_scaling.value.min_total_instances
+      max_total_instances = automatic_scaling.value.max_total_instances
+      cool_down_period    = automatic_scaling.value.cool_down_period
 
       dynamic "cpu_utilization" {
         for_each = automatic_scaling.value.cpu_utilization != null ? [automatic_scaling.value.cpu_utilization] : []
         content {
-          target_utilization       = cpu_utilization.value.target_utilization
+          target_utilization        = cpu_utilization.value.target_utilization
           aggregation_window_length = cpu_utilization.value.aggregation_window_length
         }
       }
@@ -237,9 +237,9 @@ resource "google_app_engine_flexible_app_version" "flexible" {
       dynamic "network_utilization" {
         for_each = automatic_scaling.value.network_utilization != null ? [automatic_scaling.value.network_utilization] : []
         content {
-          target_sent_bytes_per_second     = network_utilization.value.target_sent_bytes_per_second
-          target_sent_packets_per_second   = network_utilization.value.target_sent_packets_per_second
-          target_received_bytes_per_second = network_utilization.value.target_received_bytes_per_second
+          target_sent_bytes_per_second       = network_utilization.value.target_sent_bytes_per_second
+          target_sent_packets_per_second     = network_utilization.value.target_sent_packets_per_second
+          target_received_bytes_per_second   = network_utilization.value.target_received_bytes_per_second
           target_received_packets_per_second = network_utilization.value.target_received_packets_per_second
         }
       }
@@ -331,8 +331,8 @@ resource "google_app_engine_flexible_app_version" "flexible" {
     for_each = var.endpoints_api_service != null ? [var.endpoints_api_service] : []
     content {
       name                   = endpoints_api_service.value.name
-      config_id             = endpoints_api_service.value.config_id
-      rollout_strategy      = endpoints_api_service.value.rollout_strategy
+      config_id              = endpoints_api_service.value.config_id
+      rollout_strategy       = endpoints_api_service.value.rollout_strategy
       disable_trace_sampling = endpoints_api_service.value.disable_trace_sampling
     }
   }
@@ -373,11 +373,11 @@ resource "google_app_engine_flexible_app_version" "flexible" {
 
   # Delete behavior
   delete_service_on_destroy = var.delete_service_on_destroy
-  noop_on_destroy          = var.noop_on_destroy
+  noop_on_destroy           = var.noop_on_destroy
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes       = var.ignore_changes
+    ignore_changes        = var.ignore_changes
   }
 }
 

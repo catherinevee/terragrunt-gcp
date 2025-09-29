@@ -430,12 +430,12 @@ output "vpn_secret_names" {
 output "vpn_configuration_summary" {
   description = "Summary of VPN configuration"
   value = {
-    total_ha_gateways      = length(local.ha_vpn_gateways)
-    total_classic_gateways = length(local.classic_vpn_gateways)
+    total_ha_gateways       = length(local.ha_vpn_gateways)
+    total_classic_gateways  = length(local.classic_vpn_gateways)
     total_external_gateways = length(local.external_vpn_gateways)
-    total_vpn_tunnels      = length(local.vpn_tunnels)
-    total_routers          = length(local.routers)
-    total_bgp_peers        = length(local.bgp_peers)
+    total_vpn_tunnels       = length(local.vpn_tunnels)
+    total_routers           = length(local.routers)
+    total_bgp_peers         = length(local.bgp_peers)
 
     gateways_by_type = {
       ha_vpn   = length(local.ha_vpn_gateways)
@@ -456,21 +456,21 @@ output "vpn_configuration_summary" {
 output "router_configuration_summary" {
   description = "Summary of router configuration"
   value = {
-    total_routers     = length(local.routers)
-    total_interfaces  = length(local.router_interfaces)
-    total_bgp_peers   = length(local.bgp_peers)
+    total_routers    = length(local.routers)
+    total_interfaces = length(local.router_interfaces)
+    total_bgp_peers  = length(local.bgp_peers)
 
     routers_with_bgp = length([for k, v in local.routers : k if v.bgp_config != null])
 
     routers_by_region = {
       for region in distinct([for v in local.routers : v.region != null ? v.region : var.region]) :
-        region => length([
-          for k, v in local.routers : k
-          if (v.region != null ? v.region : var.region) == region
-        ])
+      region => length([
+        for k, v in local.routers : k
+        if(v.region != null ? v.region : var.region) == region
+      ])
     }
 
-    bgp_peers_enabled = length([for k, v in local.bgp_peers : k if v.enable != false])
+    bgp_peers_enabled  = length([for k, v in local.bgp_peers : k if v.enable != false])
     bgp_peers_with_bfd = length([for k, v in local.bgp_peers : k if v.bfd_config != null])
     bgp_peers_with_md5 = length([for k, v in local.bgp_peers : k if v.md5_authentication_key != null])
   }
@@ -499,16 +499,16 @@ output "redundancy_configuration_summary" {
 output "network_configuration_summary" {
   description = "Summary of network configuration"
   value = {
-    total_static_routes   = length(var.static_routes)
-    total_firewall_rules  = length(var.firewall_rules)
-    total_reserved_ips    = length(var.reserved_ip_addresses)
+    total_static_routes  = length(var.static_routes)
+    total_firewall_rules = length(var.firewall_rules)
+    total_reserved_ips   = length(var.reserved_ip_addresses)
 
     firewall_rules_by_direction = {
       ingress = length([for k, v in var.firewall_rules : k if v.direction == "INGRESS" || v.direction == null])
       egress  = length([for k, v in var.firewall_rules : k if v.direction == "EGRESS"])
     }
 
-    firewall_rules_enabled = length([for k, v in var.firewall_rules : k if v.disabled != true])
+    firewall_rules_enabled      = length([for k, v in var.firewall_rules : k if v.disabled != true])
     firewall_rules_with_logging = length([for k, v in var.firewall_rules : k if v.enable_logging != false])
 
     reserved_ips_by_tier = {
@@ -526,8 +526,8 @@ output "ha_configuration_summary" {
     ha_interfaces_count      = var.ha_vpn_config.ha_vpn_interfaces_count
     auto_failover_enabled    = var.ha_vpn_config.enable_auto_failover
     failover_timeout_seconds = var.ha_vpn_config.failover_timeout_seconds
-    path_mtu_discovery      = var.ha_vpn_config.enable_path_mtu_discovery
-    mtu_size               = var.ha_vpn_config.mtu_size
+    path_mtu_discovery       = var.ha_vpn_config.enable_path_mtu_discovery
+    mtu_size                 = var.ha_vpn_config.mtu_size
   }
 }
 
@@ -536,12 +536,12 @@ output "performance_configuration_summary" {
   description = "Summary of performance configuration"
   value = {
     accelerated_networking = var.performance_config.enable_accelerated_networking
-    tcp_optimization      = var.performance_config.enable_tcp_optimization
-    tcp_mss_clamping     = var.performance_config.tcp_mss_clamping
-    jumbo_frames_enabled = var.performance_config.enable_jumbo_frames
-    jumbo_frame_size    = var.performance_config.jumbo_frame_size
-    qos_enabled         = var.performance_config.enable_qos
-    qos_bandwidth_mbps  = var.performance_config.qos_bandwidth_mbps
+    tcp_optimization       = var.performance_config.enable_tcp_optimization
+    tcp_mss_clamping       = var.performance_config.tcp_mss_clamping
+    jumbo_frames_enabled   = var.performance_config.enable_jumbo_frames
+    jumbo_frame_size       = var.performance_config.jumbo_frame_size
+    qos_enabled            = var.performance_config.enable_qos
+    qos_bandwidth_mbps     = var.performance_config.qos_bandwidth_mbps
   }
 }
 
@@ -553,14 +553,14 @@ output "security_configuration_summary" {
     service_account_roles   = var.create_service_account ? var.service_account_roles : []
 
     perfect_forward_secrecy = var.security_config.enable_perfect_forward_secrecy
-    pfs_group              = var.security_config.pfs_group
-    replay_protection      = var.security_config.enable_replay_protection
-    anti_ddos_enabled      = var.security_config.enable_anti_ddos
-    ddos_threshold_pps     = var.security_config.ddos_threshold_pps
-    ipsec_encryption       = var.security_config.enable_ipsec_encryption
-    ipsec_encryption_algo  = var.security_config.ipsec_encryption_algorithm
-    ipsec_integrity_algo   = var.security_config.ipsec_integrity_algorithm
-    certificate_auth       = var.security_config.enable_certificate_auth
+    pfs_group               = var.security_config.pfs_group
+    replay_protection       = var.security_config.enable_replay_protection
+    anti_ddos_enabled       = var.security_config.enable_anti_ddos
+    ddos_threshold_pps      = var.security_config.ddos_threshold_pps
+    ipsec_encryption        = var.security_config.enable_ipsec_encryption
+    ipsec_encryption_algo   = var.security_config.ipsec_encryption_algorithm
+    ipsec_integrity_algo    = var.security_config.ipsec_integrity_algorithm
+    certificate_auth        = var.security_config.enable_certificate_auth
 
     secrets_in_secret_manager = var.store_secrets_in_secret_manager
   }
@@ -570,12 +570,12 @@ output "security_configuration_summary" {
 output "compliance_configuration_summary" {
   description = "Summary of compliance configuration"
   value = {
-    fips_compliance_enforced = var.compliance_config.enforce_fips_compliance
-    ipsec_encryption_required = var.compliance_config.require_ipsec_encryption
-    audit_logging_enabled    = var.compliance_config.audit_logging_enabled
+    fips_compliance_enforced   = var.compliance_config.enforce_fips_compliance
+    ipsec_encryption_required  = var.compliance_config.require_ipsec_encryption
+    audit_logging_enabled      = var.compliance_config.audit_logging_enabled
     connection_logging_enabled = var.compliance_config.enable_connection_logging
-    log_retention_days       = var.compliance_config.log_retention_days
-    data_residency_regions   = var.compliance_config.data_residency_regions
+    log_retention_days         = var.compliance_config.log_retention_days
+    data_residency_regions     = var.compliance_config.data_residency_regions
   }
 }
 
@@ -583,12 +583,12 @@ output "compliance_configuration_summary" {
 output "dr_configuration_summary" {
   description = "Summary of disaster recovery configuration"
   value = {
-    backup_tunnels_enabled      = var.dr_config.enable_backup_tunnels
-    backup_tunnel_priority     = var.dr_config.backup_tunnel_priority
-    automatic_switchover       = var.dr_config.enable_automatic_switchover
+    backup_tunnels_enabled       = var.dr_config.enable_backup_tunnels
+    backup_tunnel_priority       = var.dr_config.backup_tunnel_priority
+    automatic_switchover         = var.dr_config.enable_automatic_switchover
     switchover_threshold_seconds = var.dr_config.switchover_threshold_seconds
-    tunnel_monitoring_enabled   = var.dr_config.enable_tunnel_monitoring
-    monitoring_interval_seconds = var.dr_config.monitoring_interval_seconds
+    tunnel_monitoring_enabled    = var.dr_config.enable_tunnel_monitoring
+    monitoring_interval_seconds  = var.dr_config.monitoring_interval_seconds
   }
 }
 
@@ -636,9 +636,9 @@ output "connection_info" {
 
     bgp_sessions = {
       for k, v in google_compute_router_peer.bgp_peers : k => {
-        name             = v.name
-        router           = v.router
-        peer_ip_address  = v.peer_ip_address
+        name            = v.name
+        router          = v.router
+        peer_ip_address = v.peer_ip_address
         peer_asn        = v.peer_asn
         ip_address      = v.ip_address
       }
@@ -672,20 +672,20 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    ha_vpn_gateways      = length(var.ha_vpn_gateways)
-    classic_vpn_gateways = length(var.classic_vpn_gateways)
+    ha_vpn_gateways       = length(var.ha_vpn_gateways)
+    classic_vpn_gateways  = length(var.classic_vpn_gateways)
     external_vpn_gateways = length(var.external_vpn_gateways)
-    vpn_tunnels          = length(var.vpn_tunnels)
-    routers              = length(var.routers)
-    router_interfaces    = length(var.router_interfaces)
-    bgp_peers            = length(var.bgp_peers)
-    static_routes        = length(var.static_routes)
-    firewall_rules       = length(var.firewall_rules)
-    reserved_ips         = length(var.reserved_ip_addresses)
-    service_accounts     = var.create_service_account ? 1 : 0
-    alert_policies       = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards           = var.create_monitoring_dashboard ? 1 : 0
-    log_metrics          = var.create_log_metrics ? length(var.log_metrics) : 0
-    secrets              = var.store_secrets_in_secret_manager ? length(local.vpn_tunnels) : 0
+    vpn_tunnels           = length(var.vpn_tunnels)
+    routers               = length(var.routers)
+    router_interfaces     = length(var.router_interfaces)
+    bgp_peers             = length(var.bgp_peers)
+    static_routes         = length(var.static_routes)
+    firewall_rules        = length(var.firewall_rules)
+    reserved_ips          = length(var.reserved_ip_addresses)
+    service_accounts      = var.create_service_account ? 1 : 0
+    alert_policies        = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards            = var.create_monitoring_dashboard ? 1 : 0
+    log_metrics           = var.create_log_metrics ? length(var.log_metrics) : 0
+    secrets               = var.store_secrets_in_secret_manager ? length(local.vpn_tunnels) : 0
   }
 }

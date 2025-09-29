@@ -22,10 +22,10 @@ variable "key_ring_name" {
 variable "crypto_keys" {
   description = "Crypto keys to create"
   type = map(object({
-    name             = string
-    purpose          = string
-    algorithm        = string
-    rotation_period  = string
+    name            = string
+    purpose         = string
+    algorithm       = string
+    rotation_period = string
   }))
   default = {}
 }

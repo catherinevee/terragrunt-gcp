@@ -19,18 +19,18 @@ output "dedicated_interconnect_details" {
   description = "Detailed information about Dedicated Interconnects"
   value = {
     for k, v in google_compute_interconnect.dedicated_interconnects : k => {
-      id                   = v.id
-      name                = v.name
-      description         = v.description
-      location            = v.location
-      link_count          = v.requested_link_count
-      link_type           = v.link_type
-      interconnect_type   = v.interconnect_type
-      state              = v.state
-      google_ip_address  = v.google_ip_address
-      google_reference_id = v.google_reference_id
-      expected_outages   = v.expected_outages
-      circuit_infos      = v.circuit_infos
+      id                     = v.id
+      name                   = v.name
+      description            = v.description
+      location               = v.location
+      link_count             = v.requested_link_count
+      link_type              = v.link_type
+      interconnect_type      = v.interconnect_type
+      state                  = v.state
+      google_ip_address      = v.google_ip_address
+      google_reference_id    = v.google_reference_id
+      expected_outages       = v.expected_outages
+      circuit_infos          = v.circuit_infos
       provisioned_link_count = v.provisioned_link_count
     }
   }
@@ -55,13 +55,13 @@ output "partner_interconnect_details" {
   description = "Detailed information about Partner Interconnects"
   value = {
     for k, v in google_compute_interconnect.partner_interconnects : k => {
-      id                   = v.id
+      id                  = v.id
       name                = v.name
       description         = v.description
       location            = v.location
       interconnect_type   = v.interconnect_type
-      state              = v.state
-      google_ip_address  = v.google_ip_address
+      state               = v.state
+      google_ip_address   = v.google_ip_address
       google_reference_id = v.google_reference_id
     }
   }
@@ -86,23 +86,23 @@ output "dedicated_attachment_details" {
   description = "Detailed information about Dedicated Interconnect Attachments"
   value = {
     for k, v in google_compute_interconnect_attachment.dedicated_attachments : k => {
-      id                    = v.id
-      name                  = v.name
-      description           = v.description
-      interconnect          = v.interconnect
-      router               = v.router
-      region               = v.region
-      vlan_tag8021q        = v.vlan_tag8021q
-      bandwidth            = v.bandwidth
-      type                 = v.type
-      state                = v.state
-      google_reference_id  = v.google_reference_id
-      cloud_router_ip_address = v.cloud_router_ip_address
+      id                         = v.id
+      name                       = v.name
+      description                = v.description
+      interconnect               = v.interconnect
+      router                     = v.router
+      region                     = v.region
+      vlan_tag8021q              = v.vlan_tag8021q
+      bandwidth                  = v.bandwidth
+      type                       = v.type
+      state                      = v.state
+      google_reference_id        = v.google_reference_id
+      cloud_router_ip_address    = v.cloud_router_ip_address
       customer_router_ip_address = v.customer_router_ip_address
-      pairing_key          = v.pairing_key
-      partner_asn          = v.partner_asn
-      encryption           = v.encryption
-      dataplane_version    = v.dataplane_version
+      pairing_key                = v.pairing_key
+      partner_asn                = v.partner_asn
+      encryption                 = v.encryption
+      dataplane_version          = v.dataplane_version
     }
   }
 }
@@ -125,21 +125,21 @@ output "partner_attachment_details" {
   description = "Detailed information about Partner Interconnect Attachments"
   value = {
     for k, v in google_compute_interconnect_attachment.partner_attachments : k => {
-      id                    = v.id
-      name                  = v.name
-      description           = v.description
-      router               = v.router
-      region               = v.region
-      bandwidth            = v.bandwidth
-      type                 = v.type
-      state                = v.state
-      google_reference_id  = v.google_reference_id
-      cloud_router_ip_address = v.cloud_router_ip_address
+      id                         = v.id
+      name                       = v.name
+      description                = v.description
+      router                     = v.router
+      region                     = v.region
+      bandwidth                  = v.bandwidth
+      type                       = v.type
+      state                      = v.state
+      google_reference_id        = v.google_reference_id
+      cloud_router_ip_address    = v.cloud_router_ip_address
       customer_router_ip_address = v.customer_router_ip_address
-      pairing_key          = v.pairing_key
-      partner_asn          = v.partner_asn
-      encryption           = v.encryption
-      dataplane_version    = v.dataplane_version
+      pairing_key                = v.pairing_key
+      partner_asn                = v.partner_asn
+      encryption                 = v.encryption
+      dataplane_version          = v.dataplane_version
     }
   }
 }
@@ -163,15 +163,15 @@ output "router_details" {
   description = "Detailed information about Cloud Routers"
   value = {
     for k, v in google_compute_router.interconnect_routers : k => {
-      id          = v.id
-      name        = v.name
-      description = v.description
-      region      = v.region
-      network     = v.network
-      bgp_asn     = v.bgp[0].asn
-      bgp_advertise_mode = v.bgp[0].advertise_mode
-      bgp_advertised_groups = v.bgp[0].advertised_groups
-      bgp_advertised_ip_ranges = v.bgp[0].advertised_ip_ranges
+      id                            = v.id
+      name                          = v.name
+      description                   = v.description
+      region                        = v.region
+      network                       = v.network
+      bgp_asn                       = v.bgp[0].asn
+      bgp_advertise_mode            = v.bgp[0].advertise_mode
+      bgp_advertised_groups         = v.bgp[0].advertised_groups
+      bgp_advertised_ip_ranges      = v.bgp[0].advertised_ip_ranges
       encrypted_interconnect_router = v.encrypted_interconnect_router
     }
   }
@@ -189,13 +189,13 @@ output "router_interface_details" {
   description = "Detailed information about Router Interfaces"
   value = {
     for k, v in google_compute_router_interface.interconnect_interfaces : k => {
-      name                     = v.name
-      router                   = v.router
-      region                   = v.region
-      ip_range                 = v.ip_range
-      vpn_tunnel               = v.vpn_tunnel
-      interconnect_attachment  = v.interconnect_attachment
-      redundant_interface      = v.redundant_interface
+      name                    = v.name
+      router                  = v.router
+      region                  = v.region
+      ip_range                = v.ip_range
+      vpn_tunnel              = v.vpn_tunnel
+      interconnect_attachment = v.interconnect_attachment
+      redundant_interface     = v.redundant_interface
       subnetwork              = v.subnetwork
       private_ip_address      = v.private_ip_address
     }
@@ -217,16 +217,16 @@ output "bgp_session_details" {
       name                      = v.name
       router                    = v.router
       region                    = v.region
-      peer_ip_address          = v.peer_ip_address
-      peer_asn                 = v.peer_asn
+      peer_ip_address           = v.peer_ip_address
+      peer_asn                  = v.peer_asn
       advertised_route_priority = v.advertised_route_priority
-      interface                = v.interface
-      advertise_mode           = v.advertise_mode
-      advertised_groups        = v.advertised_groups
-      advertised_ip_ranges     = v.advertised_ip_ranges
-      enable                   = v.enable
+      interface                 = v.interface
+      advertise_mode            = v.advertise_mode
+      advertised_groups         = v.advertised_groups
+      advertised_ip_ranges      = v.advertised_ip_ranges
+      enable                    = v.enable
       router_appliance_instance = v.router_appliance_instance
-      management_type          = v.management_type
+      management_type           = v.management_type
     }
   }
 }
@@ -298,8 +298,8 @@ output "macsec_config_details" {
   description = "Detailed information about MACsec configurations"
   value = {
     for k, v in google_compute_interconnect_macsec_config.macsec_configs : k => {
-      name         = v.name
-      interconnect = v.interconnect
+      name            = v.name
+      interconnect    = v.interconnect
       pre_shared_keys = v.pre_shared_keys
     }
   }
@@ -358,16 +358,16 @@ output "configuration_metadata" {
     partner_interconnects_count   = length(google_compute_interconnect.partner_interconnects)
     dedicated_attachments_count   = length(google_compute_interconnect_attachment.dedicated_attachments)
     partner_attachments_count     = length(google_compute_interconnect_attachment.partner_attachments)
-    cloud_routers_count          = length(google_compute_router.interconnect_routers)
-    bgp_sessions_count           = length(google_compute_router_peer.interconnect_bgp_peers)
-    router_interfaces_count      = length(google_compute_router_interface.interconnect_interfaces)
-    macsec_configs_count         = length(google_compute_interconnect_macsec_config.macsec_configs)
-    connectivity_center_enabled  = var.enable_network_connectivity_center
-    connectivity_spokes_count    = length(google_network_connectivity_spoke.interconnect_spokes)
-    monitoring_enabled           = var.enable_monitoring
-    audit_logging_enabled        = var.enable_audit_logging
-    cloud_armor_enabled          = var.enable_cloud_armor
-    total_alert_policies         = length(google_monitoring_alert_policy.interconnect_alerts)
+    cloud_routers_count           = length(google_compute_router.interconnect_routers)
+    bgp_sessions_count            = length(google_compute_router_peer.interconnect_bgp_peers)
+    router_interfaces_count       = length(google_compute_router_interface.interconnect_interfaces)
+    macsec_configs_count          = length(google_compute_interconnect_macsec_config.macsec_configs)
+    connectivity_center_enabled   = var.enable_network_connectivity_center
+    connectivity_spokes_count     = length(google_network_connectivity_spoke.interconnect_spokes)
+    monitoring_enabled            = var.enable_monitoring
+    audit_logging_enabled         = var.enable_audit_logging
+    cloud_armor_enabled           = var.enable_cloud_armor
+    total_alert_policies          = length(google_monitoring_alert_policy.interconnect_alerts)
   }
 }
 
@@ -394,7 +394,7 @@ output "connectivity_summary" {
         for k, v in google_compute_interconnect_attachment.partner_attachments : k => v.bandwidth
       }
     }
-    redundancy_enabled = var.enable_redundancy
+    redundancy_enabled          = var.enable_redundancy
     traffic_engineering_enabled = var.enable_traffic_engineering
   }
 }
@@ -410,7 +410,7 @@ output "security_configuration" {
         google_compute_interconnect_attachment.partner_attachments
       ) : k => v.encryption
     }
-    cloud_armor_enabled = var.enable_cloud_armor
+    cloud_armor_enabled   = var.enable_cloud_armor
     audit_logging_enabled = var.enable_audit_logging
     iam_bindings_configured = {
       interconnect_bindings = length(var.interconnect_iam_bindings)
@@ -440,10 +440,10 @@ output "operational_status" {
         for k, v in google_compute_interconnect_attachment.partner_attachments : k => v.state
       }
     )
-    monitoring_enabled = var.enable_monitoring
+    monitoring_enabled             = var.enable_monitoring
     performance_monitoring_enabled = var.enable_performance_monitoring
-    disaster_recovery_enabled = var.enable_disaster_recovery
-    maintenance_configured = var.maintenance_config != {}
+    disaster_recovery_enabled      = var.enable_disaster_recovery
+    maintenance_configured         = var.maintenance_config != {}
   }
 }
 
@@ -456,17 +456,17 @@ output "bgp_configuration" {
     }
     bgp_sessions = {
       for k, v in google_compute_router_peer.interconnect_bgp_peers : k => {
-        peer_asn                 = v.peer_asn
-        peer_ip_address         = v.peer_ip_address
+        peer_asn                  = v.peer_asn
+        peer_ip_address           = v.peer_ip_address
         advertised_route_priority = v.advertised_route_priority
-        advertise_mode          = v.advertise_mode
-        enabled                 = v.enable
+        advertise_mode            = v.advertise_mode
+        enabled                   = v.enable
       }
     }
     advertised_routes = {
       for k, v in google_compute_router.interconnect_routers : k => {
-        advertise_mode    = v.bgp[0].advertise_mode
-        advertised_groups = v.bgp[0].advertised_groups
+        advertise_mode       = v.bgp[0].advertise_mode
+        advertised_groups    = v.bgp[0].advertised_groups
         advertised_ip_ranges = v.bgp[0].advertised_ip_ranges
       }
     }
@@ -477,12 +477,12 @@ output "bgp_configuration" {
 output "network_telemetry" {
   description = "Network telemetry configuration"
   value = {
-    flow_logs_enabled = var.network_telemetry_config.enable_flow_logs
+    flow_logs_enabled        = var.network_telemetry_config.enable_flow_logs
     packet_mirroring_enabled = var.network_telemetry_config.enable_packet_mirroring
-    flow_sampling_rate = var.network_telemetry_config.flow_sampling_rate
-    log_format = var.network_telemetry_config.log_format
-    retention_period = var.network_telemetry_config.retention_period_days
-    export_destinations = var.network_telemetry_config.export_destinations
+    flow_sampling_rate       = var.network_telemetry_config.flow_sampling_rate
+    log_format               = var.network_telemetry_config.log_format
+    retention_period         = var.network_telemetry_config.retention_period_days
+    export_destinations      = var.network_telemetry_config.export_destinations
   }
 }
 
@@ -490,11 +490,11 @@ output "network_telemetry" {
 output "cost_optimization" {
   description = "Cost optimization configuration"
   value = {
-    optimization_enabled = var.enable_cost_optimization
+    optimization_enabled        = var.enable_cost_optimization
     commitment_analysis_enabled = var.cost_optimization_config.enable_commitment_analysis
-    right_sizing_enabled = var.cost_optimization_config.enable_right_sizing
-    usage_efficiency_threshold = var.cost_optimization_config.usage_efficiency_threshold
-    idle_resource_detection = var.cost_optimization_config.idle_resource_detection
+    right_sizing_enabled        = var.cost_optimization_config.enable_right_sizing
+    usage_efficiency_threshold  = var.cost_optimization_config.usage_efficiency_threshold
+    idle_resource_detection     = var.cost_optimization_config.idle_resource_detection
   }
 }
 
@@ -503,11 +503,11 @@ output "compliance_status" {
   description = "Compliance monitoring status"
   value = {
     compliance_monitoring_enabled = var.enable_compliance_monitoring
-    compliance_standards = var.compliance_config.compliance_standards
-    audit_frequency = var.compliance_config.audit_frequency
-    compliance_reporting = var.compliance_config.compliance_reporting
-    violation_alerts = var.compliance_config.violation_alerts
-    remediation_automation = var.compliance_config.remediation_automation
+    compliance_standards          = var.compliance_config.compliance_standards
+    audit_frequency               = var.compliance_config.audit_frequency
+    compliance_reporting          = var.compliance_config.compliance_reporting
+    violation_alerts              = var.compliance_config.violation_alerts
+    remediation_automation        = var.compliance_config.remediation_automation
   }
 }
 
@@ -515,12 +515,12 @@ output "compliance_status" {
 output "management_urls" {
   description = "URLs for managing Cloud Interconnect resources"
   value = {
-    interconnect_console = "https://console.cloud.google.com/hybrid/interconnect?project=${var.project_id}"
+    interconnect_console         = "https://console.cloud.google.com/hybrid/interconnect?project=${var.project_id}"
     network_connectivity_console = var.enable_network_connectivity_center ? "https://console.cloud.google.com/networking/networkconnectivity?project=${var.project_id}" : null
-    cloud_router_console = "https://console.cloud.google.com/networking/routers?project=${var.project_id}"
-    monitoring_console = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
-    logs_console = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
-    network_topology_console = "https://console.cloud.google.com/networking/topology?project=${var.project_id}"
+    cloud_router_console         = "https://console.cloud.google.com/networking/routers?project=${var.project_id}"
+    monitoring_console           = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
+    logs_console                 = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
+    network_topology_console     = "https://console.cloud.google.com/networking/topology?project=${var.project_id}"
   }
 }
 
@@ -546,7 +546,7 @@ output "resource_identifiers" {
       for k, v in google_compute_router.interconnect_routers : k => v.id
     }
     connectivity_hub_resource = var.enable_network_connectivity_center ? google_network_connectivity_hub.connectivity_hub[0].id : null
-    service_account_resource = var.create_service_account ? google_service_account.interconnect_sa[0].id : null
+    service_account_resource  = var.create_service_account ? google_service_account.interconnect_sa[0].id : null
   }
 }
 
@@ -556,8 +556,8 @@ output "bandwidth_summary" {
   value = {
     dedicated_interconnect_capacity = {
       for k, v in google_compute_interconnect.dedicated_interconnects : k => {
-        link_count = v.requested_link_count
-        link_type  = v.link_type
+        link_count     = v.requested_link_count
+        link_type      = v.link_type
         total_capacity = "${v.requested_link_count}x${v.link_type}"
       }
     }
@@ -569,7 +569,7 @@ output "bandwidth_summary" {
         for k, v in google_compute_interconnect_attachment.partner_attachments : k => v.bandwidth
       }
     )
-    utilization_monitoring = var.enable_performance_monitoring
+    utilization_monitoring    = var.enable_performance_monitoring
     capacity_planning_enabled = var.enable_capacity_planning
   }
 }
@@ -590,15 +590,15 @@ output "connection_status" {
     interconnect_operational_status = merge(
       {
         for k, v in google_compute_interconnect.dedicated_interconnects : k => {
-          state = v.state
-          google_ip_address = v.google_ip_address
+          state               = v.state
+          google_ip_address   = v.google_ip_address
           google_reference_id = v.google_reference_id
         }
       },
       {
         for k, v in google_compute_interconnect.partner_interconnects : k => {
-          state = v.state
-          google_ip_address = v.google_ip_address
+          state               = v.state
+          google_ip_address   = v.google_ip_address
           google_reference_id = v.google_reference_id
         }
       }
@@ -606,18 +606,18 @@ output "connection_status" {
     attachment_ip_addresses = merge(
       {
         for k, v in google_compute_interconnect_attachment.dedicated_attachments : k => {
-          cloud_router_ip = v.cloud_router_ip_address
+          cloud_router_ip    = v.cloud_router_ip_address
           customer_router_ip = v.customer_router_ip_address
         }
       },
       {
         for k, v in google_compute_interconnect_attachment.partner_attachments : k => {
-          cloud_router_ip = v.cloud_router_ip_address
+          cloud_router_ip    = v.cloud_router_ip_address
           customer_router_ip = v.customer_router_ip_address
         }
       }
     )
-    health_monitoring_enabled = var.enable_performance_monitoring
+    health_monitoring_enabled    = var.enable_performance_monitoring
     disaster_recovery_configured = var.enable_disaster_recovery
   }
 }

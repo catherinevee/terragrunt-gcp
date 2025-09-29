@@ -40,25 +40,25 @@ variable "backend_services" {
   description = "Map of backend service configurations"
   type = map(object({
     name                            = optional(string)
-    description                    = optional(string)
-    protocol                       = optional(string)  # "HTTP", "HTTPS", "HTTP2", "GRPC"
-    port_name                      = optional(string)
-    timeout_sec                    = optional(number)
-    enable_cdn                     = optional(bool)
+    description                     = optional(string)
+    protocol                        = optional(string) # "HTTP", "HTTPS", "HTTP2", "GRPC"
+    port_name                       = optional(string)
+    timeout_sec                     = optional(number)
+    enable_cdn                      = optional(bool)
     connection_draining_timeout_sec = optional(number)
-    load_balancing_scheme          = optional(string)
-    locality_lb_policy             = optional(string)
-    session_affinity               = optional(string)
-    affinity_cookie_ttl_sec        = optional(number)
+    load_balancing_scheme           = optional(string)
+    locality_lb_policy              = optional(string)
+    session_affinity                = optional(string)
+    affinity_cookie_ttl_sec         = optional(number)
 
     # CDN policy configuration
     cdn_policy = optional(object({
-      cache_mode                   = optional(string)  # "CACHE_ALL_STATIC", "USE_ORIGIN_HEADERS", "FORCE_CACHE_ALL"
+      cache_mode                   = optional(string) # "CACHE_ALL_STATIC", "USE_ORIGIN_HEADERS", "FORCE_CACHE_ALL"
       default_ttl                  = optional(number)
       client_ttl                   = optional(number)
       max_ttl                      = optional(number)
       negative_caching             = optional(bool)
-      serve_while_stale           = optional(number)
+      serve_while_stale            = optional(number)
       signed_url_cache_max_age_sec = optional(number)
 
       negative_caching_policy = optional(list(object({
@@ -67,7 +67,7 @@ variable "backend_services" {
       })))
 
       cache_key_policy = optional(object({
-        include_protocol        = optional(bool)
+        include_protocol       = optional(bool)
         include_host           = optional(bool)
         include_query_string   = optional(bool)
         query_string_whitelist = optional(list(string))
@@ -83,17 +83,17 @@ variable "backend_services" {
 
     # Backend configuration
     backends = optional(list(object({
-      group                       = string
-      balancing_mode             = optional(string)
-      capacity_scaler            = optional(number)
-      description                = optional(string)
-      max_connections            = optional(number)
+      group                        = string
+      balancing_mode               = optional(string)
+      capacity_scaler              = optional(number)
+      description                  = optional(string)
+      max_connections              = optional(number)
       max_connections_per_instance = optional(number)
       max_connections_per_endpoint = optional(number)
-      max_rate                   = optional(number)
-      max_rate_per_instance      = optional(number)
-      max_rate_per_endpoint      = optional(number)
-      max_utilization           = optional(number)
+      max_rate                     = optional(number)
+      max_rate_per_instance        = optional(number)
+      max_rate_per_endpoint        = optional(number)
+      max_utilization              = optional(number)
     })))
 
     # Health checks
@@ -102,19 +102,19 @@ variable "backend_services" {
     # Circuit breaker configuration
     circuit_breakers = optional(object({
       max_requests_per_connection = optional(number)
-      max_connections            = optional(number)
-      max_pending_requests       = optional(number)
-      max_requests              = optional(number)
-      max_retries               = optional(number)
+      max_connections             = optional(number)
+      max_pending_requests        = optional(number)
+      max_requests                = optional(number)
+      max_retries                 = optional(number)
     }))
 
     # Consistent hash configuration
     consistent_hash = optional(object({
       http_cookie_ttl_seconds = optional(number)
-      http_cookie_name       = optional(string)
-      http_cookie_path       = optional(string)
-      http_header_name       = optional(string)
-      minimum_ring_size      = optional(number)
+      http_cookie_name        = optional(string)
+      http_cookie_path        = optional(string)
+      http_header_name        = optional(string)
+      minimum_ring_size       = optional(number)
     }))
 
     # IAP configuration
@@ -133,17 +133,17 @@ variable "backend_services" {
     # Outlier detection
     outlier_detection = optional(object({
       consecutive_errors                    = optional(number)
-      consecutive_gateway_failure          = optional(number)
-      enforcing_consecutive_errors         = optional(number)
+      consecutive_gateway_failure           = optional(number)
+      enforcing_consecutive_errors          = optional(number)
       enforcing_consecutive_gateway_failure = optional(number)
-      enforcing_success_rate               = optional(number)
-      interval_seconds                     = optional(number)
-      base_ejection_time_seconds           = optional(number)
-      max_ejection_percent                 = optional(number)
-      split_external_local_origin_errors   = optional(bool)
-      success_rate_minimum_hosts           = optional(number)
-      success_rate_request_volume          = optional(number)
-      success_rate_stdev_factor            = optional(number)
+      enforcing_success_rate                = optional(number)
+      interval_seconds                      = optional(number)
+      base_ejection_time_seconds            = optional(number)
+      max_ejection_percent                  = optional(number)
+      split_external_local_origin_errors    = optional(bool)
+      success_rate_minimum_hosts            = optional(number)
+      success_rate_request_volume           = optional(number)
+      success_rate_stdev_factor             = optional(number)
     }))
 
     # Log configuration
@@ -165,28 +165,28 @@ variable "origins" {
 
     # Health check configuration
     health_check = optional(object({
-      type               = optional(string)  # "HTTP", "HTTPS", "TCP"
-      port               = optional(number)
-      request_path       = optional(string)
-      response           = optional(string)
-      proxy_header       = optional(string)
-      port_specification = optional(string)
-      request            = optional(string)
-      check_interval_sec = optional(number)
-      timeout_sec        = optional(number)
-      healthy_threshold  = optional(number)
+      type                = optional(string) # "HTTP", "HTTPS", "TCP"
+      port                = optional(number)
+      request_path        = optional(string)
+      response            = optional(string)
+      proxy_header        = optional(string)
+      port_specification  = optional(string)
+      request             = optional(string)
+      check_interval_sec  = optional(number)
+      timeout_sec         = optional(number)
+      healthy_threshold   = optional(number)
       unhealthy_threshold = optional(number)
     }))
 
     # Backend service configuration
     backend_config = optional(object({
       max_rate_per_instance        = optional(number)
-      max_rate                    = optional(number)
-      max_connections             = optional(number)
+      max_rate                     = optional(number)
+      max_connections              = optional(number)
       max_connections_per_instance = optional(number)
-      max_utilization             = optional(number)
-      capacity_scaler             = optional(number)
-      balancing_mode              = optional(string)
+      max_utilization              = optional(number)
+      capacity_scaler              = optional(number)
+      balancing_mode               = optional(string)
     }))
   }))
   default = {}
@@ -227,22 +227,22 @@ variable "url_maps" {
 
       default_url_redirect = optional(object({
         redirect_response_code = optional(string)
-        strip_query           = optional(bool)
-        host_redirect         = optional(string)
-        path_redirect         = optional(string)
-        prefix_redirect       = optional(string)
-        https_redirect        = optional(bool)
+        strip_query            = optional(bool)
+        host_redirect          = optional(string)
+        path_redirect          = optional(string)
+        prefix_redirect        = optional(string)
+        https_redirect         = optional(bool)
       }))
     })))
 
     # Default URL redirect
     default_url_redirect = optional(object({
       redirect_response_code = optional(string)
-      strip_query           = optional(bool)
-      host_redirect         = optional(string)
-      path_redirect         = optional(string)
-      prefix_redirect       = optional(string)
-      https_redirect        = optional(bool)
+      strip_query            = optional(bool)
+      host_redirect          = optional(string)
+      path_redirect          = optional(string)
+      prefix_redirect        = optional(string)
+      https_redirect         = optional(bool)
     }))
 
     # Tests
@@ -281,12 +281,12 @@ variable "ssl_certificates" {
 variable "target_https_proxies" {
   description = "Map of target HTTPS proxy configurations"
   type = map(object({
-    name         = optional(string)
-    description  = optional(string)
-    url_map      = optional(string)
-    ssl_certificates = optional(list(string))
-    ssl_policy   = optional(string)
-    quic_override = optional(string)  # "NONE", "ENABLE", "DISABLE"
+    name                        = optional(string)
+    description                 = optional(string)
+    url_map                     = optional(string)
+    ssl_certificates            = optional(list(string))
+    ssl_policy                  = optional(string)
+    quic_override               = optional(string) # "NONE", "ENABLE", "DISABLE"
     http_keep_alive_timeout_sec = optional(number)
   }))
   default = {}
@@ -296,15 +296,15 @@ variable "target_https_proxies" {
 variable "global_forwarding_rules" {
   description = "Map of global forwarding rule configurations"
   type = map(object({
-    name        = optional(string)
-    description = optional(string)
-    port_range  = optional(string)
-    ip_protocol = optional(string)
-    ip_address  = optional(string)
-    target      = optional(string)
+    name                  = optional(string)
+    description           = optional(string)
+    port_range            = optional(string)
+    ip_protocol           = optional(string)
+    ip_address            = optional(string)
+    target                = optional(string)
     load_balancing_scheme = optional(string)
-    network_tier = optional(string)
-    labels      = optional(map(string))
+    network_tier          = optional(string)
+    labels                = optional(map(string))
   }))
   default = {}
 }
@@ -319,8 +319,8 @@ variable "security_policies" {
 
     # Default rule
     default_rule = optional(object({
-      action   = string
-      priority = number
+      action      = string
+      priority    = number
       description = optional(string)
       match = object({
         versioned_expr = string
@@ -332,8 +332,8 @@ variable "security_policies" {
 
     # Additional rules
     rules = optional(list(object({
-      action   = string
-      priority = number
+      action      = string
+      priority    = number
       description = optional(string)
 
       match = optional(object({
@@ -421,27 +421,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -457,15 +457,15 @@ variable "advanced_cdn_config" {
   description = "Advanced CDN configuration options"
   type = object({
     enable_brotli_compression = optional(bool)
-    enable_gzip_compression  = optional(bool)
-    compression_whitelist    = optional(list(string))
-    enable_origin_failover   = optional(bool)
-    origin_failover_criteria = optional(list(string))
-    custom_error_responses   = optional(map(object({
-      error_code        = number
-      response_code     = number
-      error_service     = optional(string)
-      path             = optional(string)
+    enable_gzip_compression   = optional(bool)
+    compression_whitelist     = optional(list(string))
+    enable_origin_failover    = optional(bool)
+    origin_failover_criteria  = optional(list(string))
+    custom_error_responses = optional(map(object({
+      error_code             = number
+      response_code          = number
+      error_service          = optional(string)
+      path                   = optional(string)
       override_response_code = optional(number)
     })))
   })
@@ -476,14 +476,14 @@ variable "advanced_cdn_config" {
 variable "security_config" {
   description = "Security configuration for CDN"
   type = object({
-    enable_cloud_armor      = optional(bool)
-    enable_ddos_protection  = optional(bool)
-    enable_bot_management   = optional(bool)
+    enable_cloud_armor     = optional(bool)
+    enable_ddos_protection = optional(bool)
+    enable_bot_management  = optional(bool)
     enable_owasp_rules     = optional(bool)
-    custom_security_rules   = optional(list(object({
-      priority = number
-      action   = string
-      expression = string
+    custom_security_rules = optional(list(object({
+      priority    = number
+      action      = string
+      expression  = string
       description = optional(string)
     })))
     rate_limiting_rules = optional(list(object({
@@ -492,7 +492,7 @@ variable "security_config" {
         count        = number
         interval_sec = number
       })
-      action = string
+      action      = string
       description = optional(string)
     })))
   })
@@ -505,27 +505,27 @@ variable "security_config" {
 variable "performance_config" {
   description = "Performance configuration for CDN"
   type = object({
-    enable_http2           = optional(bool)
-    enable_http3_quic      = optional(bool)
+    enable_http2                = optional(bool)
+    enable_http3_quic           = optional(bool)
     connection_draining_timeout = optional(number)
-    request_timeout        = optional(number)
-    enable_connection_pooling = optional(bool)
-    max_connections_per_origin = optional(number)
-    origin_request_policy  = optional(object({
+    request_timeout             = optional(number)
+    enable_connection_pooling   = optional(bool)
+    max_connections_per_origin  = optional(number)
+    origin_request_policy = optional(object({
       cache_key_policy = object({
-        include_protocol      = bool
+        include_protocol     = bool
         include_host         = bool
         include_query_string = bool
         include_headers      = list(string)
         include_cookies      = list(string)
       })
       origin_request_policy = object({
-        header_behavior = string
-        headers         = list(string)
+        header_behavior       = string
+        headers               = list(string)
         query_string_behavior = string
-        query_strings   = list(string)
-        cookie_behavior = string
-        cookies         = list(string)
+        query_strings         = list(string)
+        cookie_behavior       = string
+        cookies               = list(string)
       })
     }))
   })
@@ -542,23 +542,23 @@ variable "cache_config" {
     global_cache_behaviors = optional(list(object({
       path_pattern = string
       cache_policy = object({
-        cache_mode   = string
-        default_ttl  = number
-        max_ttl      = number
-        client_ttl   = number
+        cache_mode  = string
+        default_ttl = number
+        max_ttl     = number
+        client_ttl  = number
       })
       compress = optional(bool)
     })))
 
     cache_invalidation_rules = optional(list(object({
-      path_patterns = list(string)
-      invalidation_type = string  # "PURGE", "REFRESH"
+      path_patterns     = list(string)
+      invalidation_type = string # "PURGE", "REFRESH"
     })))
 
     edge_caching_policy = optional(object({
       enable_edge_caching = bool
-      edge_cache_ttl     = number
-      origin_cache_ttl   = number
+      edge_cache_ttl      = number
+      origin_cache_ttl    = number
     }))
   })
   default = {}
@@ -568,11 +568,11 @@ variable "cache_config" {
 variable "cost_optimization_config" {
   description = "Cost optimization configuration"
   type = object({
-    enable_cost_optimization = optional(bool)
-    cache_efficiency_target  = optional(number)  # Percentage
-    bandwidth_optimization   = optional(bool)
+    enable_cost_optimization  = optional(bool)
+    cache_efficiency_target   = optional(number) # Percentage
+    bandwidth_optimization    = optional(bool)
     regional_cache_preference = optional(list(string))
-    cost_allocation_tags     = optional(map(string))
+    cost_allocation_tags      = optional(map(string))
   })
   default = {
     enable_cost_optimization = false
@@ -590,9 +590,9 @@ variable "labels" {
 variable "lifecycle_config" {
   description = "Lifecycle configuration for resources"
   type = object({
-    prevent_destroy          = optional(bool)
-    ignore_changes          = optional(list(string))
-    create_before_destroy   = optional(bool)
+    prevent_destroy       = optional(bool)
+    ignore_changes        = optional(list(string))
+    create_before_destroy = optional(bool)
   })
   default = {
     prevent_destroy = false

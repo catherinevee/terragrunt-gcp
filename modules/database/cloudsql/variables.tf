@@ -175,7 +175,7 @@ variable "additional_users" {
   description = "Map of additional users to create"
   type = map(object({
     password        = string
-    type           = optional(string)
+    type            = optional(string)
     deletion_policy = optional(string)
   }))
   default   = {}
@@ -191,8 +191,8 @@ variable "backup_configuration" {
     location                       = optional(string)
     point_in_time_recovery_enabled = optional(bool)
     transaction_log_retention_days = optional(number)
-    retained_backups              = optional(number)
-    retention_unit                = optional(string)
+    retained_backups               = optional(number)
+    retention_unit                 = optional(string)
   })
   default = {}
 }
@@ -261,10 +261,10 @@ variable "insights_config" {
   description = "Query insights configuration"
   type = object({
     query_insights_enabled  = optional(bool)
-    query_string_length    = optional(number)
+    query_string_length     = optional(number)
     record_application_tags = optional(bool)
-    record_client_address  = optional(bool)
-    query_plans_per_minute = optional(number)
+    record_client_address   = optional(bool)
+    query_plans_per_minute  = optional(number)
   })
   default = null
 }
@@ -274,11 +274,11 @@ variable "password_validation_policy" {
   description = "Password validation policy configuration"
   type = object({
     enable_password_policy      = optional(bool)
-    min_length                 = optional(number)
-    complexity                 = optional(string)
-    reuse_interval             = optional(number)
+    min_length                  = optional(number)
+    complexity                  = optional(string)
+    reuse_interval              = optional(number)
     disallow_username_substring = optional(bool)
-    password_change_interval   = optional(string)
+    password_change_interval    = optional(string)
   })
   default = null
 }
@@ -330,14 +330,14 @@ variable "replica_configuration" {
   type = object({
     ca_certificate            = optional(string)
     client_certificate        = optional(string)
-    client_key               = optional(string)
-    connect_retry_interval   = optional(number)
-    dump_file_path           = optional(string)
-    failover_target          = optional(bool)
-    master_heartbeat_period  = optional(number)
-    password                 = optional(string)
-    ssl_cipher               = optional(string)
-    username                 = optional(string)
+    client_key                = optional(string)
+    connect_retry_interval    = optional(number)
+    dump_file_path            = optional(string)
+    failover_target           = optional(bool)
+    master_heartbeat_period   = optional(number)
+    password                  = optional(string)
+    ssl_cipher                = optional(string)
+    username                  = optional(string)
     verify_server_certificate = optional(bool)
   })
   default = null
@@ -346,25 +346,25 @@ variable "replica_configuration" {
 variable "read_replicas" {
   description = "List of read replicas to create"
   type = list(object({
-    name                = string
-    region              = optional(string)
-    tier                = optional(string)
-    availability_type   = optional(string)
-    disk_size           = optional(number)
-    disk_type           = optional(string)
-    disk_autoresize     = optional(bool)
+    name                  = string
+    region                = optional(string)
+    tier                  = optional(string)
+    availability_type     = optional(string)
+    disk_size             = optional(number)
+    disk_type             = optional(string)
+    disk_autoresize       = optional(bool)
     disk_autoresize_limit = optional(number)
-    pricing_plan        = optional(string)
-    deletion_protection = optional(bool)
-    failover_target     = optional(bool)
-    activation_policy   = optional(string)
+    pricing_plan          = optional(string)
+    deletion_protection   = optional(bool)
+    failover_target       = optional(bool)
+    activation_policy     = optional(string)
     authorized_networks = optional(list(object({
       name            = string
       value           = string
       expiration_time = optional(string)
     })))
     encryption_key_name = optional(string)
-    labels             = optional(map(string))
+    labels              = optional(map(string))
   }))
   default = []
 }
@@ -375,7 +375,7 @@ variable "restore_backup_context" {
   type = object({
     backup_run_id = string
     instance_id   = optional(string)
-    project      = optional(string)
+    project       = optional(string)
   })
   default = null
 }
@@ -384,9 +384,9 @@ variable "clone_source" {
   description = "Configuration for cloning from another instance"
   type = object({
     source_instance_name = string
-    point_in_time       = optional(string)
-    database_names      = optional(list(string))
-    allocated_ip_range  = optional(string)
+    point_in_time        = optional(string)
+    database_names       = optional(list(string))
+    allocated_ip_range   = optional(string)
   })
   default = null
 }

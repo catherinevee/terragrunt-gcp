@@ -447,7 +447,7 @@ output "certificate_configuration_summary" {
     total_certificate_map_entries = length(local.certificate_map_entries)
     total_dns_authorizations      = length(local.dns_authorizations)
     total_issuance_configs        = length(local.certificate_issuance_configs)
-    total_trust_configs          = length(local.trust_configs)
+    total_trust_configs           = length(local.trust_configs)
 
     certificates_by_type = {
       managed      = length([for k, v in local.certificates : k if v.managed != null])
@@ -455,9 +455,9 @@ output "certificate_configuration_summary" {
     }
 
     certificates_by_scope = {
-      default      = length([for k, v in local.certificates : k if v.scope == "DEFAULT" || v.scope == null])
-      edge_cache   = length([for k, v in local.certificates : k if v.scope == "EDGE_CACHE"])
-      all_regions  = length([for k, v in local.certificates : k if v.scope == "ALL_REGIONS"])
+      default     = length([for k, v in local.certificates : k if v.scope == "DEFAULT" || v.scope == null])
+      edge_cache  = length([for k, v in local.certificates : k if v.scope == "EDGE_CACHE"])
+      all_regions = length([for k, v in local.certificates : k if v.scope == "ALL_REGIONS"])
     }
 
     classic_certificates = {
@@ -471,7 +471,7 @@ output "certificate_configuration_summary" {
 output "ssl_policy_configuration_summary" {
   description = "Summary of SSL policy configuration"
   value = {
-    total_ssl_policies      = length(var.ssl_policies)
+    total_ssl_policies         = length(var.ssl_policies)
     total_target_https_proxies = length(var.target_https_proxies)
 
     ssl_policies_by_profile = {
@@ -503,17 +503,17 @@ output "dns_authorization_summary" {
 
     dns_authorizations_by_domain = {
       for domain in distinct([for v in local.dns_authorizations : v.domain]) :
-        domain => length([
-          for k, v in local.dns_authorizations : k
-          if v.domain == domain
-        ])
+      domain => length([
+        for k, v in local.dns_authorizations : k
+        if v.domain == domain
+      ])
     }
 
     dns_records_to_create = {
       for k, v in google_certificate_manager_dns_authorization.dns_authorizations : k => {
-        name  = v.dns_resource_record[0].name
-        type  = v.dns_resource_record[0].type
-        data  = v.dns_resource_record[0].data
+        name = v.dns_resource_record[0].name
+        type = v.dns_resource_record[0].type
+        data = v.dns_resource_record[0].data
       }
     }
   }
@@ -540,9 +540,9 @@ output "validation_configuration_summary" {
   value = {
     ocsp_validation_enabled = var.validation_config.enable_ocsp_validation
     crl_validation_enabled  = var.validation_config.enable_crl_validation
-    strict_validation      = var.validation_config.strict_validation
-    minimum_key_size       = var.validation_config.minimum_key_size
-    maximum_validity_days  = var.validation_config.maximum_validity_days
+    strict_validation       = var.validation_config.strict_validation
+    minimum_key_size        = var.validation_config.minimum_key_size
+    maximum_validity_days   = var.validation_config.maximum_validity_days
   }
 }
 
@@ -550,12 +550,12 @@ output "validation_configuration_summary" {
 output "compliance_configuration_summary" {
   description = "Summary of compliance configuration"
   value = {
-    cap_baseline_enforced    = var.compliance_config.enforce_cap_baseline
-    mozilla_policy_enforced  = var.compliance_config.enforce_mozilla_policy
+    cap_baseline_enforced     = var.compliance_config.enforce_cap_baseline
+    mozilla_policy_enforced   = var.compliance_config.enforce_mozilla_policy
     chrome_ct_policy_enforced = var.compliance_config.enforce_chrome_ct_policy
-    sct_required            = var.compliance_config.require_sct
-    caa_check_required      = var.compliance_config.require_caa_check
-    audit_logging_enabled   = var.compliance_config.audit_logging_enabled
+    sct_required              = var.compliance_config.require_sct
+    caa_check_required        = var.compliance_config.require_caa_check
+    audit_logging_enabled     = var.compliance_config.audit_logging_enabled
   }
 }
 
@@ -566,12 +566,12 @@ output "security_configuration_summary" {
     service_account_created = var.create_service_account
     service_account_roles   = var.create_service_account ? var.service_account_roles : []
 
-    hsm_protection_enabled       = var.security_config.enable_hsm_protection
-    private_ca_enabled          = var.security_config.enable_private_ca
+    hsm_protection_enabled           = var.security_config.enable_hsm_protection
+    private_ca_enabled               = var.security_config.enable_private_ca
     certificate_transparency_enabled = var.security_config.enable_certificate_transparency
-    key_rotation_enabled        = var.security_config.enable_key_rotation
-    key_rotation_period_days    = var.security_config.key_rotation_period_days
-    backup_certificates_enabled = var.security_config.enable_backup_certificates
+    key_rotation_enabled             = var.security_config.enable_key_rotation
+    key_rotation_period_days         = var.security_config.key_rotation_period_days
+    backup_certificates_enabled      = var.security_config.enable_backup_certificates
   }
 }
 
@@ -579,17 +579,17 @@ output "security_configuration_summary" {
 output "monitoring_configuration_summary" {
   description = "Summary of monitoring configuration"
   value = {
-    alerts_enabled       = var.create_monitoring_alerts
-    dashboard_enabled    = var.create_monitoring_dashboard
+    alerts_enabled        = var.create_monitoring_alerts
+    dashboard_enabled     = var.create_monitoring_dashboard
     auto_rotation_enabled = var.enable_auto_rotation
 
-    alert_policies_count     = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    alert_policies_count        = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
     notification_channels_count = length(var.notification_channels)
 
     rotation_configuration = var.enable_auto_rotation ? {
-      schedule              = var.rotation_schedule
-      time_zone            = var.rotation_time_zone
-      days_before_expiry   = var.rotation_days_before_expiry
+      schedule           = var.rotation_schedule
+      time_zone          = var.rotation_time_zone
+      days_before_expiry = var.rotation_days_before_expiry
     } : null
   }
 }
@@ -600,7 +600,7 @@ output "rate_limiting_summary" {
   value = {
     enabled                      = var.rate_limiting_config.enable_rate_limiting
     max_certificates_per_hour    = var.rate_limiting_config.max_certificates_per_hour
-    max_renewals_per_day        = var.rate_limiting_config.max_renewals_per_day
+    max_renewals_per_day         = var.rate_limiting_config.max_renewals_per_day
     max_dns_validations_per_hour = var.rate_limiting_config.max_dns_validations_per_hour
   }
 }
@@ -609,11 +609,11 @@ output "rate_limiting_summary" {
 output "cost_optimization_summary" {
   description = "Summary of cost optimization configuration"
   value = {
-    unused_cert_cleanup_enabled   = var.cost_optimization_config.enable_unused_cert_cleanup
-    cleanup_age_days             = var.cost_optimization_config.cleanup_age_days
+    unused_cert_cleanup_enabled    = var.cost_optimization_config.enable_unused_cert_cleanup
+    cleanup_age_days               = var.cost_optimization_config.cleanup_age_days
     wildcard_consolidation_enabled = var.cost_optimization_config.enable_wildcard_consolidation
     managed_certificates_preferred = var.cost_optimization_config.prefer_managed_certificates
-    certificate_sharing_enabled   = var.cost_optimization_config.enable_certificate_sharing
+    certificate_sharing_enabled    = var.cost_optimization_config.enable_certificate_sharing
   }
 }
 
@@ -683,20 +683,20 @@ output "resource_counts" {
   description = "Count of each resource type created"
   value = {
     certificates                 = length(var.certificates)
-    certificate_maps            = length(var.certificate_maps)
-    certificate_map_entries     = length(var.certificate_map_entries)
-    dns_authorizations          = length(var.dns_authorizations)
+    certificate_maps             = length(var.certificate_maps)
+    certificate_map_entries      = length(var.certificate_map_entries)
+    dns_authorizations           = length(var.dns_authorizations)
     certificate_issuance_configs = length(var.certificate_issuance_configs)
-    trust_configs              = length(var.trust_configs)
-    classic_ssl_certificates    = length(var.classic_ssl_certificates)
+    trust_configs                = length(var.trust_configs)
+    classic_ssl_certificates     = length(var.classic_ssl_certificates)
     classic_managed_certificates = length(var.classic_managed_ssl_certificates)
-    ssl_policies               = length(var.ssl_policies)
-    target_https_proxies       = length(var.target_https_proxies)
-    service_accounts           = var.create_service_account ? 1 : 0
-    alert_policies             = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards                 = var.create_monitoring_dashboard ? 1 : 0
-    notification_channels      = length(var.notification_channels)
-    rotation_functions         = var.enable_auto_rotation ? 1 : 0
-    rotation_schedules         = var.enable_auto_rotation ? 1 : 0
+    ssl_policies                 = length(var.ssl_policies)
+    target_https_proxies         = length(var.target_https_proxies)
+    service_accounts             = var.create_service_account ? 1 : 0
+    alert_policies               = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards                   = var.create_monitoring_dashboard ? 1 : 0
+    notification_channels        = length(var.notification_channels)
+    rotation_functions           = var.enable_auto_rotation ? 1 : 0
+    rotation_schedules           = var.enable_auto_rotation ? 1 : 0
   }
 }

@@ -182,11 +182,11 @@ output "console_urls" {
     ) : null
 
     job_details = var.deploy_job ? (
-      "https://console.cloud.google.com/run/jobs/details/${var.region}/${var.job_name != null ? var.job_name : \"${local.service_name}-job\"}?project=${var.project_id}"
+      "https://console.cloud.google.com/run/jobs/details/${var.region}/${var.job_name != null ? var.job_name : "${local.service_name}-job"}?project=${var.project_id}"
     ) : null
 
     job_executions = var.deploy_job ? (
-      "https://console.cloud.google.com/run/jobs/executions/${var.region}/${var.job_name != null ? var.job_name : \"${local.service_name}-job\"}?project=${var.project_id}"
+      "https://console.cloud.google.com/run/jobs/executions/${var.region}/${var.job_name != null ? var.job_name : "${local.service_name}-job"}?project=${var.project_id}"
     ) : null
 
     domain_mappings = var.deploy_service ? (
@@ -212,15 +212,15 @@ output "gcloud_commands" {
     ) : null
 
     describe_job = var.deploy_job ? (
-      "gcloud run jobs describe ${var.job_name != null ? var.job_name : \"${local.service_name}-job\"} --region=${var.region} --project=${var.project_id}"
+      "gcloud run jobs describe ${var.job_name != null ? var.job_name : "${local.service_name}-job"} --region=${var.region} --project=${var.project_id}"
     ) : null
 
     execute_job = var.deploy_job ? (
-      "gcloud run jobs execute ${var.job_name != null ? var.job_name : \"${local.service_name}-job\"} --region=${var.region} --project=${var.project_id}"
+      "gcloud run jobs execute ${var.job_name != null ? var.job_name : "${local.service_name}-job"} --region=${var.region} --project=${var.project_id}"
     ) : null
 
     list_executions = var.deploy_job ? (
-      "gcloud run jobs executions list --job=${var.job_name != null ? var.job_name : \"${local.service_name}-job\"} --region=${var.region} --project=${var.project_id}"
+      "gcloud run jobs executions list --job=${var.job_name != null ? var.job_name : "${local.service_name}-job"} --region=${var.region} --project=${var.project_id}"
     ) : null
 
     update_traffic = var.deploy_service ? (
@@ -238,15 +238,15 @@ output "curl_commands" {
   description = "curl commands"
   value = var.deploy_service ? {
     basic = (
-      "curl ${try(google_cloud_run_v2_service.service[0].uri, \"\")}"
+      "curl ${try(google_cloud_run_v2_service.service[0].uri, "")}"
     )
 
     with_auth = (
-      "curl -H \"Authorization: Bearer $(gcloud auth print-identity-token)\" ${try(google_cloud_run_v2_service.service[0].uri, \"\")}"
+      "curl -H \"Authorization: Bearer $(gcloud auth print-identity-token)\" ${try(google_cloud_run_v2_service.service[0].uri, "")}"
     )
 
     with_data = (
-      "curl -X POST -H \"Content-Type: application/json\" -d '{\"key\":\"value\"}' ${try(google_cloud_run_v2_service.service[0].uri, \"\")}"
+      "curl -X POST -H \"Content-Type: application/json\" -d '{\"key\":\"value\"}' ${try(google_cloud_run_v2_service.service[0].uri, "")}"
     )
   } : null
 }
@@ -260,11 +260,11 @@ output "import_commands" {
     ) : null
 
     job = var.deploy_job ? (
-      "terraform import google_cloud_run_v2_job.job projects/${var.project_id}/locations/${var.region}/jobs/${var.job_name != null ? var.job_name : \"${local.service_name}-job\"}"
+      "terraform import google_cloud_run_v2_job.job projects/${var.project_id}/locations/${var.region}/jobs/${var.job_name != null ? var.job_name : "${local.service_name}-job"}"
     ) : null
 
     service_account = var.create_service_account ? (
-      "terraform import google_service_account.service_sa projects/${var.project_id}/serviceAccounts/${try(google_service_account.service_sa[0].email, \"\")}"
+      "terraform import google_service_account.service_sa projects/${var.project_id}/serviceAccounts/${try(google_service_account.service_sa[0].email, "")}"
     ) : null
 
     domain_mapping = var.deploy_service && var.domain_name != null ? (

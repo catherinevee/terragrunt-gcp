@@ -46,15 +46,15 @@ output "build_trigger_details" {
   description = "Detailed information about Cloud Build triggers"
   value = {
     for k, v in google_cloudbuild_trigger.repo_triggers : k => {
-      id          = v.id
-      name        = v.name
-      description = v.description
-      project     = v.project
-      filename    = v.filename
-      disabled    = v.disabled
+      id               = v.id
+      name             = v.name
+      description      = v.description
+      project          = v.project
+      filename         = v.filename
+      disabled         = v.disabled
       trigger_template = v.trigger_template
-      service_account = v.service_account
-      tags        = v.tags
+      service_account  = v.service_account
+      tags             = v.tags
     }
   }
 }
@@ -178,21 +178,21 @@ output "alert_policy_names" {
 output "configuration_metadata" {
   description = "Metadata about the Source Repositories configuration"
   value = {
-    project_id                    = var.project_id
-    repositories_count           = length(google_sourcerepo_repository.repositories)
-    build_triggers_count         = length(google_cloudbuild_trigger.repo_triggers)
-    pubsub_topics_count          = length(google_pubsub_topic.repo_event_topics)
-    pubsub_subscriptions_count   = length(google_pubsub_subscription.repo_event_subscriptions)
-    webhook_functions_count      = length(google_cloudfunctions_function.repo_webhooks)
-    repository_secrets_count     = length(google_secret_manager_secret.repo_secrets)
+    project_id                      = var.project_id
+    repositories_count              = length(google_sourcerepo_repository.repositories)
+    build_triggers_count            = length(google_cloudbuild_trigger.repo_triggers)
+    pubsub_topics_count             = length(google_pubsub_topic.repo_event_topics)
+    pubsub_subscriptions_count      = length(google_pubsub_subscription.repo_event_subscriptions)
+    webhook_functions_count         = length(google_cloudfunctions_function.repo_webhooks)
+    repository_secrets_count        = length(google_secret_manager_secret.repo_secrets)
     build_artifacts_storage_enabled = var.enable_build_artifacts_storage
-    pubsub_notifications_enabled = var.enable_pubsub_notifications
+    pubsub_notifications_enabled    = var.enable_pubsub_notifications
     cloud_build_integration_enabled = var.enable_cloud_build_integration
-    secret_management_enabled    = var.enable_secret_management
-    webhook_functions_enabled    = var.enable_webhook_functions
-    monitoring_enabled           = var.enable_monitoring
-    audit_logging_enabled        = var.enable_audit_logging
-    total_alert_policies         = length(google_monitoring_alert_policy.source_repos_alerts)
+    secret_management_enabled       = var.enable_secret_management
+    webhook_functions_enabled       = var.enable_webhook_functions
+    monitoring_enabled              = var.enable_monitoring
+    audit_logging_enabled           = var.enable_audit_logging
+    total_alert_policies            = length(google_monitoring_alert_policy.source_repos_alerts)
   }
 }
 
@@ -249,12 +249,12 @@ output "security_configuration" {
       rules_count = length(var.branch_protection_rules)
     }
     code_scanning = {
-      enabled = var.enable_code_scanning
+      enabled                 = var.enable_code_scanning
       repositories_configured = length(var.code_scanning_config)
     }
     dependency_scanning = {
-      enabled           = var.enable_dependency_scanning
-      auto_update       = var.dependency_scanning_config.auto_update_enabled
+      enabled            = var.enable_dependency_scanning
+      auto_update        = var.dependency_scanning_config.auto_update_enabled
       severity_threshold = var.dependency_scanning_config.severity_threshold
     }
     container_scanning = {
@@ -274,8 +274,8 @@ output "integration_status" {
   description = "Status of integrations and features"
   value = {
     pubsub_integration = {
-      enabled           = var.enable_pubsub_notifications
-      topics_count      = length(var.pubsub_topics)
+      enabled             = var.enable_pubsub_notifications
+      topics_count        = length(var.pubsub_topics)
       subscriptions_count = length(var.pubsub_subscriptions)
     }
     webhook_integration = {
@@ -302,21 +302,21 @@ output "performance_monitoring_summary" {
   value = {
     monitoring_enabled = var.enable_monitoring
     performance_monitoring = {
-      enabled      = var.enable_performance_monitoring
+      enabled       = var.enable_performance_monitoring
       build_metrics = var.performance_monitoring_config.enable_build_metrics
       clone_metrics = var.performance_monitoring_config.enable_clone_metrics
       api_metrics   = var.performance_monitoring_config.enable_api_metrics
     }
     automated_testing = {
-      enabled         = var.enable_automated_testing
-      frameworks      = var.automated_testing_config.test_frameworks
-      environments    = length(var.automated_testing_config.test_environments)
+      enabled            = var.enable_automated_testing
+      frameworks         = var.automated_testing_config.test_frameworks
+      environments       = length(var.automated_testing_config.test_environments)
       coverage_threshold = var.automated_testing_config.coverage_threshold
     }
     backup_and_recovery = {
-      enabled           = var.enable_backup_and_recovery
-      backup_frequency  = var.backup_config.backup_frequency
-      retention_days    = var.backup_config.backup_retention_days
+      enabled                = var.enable_backup_and_recovery
+      backup_frequency       = var.backup_config.backup_frequency
+      retention_days         = var.backup_config.backup_retention_days
       point_in_time_recovery = var.backup_config.enable_point_in_time_recovery
     }
   }
@@ -328,7 +328,7 @@ output "workflow_template_summary" {
   value = {
     workflow_templates = {
       templates_count = length(var.workflow_templates)
-      template_types  = [
+      template_types = [
         for template in var.workflow_templates : template.template_type
       ]
     }
@@ -347,14 +347,14 @@ output "workflow_template_summary" {
 output "management_urls" {
   description = "URLs for managing Source Repositories resources"
   value = {
-    source_repos_console = "https://source.cloud.google.com/repos?project=${var.project_id}"
-    cloud_build_console = var.enable_cloud_build_integration ? "https://console.cloud.google.com/cloud-build?project=${var.project_id}" : null
-    storage_console = var.enable_build_artifacts_storage ? "https://console.cloud.google.com/storage/browser?project=${var.project_id}" : null
-    pubsub_console = var.enable_pubsub_notifications ? "https://console.cloud.google.com/cloudpubsub?project=${var.project_id}" : null
-    secret_manager_console = var.enable_secret_management ? "https://console.cloud.google.com/security/secret-manager?project=${var.project_id}" : null
+    source_repos_console    = "https://source.cloud.google.com/repos?project=${var.project_id}"
+    cloud_build_console     = var.enable_cloud_build_integration ? "https://console.cloud.google.com/cloud-build?project=${var.project_id}" : null
+    storage_console         = var.enable_build_artifacts_storage ? "https://console.cloud.google.com/storage/browser?project=${var.project_id}" : null
+    pubsub_console          = var.enable_pubsub_notifications ? "https://console.cloud.google.com/cloudpubsub?project=${var.project_id}" : null
+    secret_manager_console  = var.enable_secret_management ? "https://console.cloud.google.com/security/secret-manager?project=${var.project_id}" : null
     cloud_functions_console = var.enable_webhook_functions ? "https://console.cloud.google.com/functions?project=${var.project_id}" : null
-    monitoring_console = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
-    logs_console = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
+    monitoring_console      = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
+    logs_console            = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
   }
 }
 
@@ -371,7 +371,7 @@ output "resource_identifiers" {
     pubsub_topic_resources = {
       for k, v in google_pubsub_topic.repo_event_topics : k => v.name
     }
-    storage_bucket_resource = var.enable_build_artifacts_storage ? google_storage_bucket.build_artifacts_bucket[0].name : null
+    storage_bucket_resource  = var.enable_build_artifacts_storage ? google_storage_bucket.build_artifacts_bucket[0].name : null
     service_account_resource = var.create_service_account ? google_service_account.source_repos_sa[0].email : null
     secret_resources = {
       for k, v in google_secret_manager_secret.repo_secrets : k => v.name

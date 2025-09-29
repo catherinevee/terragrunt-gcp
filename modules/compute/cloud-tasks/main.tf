@@ -33,14 +33,14 @@ locals {
       location = var.region
       retry_config = {
         max_attempts       = 100
-        max_retry_duration = "86400s"  # 24 hours
-        max_backoff        = "3600s"   # 1 hour
-        min_backoff        = "0.100s"  # 100ms
+        max_retry_duration = "86400s" # 24 hours
+        max_backoff        = "3600s"  # 1 hour
+        min_backoff        = "0.100s" # 100ms
         max_doublings      = 16
       }
       rate_limits = {
         max_dispatches_per_second = 500
-        max_burst_size           = 100
+        max_burst_size            = 100
         max_concurrent_dispatches = 1000
       }
       state = "RUNNING"
@@ -108,7 +108,7 @@ resource "google_cloud_tasks_queue" "http_queues" {
 
   rate_limits {
     max_dispatches_per_second = each.value.rate_limits.max_dispatches_per_second
-    max_burst_size           = each.value.rate_limits.max_burst_size
+    max_burst_size            = each.value.rate_limits.max_burst_size
     max_concurrent_dispatches = each.value.rate_limits.max_concurrent_dispatches
   }
 
@@ -143,7 +143,7 @@ resource "google_cloud_tasks_queue" "app_engine_queues" {
 
   rate_limits {
     max_dispatches_per_second = each.value.rate_limits.max_dispatches_per_second
-    max_burst_size           = each.value.rate_limits.max_burst_size
+    max_burst_size            = each.value.rate_limits.max_burst_size
     max_concurrent_dispatches = each.value.rate_limits.max_concurrent_dispatches
   }
 
@@ -172,7 +172,7 @@ resource "google_cloud_tasks_queue" "pull_queues" {
 
   rate_limits {
     max_dispatches_per_second = each.value.rate_limits.max_dispatches_per_second
-    max_burst_size           = each.value.rate_limits.max_burst_size
+    max_burst_size            = each.value.rate_limits.max_burst_size
     max_concurrent_dispatches = each.value.rate_limits.max_concurrent_dispatches
   }
 
@@ -235,7 +235,7 @@ resource "google_cloud_tasks_task" "sample_tasks" {
         for_each = each.value.http_request.oauth_token != null ? [1] : []
         content {
           service_account_email = each.value.http_request.oauth_token.service_account_email
-          scope                = each.value.http_request.oauth_token.scope
+          scope                 = each.value.http_request.oauth_token.scope
         }
       }
 
@@ -243,7 +243,7 @@ resource "google_cloud_tasks_task" "sample_tasks" {
         for_each = each.value.http_request.oidc_token != null ? [1] : []
         content {
           service_account_email = each.value.http_request.oidc_token.service_account_email
-          audience             = each.value.http_request.oidc_token.audience
+          audience              = each.value.http_request.oidc_token.audience
         }
       }
     }
@@ -296,9 +296,9 @@ resource "google_monitoring_alert_policy" "tasks_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -352,7 +352,7 @@ resource "google_monitoring_alert_policy" "tasks_alerts" {
 resource "google_monitoring_dashboard" "tasks" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Cloud Tasks - ${title(local.environment)}"
     mosaicLayout = {
@@ -477,9 +477,9 @@ resource "google_logging_metric" "tasks_metrics" {
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
     content {
-      metric_kind = each.value.metric_descriptor.metric_kind
-      value_type  = each.value.metric_descriptor.value_type
-      unit        = each.value.metric_descriptor.unit
+      metric_kind  = each.value.metric_descriptor.metric_kind
+      value_type   = each.value.metric_descriptor.value_type
+      unit         = each.value.metric_descriptor.unit
       display_name = each.value.metric_descriptor.display_name
 
       dynamic "labels" {
@@ -525,8 +525,8 @@ resource "google_cloudfunctions_function" "task_processor" {
   region  = var.region
   name    = "${local.name_prefix}-${each.key}-processor-${local.environment}"
 
-  runtime     = each.value.runtime
-  entry_point = each.value.entry_point
+  runtime               = each.value.runtime
+  entry_point           = each.value.entry_point
   source_archive_bucket = each.value.source_bucket
   source_archive_object = each.value.source_object
 
@@ -548,7 +548,7 @@ resource "google_cloudfunctions_function" "task_processor" {
   environment_variables = each.value.environment_variables
 
   available_memory_mb = each.value.memory_mb
-  timeout            = each.value.timeout_seconds
+  timeout             = each.value.timeout_seconds
 
   labels = merge(local.default_labels, each.value.labels != null ? each.value.labels : {})
 }

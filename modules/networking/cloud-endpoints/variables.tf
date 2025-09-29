@@ -37,9 +37,9 @@ variable "service_account_roles" {
 variable "managed_services" {
   description = "Configuration for managed API services"
   type = map(object({
-    api_version          = optional(string)
-    display_name         = optional(string)
-    management_features  = optional(list(string))
+    api_version         = optional(string)
+    display_name        = optional(string)
+    management_features = optional(list(string))
     quota_limits        = optional(map(number))
     authentication      = optional(any)
     backend_rules       = optional(list(any))
@@ -51,10 +51,10 @@ variable "managed_services" {
 variable "openapi_services" {
   description = "OpenAPI-based services configuration"
   type = map(object({
-    openapi_spec_path    = string
-    backend_url          = string
-    api_version          = optional(string)
-    template_variables   = optional(map(string))
+    openapi_spec_path  = string
+    backend_url        = string
+    api_version        = optional(string)
+    template_variables = optional(map(string))
   }))
   default = {}
 }
@@ -62,7 +62,7 @@ variable "openapi_services" {
 variable "grpc_services" {
   description = "gRPC-based services configuration"
   type = map(object({
-    backend_address        = string
+    backend_address       = string
     backend_port          = number
     proto_descriptor_path = optional(string)
     enable_transcoding    = optional(bool, false)
@@ -73,9 +73,9 @@ variable "grpc_services" {
 variable "api_keys" {
   description = "API keys configuration for authentication"
   type = map(object({
-    display_name        = string
-    service            = string
-    allowed_methods    = optional(list(string))
+    display_name    = string
+    service         = string
+    allowed_methods = optional(list(string))
     browser_restrictions = optional(object({
       allowed_referrers = list(string)
     }))
@@ -102,7 +102,7 @@ variable "enable_api_gateway" {
 variable "api_gateway_configs" {
   description = "API Gateway configurations"
   type = map(object({
-    region                   = string
+    region                  = string
     display_name            = optional(string)
     openapi_spec            = optional(string)
     openapi_spec_inline     = optional(string)
@@ -116,16 +116,16 @@ variable "authentication_config" {
   description = "Authentication configuration for services"
   type = object({
     providers = optional(list(object({
-      id                    = string
-      issuer               = string
-      jwks_uri             = optional(string)
-      audiences            = optional(list(string))
-      authorization_url    = optional(string)
-      jwt_locations        = optional(list(any))
+      id                = string
+      issuer            = string
+      jwks_uri          = optional(string)
+      audiences         = optional(list(string))
+      authorization_url = optional(string)
+      jwt_locations     = optional(list(any))
     })))
     rules = optional(list(object({
-      selector              = string
-      requirements         = optional(list(any))
+      selector                 = string
+      requirements             = optional(list(any))
       allow_without_credential = optional(bool)
     })))
   })
@@ -143,7 +143,7 @@ variable "quota_configs" {
   type = map(object({
     selector           = string
     allow_unregistered = optional(bool, false)
-    skip_control      = optional(bool, false)
+    skip_control       = optional(bool, false)
   }))
   default = {}
 }
@@ -200,24 +200,24 @@ variable "alert_policies" {
   description = "Alert policies configuration"
   type = map(object({
     display_name           = string
-    combiner              = optional(string, "OR")
-    enabled               = optional(bool, true)
-    documentation         = optional(string)
+    combiner               = optional(string, "OR")
+    enabled                = optional(bool, true)
+    documentation          = optional(string)
     condition_display_name = string
-    filter                = string
-    duration              = string
-    comparison            = string
-    threshold_value       = number
-    alignment_period      = optional(string, "60s")
-    per_series_aligner    = optional(string, "ALIGN_RATE")
-    cross_series_reducer  = optional(string, "REDUCE_SUM")
-    group_by_fields       = optional(list(string), [])
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string), [])
-    labels               = optional(map(string), {})
-    auto_close_duration   = optional(string, "86400s")
-    rate_limit           = optional(string)
+    filter                 = string
+    duration               = string
+    comparison             = string
+    threshold_value        = number
+    alignment_period       = optional(string, "60s")
+    per_series_aligner     = optional(string, "ALIGN_RATE")
+    cross_series_reducer   = optional(string, "REDUCE_SUM")
+    group_by_fields        = optional(list(string), [])
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string), [])
+    labels                 = optional(map(string), {})
+    auto_close_duration    = optional(string, "86400s")
+    rate_limit             = optional(string)
   }))
   default = {}
 }
@@ -281,9 +281,9 @@ variable "enable_private_service_connect" {
 variable "private_service_connect_config" {
   description = "Private Service Connect configuration"
   type = object({
-    network               = string
-    subnet               = string
-    ip_address           = optional(string)
+    network                  = string
+    subnet                   = string
+    ip_address               = optional(string)
     service_attachment_names = optional(list(string))
   })
   default = null
@@ -312,8 +312,8 @@ variable "rate_limit_configs" {
   type = map(object({
     requests_per_minute = number
     requests_per_user   = optional(number)
-    burst_size         = optional(number)
-    enforce_on_key     = optional(string, "IP")
+    burst_size          = optional(number)
+    enforce_on_key      = optional(string, "IP")
   }))
   default = {}
 }
@@ -321,11 +321,11 @@ variable "rate_limit_configs" {
 variable "cors_configs" {
   description = "CORS configurations for APIs"
   type = map(object({
-    allow_origins      = list(string)
-    allow_methods      = list(string)
-    allow_headers      = list(string)
-    expose_headers     = optional(list(string))
-    allow_credentials  = optional(bool, false)
+    allow_origins     = list(string)
+    allow_methods     = list(string)
+    allow_headers     = list(string)
+    expose_headers    = optional(list(string))
+    allow_credentials = optional(bool, false)
     max_age           = optional(number, 3600)
   }))
   default = {}
@@ -334,25 +334,25 @@ variable "cors_configs" {
 variable "backend_service_configs" {
   description = "Advanced backend service configurations"
   type = map(object({
-    protocol                = optional(string, "HTTP2")
-    load_balancing_scheme   = optional(string, "ROUND_ROBIN")
-    session_affinity        = optional(string, "NONE")
-    timeout_sec            = optional(number, 30)
+    protocol                        = optional(string, "HTTP2")
+    load_balancing_scheme           = optional(string, "ROUND_ROBIN")
+    session_affinity                = optional(string, "NONE")
+    timeout_sec                     = optional(number, 30)
     connection_draining_timeout_sec = optional(number, 300)
     circuit_breaker = optional(object({
       max_requests_per_connection = optional(number)
-      max_connections            = optional(number)
-      max_pending_requests       = optional(number)
-      max_requests              = optional(number)
-      max_retries               = optional(number)
+      max_connections             = optional(number)
+      max_pending_requests        = optional(number)
+      max_requests                = optional(number)
+      max_retries                 = optional(number)
     }))
     health_check = optional(object({
-      check_interval_sec   = optional(number, 30)
+      check_interval_sec  = optional(number, 30)
       timeout_sec         = optional(number, 10)
       healthy_threshold   = optional(number, 2)
       unhealthy_threshold = optional(number, 2)
       request_path        = optional(string, "/health")
-      port               = optional(number)
+      port                = optional(number)
     }))
   }))
   default = {}
@@ -362,7 +362,7 @@ variable "service_level_objectives" {
   description = "Service Level Objectives (SLOs) for APIs"
   type = map(object({
     display_name        = string
-    goal               = number
+    goal                = number
     rolling_period_days = optional(number, 30)
     service_level_indicator = object({
       request_based = optional(object({
@@ -373,13 +373,13 @@ variable "service_level_objectives" {
           })
         }))
         good_total_ratio = optional(object({
-          good_service_filter = optional(string)
-          bad_service_filter  = optional(string)
+          good_service_filter  = optional(string)
+          bad_service_filter   = optional(string)
           total_service_filter = optional(string)
         }))
       }))
       windows_based = optional(object({
-        window_period = string
+        window_period          = string
         good_bad_metric_filter = optional(string)
         good_total_ratio_threshold = optional(object({
           threshold = number
@@ -391,8 +391,8 @@ variable "service_level_objectives" {
               })
             }))
             good_total_ratio = optional(object({
-              good_service_filter = optional(string)
-              bad_service_filter  = optional(string)
+              good_service_filter  = optional(string)
+              bad_service_filter   = optional(string)
               total_service_filter = optional(string)
             }))
           })
@@ -406,9 +406,9 @@ variable "service_level_objectives" {
 variable "custom_domain_mappings" {
   description = "Custom domain mappings for APIs"
   type = map(object({
-    domain_name     = string
-    certificate_id  = string
-    path_mappings   = optional(map(string))
+    domain_name    = string
+    certificate_id = string
+    path_mappings  = optional(map(string))
   }))
   default = {}
 }
@@ -424,7 +424,7 @@ variable "request_validation_rules" {
   type = map(object({
     validate_request_parameters = optional(bool, true)
     validate_request_body       = optional(bool, true)
-    fail_on_warnings           = optional(bool, false)
+    fail_on_warnings            = optional(bool, false)
   }))
   default = {}
 }
@@ -451,11 +451,11 @@ variable "cache_configs" {
   description = "Cache configurations per API method"
   type = map(object({
     cache_key_parameters = optional(list(string))
-    default_ttl         = optional(number, 3600)
-    max_ttl            = optional(number, 86400)
-    client_ttl         = optional(number, 3600)
-    negative_caching   = optional(bool, false)
-    cache_modes        = optional(list(string), ["GET", "HEAD"])
+    default_ttl          = optional(number, 3600)
+    max_ttl              = optional(number, 86400)
+    client_ttl           = optional(number, 3600)
+    negative_caching     = optional(bool, false)
+    cache_modes          = optional(list(string), ["GET", "HEAD"])
   }))
   default = {}
 }
@@ -463,11 +463,11 @@ variable "cache_configs" {
 variable "webhook_configs" {
   description = "Webhook configurations for API events"
   type = map(object({
-    url                = string
-    events            = list(string)
-    secret            = optional(string)
-    headers           = optional(map(string))
-    retry_policy      = optional(object({
+    url     = string
+    events  = list(string)
+    secret  = optional(string)
+    headers = optional(map(string))
+    retry_policy = optional(object({
       max_attempts     = optional(number, 3)
       initial_interval = optional(string, "1s")
       max_interval     = optional(string, "60s")
@@ -487,9 +487,9 @@ variable "api_lifecycle_policies" {
   description = "API lifecycle policies"
   type = map(object({
     deprecation_date    = optional(string)
-    sunset_date        = optional(string)
+    sunset_date         = optional(string)
     migration_guide_url = optional(string)
-    replacement_api    = optional(string)
+    replacement_api     = optional(string)
   }))
   default = {}
 }

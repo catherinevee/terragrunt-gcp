@@ -39,11 +39,11 @@ locals {
     "log_temp_files"              = "0"
     "log_autovacuum_min_duration" = "0"
     "shared_preload_libraries"    = "pg_stat_statements"
-  } : var.database_type == "MYSQL" ? {
-    "slow_query_log"              = "on"
-    "long_query_time"             = "1"
-    "log_output"                  = "FILE"
-    "general_log"                 = "off"
+    } : var.database_type == "MYSQL" ? {
+    "slow_query_log"                = "on"
+    "long_query_time"               = "1"
+    "log_output"                    = "FILE"
+    "general_log"                   = "off"
     "log_queries_not_using_indexes" = "on"
   } : {}
 
@@ -57,8 +57,8 @@ locals {
     location                       = var.region
     point_in_time_recovery_enabled = var.database_type != "SQLSERVER"
     transaction_log_retention_days = var.database_type == "POSTGRES" || var.database_type == "MYSQL" ? 7 : null
-    retained_backups              = 7
-    retention_unit                = "COUNT"
+    retained_backups               = 7
+    retention_unit                 = "COUNT"
   }, var.backup_configuration)
 
   # IP configuration
@@ -72,8 +72,8 @@ locals {
 
   # Maintenance window
   maintenance_window = merge({
-    day          = 7  # Sunday
-    hour         = 4  # 4 AM
+    day          = 7 # Sunday
+    hour         = 4 # 4 AM
     update_track = "stable"
   }, var.maintenance_window)
 
@@ -96,7 +96,7 @@ resource "random_id" "name_suffix" {
 
   keepers = {
     database_version = local.database_version
-    tier            = var.tier
+    tier             = var.tier
   }
 }
 
@@ -128,14 +128,14 @@ resource "google_sql_database_instance" "instance" {
     content {
       ca_certificate            = lookup(replica_configuration.value, "ca_certificate", null)
       client_certificate        = lookup(replica_configuration.value, "client_certificate", null)
-      client_key               = lookup(replica_configuration.value, "client_key", null)
-      connect_retry_interval   = lookup(replica_configuration.value, "connect_retry_interval", null)
-      dump_file_path           = lookup(replica_configuration.value, "dump_file_path", null)
-      failover_target          = lookup(replica_configuration.value, "failover_target", false)
-      master_heartbeat_period  = lookup(replica_configuration.value, "master_heartbeat_period", null)
-      password                 = lookup(replica_configuration.value, "password", null)
-      ssl_cipher               = lookup(replica_configuration.value, "ssl_cipher", null)
-      username                 = lookup(replica_configuration.value, "username", null)
+      client_key                = lookup(replica_configuration.value, "client_key", null)
+      connect_retry_interval    = lookup(replica_configuration.value, "connect_retry_interval", null)
+      dump_file_path            = lookup(replica_configuration.value, "dump_file_path", null)
+      failover_target           = lookup(replica_configuration.value, "failover_target", false)
+      master_heartbeat_period   = lookup(replica_configuration.value, "master_heartbeat_period", null)
+      password                  = lookup(replica_configuration.value, "password", null)
+      ssl_cipher                = lookup(replica_configuration.value, "ssl_cipher", null)
+      username                  = lookup(replica_configuration.value, "username", null)
       verify_server_certificate = lookup(replica_configuration.value, "verify_server_certificate", null)
     }
   }
@@ -146,7 +146,7 @@ resource "google_sql_database_instance" "instance" {
     content {
       backup_run_id = restore_backup_context.value.backup_run_id
       instance_id   = lookup(restore_backup_context.value, "instance_id", null)
-      project      = lookup(restore_backup_context.value, "project", null)
+      project       = lookup(restore_backup_context.value, "project", null)
     }
   }
 
@@ -155,19 +155,19 @@ resource "google_sql_database_instance" "instance" {
     for_each = var.clone_source != null ? [var.clone_source] : []
     content {
       source_instance_name = clone.value.source_instance_name
-      point_in_time       = lookup(clone.value, "point_in_time", null)
-      database_names      = lookup(clone.value, "database_names", null)
-      allocated_ip_range  = lookup(clone.value, "allocated_ip_range", null)
+      point_in_time        = lookup(clone.value, "point_in_time", null)
+      database_names       = lookup(clone.value, "database_names", null)
+      allocated_ip_range   = lookup(clone.value, "allocated_ip_range", null)
     }
   }
 
   settings {
-    tier              = var.tier
-    edition           = var.edition
-    user_labels       = local.labels
-    activation_policy = var.activation_policy
-    availability_type = var.availability_type
-    collation        = var.collation
+    tier                  = var.tier
+    edition               = var.edition
+    user_labels           = local.labels
+    activation_policy     = var.activation_policy
+    availability_type     = var.availability_type
+    collation             = var.collation
     connector_enforcement = var.connector_enforcement
 
     disk_autoresize       = var.disk_autoresize
@@ -222,8 +222,8 @@ resource "google_sql_database_instance" "instance" {
         dynamic "authorized_networks" {
           for_each = var.authorized_networks
           content {
-            name  = authorized_networks.value.name
-            value = authorized_networks.value.value
+            name            = authorized_networks.value.name
+            value           = authorized_networks.value.value
             expiration_time = lookup(authorized_networks.value, "expiration_time", null)
           }
         }
@@ -254,10 +254,10 @@ resource "google_sql_database_instance" "instance" {
       for_each = var.insights_config != null ? [var.insights_config] : []
       content {
         query_insights_enabled  = lookup(insights_config.value, "query_insights_enabled", null)
-        query_string_length    = lookup(insights_config.value, "query_string_length", null)
+        query_string_length     = lookup(insights_config.value, "query_string_length", null)
         record_application_tags = lookup(insights_config.value, "record_application_tags", null)
-        record_client_address  = lookup(insights_config.value, "record_client_address", null)
-        query_plans_per_minute = lookup(insights_config.value, "query_plans_per_minute", null)
+        record_client_address   = lookup(insights_config.value, "record_client_address", null)
+        query_plans_per_minute  = lookup(insights_config.value, "query_plans_per_minute", null)
       }
     }
 
@@ -265,12 +265,12 @@ resource "google_sql_database_instance" "instance" {
     dynamic "password_validation_policy" {
       for_each = var.password_validation_policy != null ? [var.password_validation_policy] : []
       content {
-        enable_password_policy = lookup(password_validation_policy.value, "enable_password_policy", true)
-        min_length            = lookup(password_validation_policy.value, "min_length", 8)
-        complexity            = lookup(password_validation_policy.value, "complexity", null)
-        reuse_interval        = lookup(password_validation_policy.value, "reuse_interval", null)
+        enable_password_policy      = lookup(password_validation_policy.value, "enable_password_policy", true)
+        min_length                  = lookup(password_validation_policy.value, "min_length", 8)
+        complexity                  = lookup(password_validation_policy.value, "complexity", null)
+        reuse_interval              = lookup(password_validation_policy.value, "reuse_interval", null)
         disallow_username_substring = lookup(password_validation_policy.value, "disallow_username_substring", null)
-        password_change_interval = lookup(password_validation_policy.value, "password_change_interval", null)
+        password_change_interval    = lookup(password_validation_policy.value, "password_change_interval", null)
       }
     }
 
@@ -454,10 +454,10 @@ resource "google_sql_database_instance" "read_replica" {
       for_each = var.insights_config != null ? [var.insights_config] : []
       content {
         query_insights_enabled  = lookup(insights_config.value, "query_insights_enabled", null)
-        query_string_length    = lookup(insights_config.value, "query_string_length", null)
+        query_string_length     = lookup(insights_config.value, "query_string_length", null)
         record_application_tags = lookup(insights_config.value, "record_application_tags", null)
-        record_client_address  = lookup(insights_config.value, "record_client_address", null)
-        query_plans_per_minute = lookup(insights_config.value, "query_plans_per_minute", null)
+        record_client_address   = lookup(insights_config.value, "record_client_address", null)
+        query_plans_per_minute  = lookup(insights_config.value, "query_plans_per_minute", null)
       }
     }
   }

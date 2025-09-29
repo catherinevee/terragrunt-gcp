@@ -63,9 +63,9 @@ resource "google_bigquery_dataset" "dataset" {
   dataset_id = local.dataset_id
   location   = var.location
 
-  friendly_name               = var.friendly_name
-  description                = var.description
-  default_table_expiration_ms = var.default_table_expiration_ms
+  friendly_name                   = var.friendly_name
+  description                     = var.description
+  default_table_expiration_ms     = var.default_table_expiration_ms
   default_partition_expiration_ms = var.default_partition_expiration_ms
 
   labels = local.dataset_labels
@@ -79,12 +79,12 @@ resource "google_bigquery_dataset" "dataset" {
   dynamic "access" {
     for_each = local.access_entries
     content {
-      role          = lookup(access.value, "role", null)
-      user_by_email = lookup(access.value, "user_by_email", null)
+      role           = lookup(access.value, "role", null)
+      user_by_email  = lookup(access.value, "user_by_email", null)
       group_by_email = lookup(access.value, "group_by_email", null)
-      domain        = lookup(access.value, "domain", null)
-      special_group = lookup(access.value, "special_group", null)
-      iam_member    = lookup(access.value, "iam_member", null)
+      domain         = lookup(access.value, "domain", null)
+      special_group  = lookup(access.value, "special_group", null)
+      iam_member     = lookup(access.value, "iam_member", null)
 
       dynamic "view" {
         for_each = lookup(access.value, "view", null) != null ? [access.value.view] : []
@@ -152,7 +152,7 @@ resource "google_bigquery_table" "tables" {
   table_id   = each.key
 
   friendly_name = lookup(each.value, "friendly_name", null)
-  description  = lookup(each.value, "description", null)
+  description   = lookup(each.value, "description", null)
 
   # Table type and schema
   schema = lookup(each.value, "schema", null)
@@ -161,24 +161,24 @@ resource "google_bigquery_table" "tables" {
   dynamic "external_data_configuration" {
     for_each = lookup(each.value, "external_data_configuration", null) != null ? [each.value.external_data_configuration] : []
     content {
-      source_uris        = external_data_configuration.value.source_uris
-      source_format      = external_data_configuration.value.source_format
-      autodetect         = lookup(external_data_configuration.value, "autodetect", false)
-      compression        = lookup(external_data_configuration.value, "compression", null)
-      ignore_unknown_values = lookup(external_data_configuration.value, "ignore_unknown_values", false)
-      max_bad_records    = lookup(external_data_configuration.value, "max_bad_records", 0)
-      schema            = lookup(external_data_configuration.value, "schema", null)
+      source_uris               = external_data_configuration.value.source_uris
+      source_format             = external_data_configuration.value.source_format
+      autodetect                = lookup(external_data_configuration.value, "autodetect", false)
+      compression               = lookup(external_data_configuration.value, "compression", null)
+      ignore_unknown_values     = lookup(external_data_configuration.value, "ignore_unknown_values", false)
+      max_bad_records           = lookup(external_data_configuration.value, "max_bad_records", 0)
+      schema                    = lookup(external_data_configuration.value, "schema", null)
       reference_file_schema_uri = lookup(external_data_configuration.value, "reference_file_schema_uri", null)
 
       dynamic "csv_options" {
         for_each = lookup(external_data_configuration.value, "csv_options", null) != null ? [external_data_configuration.value.csv_options] : []
         content {
-          quote                = lookup(csv_options.value, "quote", null)
-          allow_jagged_rows    = lookup(csv_options.value, "allow_jagged_rows", false)
+          quote                 = lookup(csv_options.value, "quote", null)
+          allow_jagged_rows     = lookup(csv_options.value, "allow_jagged_rows", false)
           allow_quoted_newlines = lookup(csv_options.value, "allow_quoted_newlines", false)
-          encoding             = lookup(csv_options.value, "encoding", "UTF-8")
-          field_delimiter      = lookup(csv_options.value, "field_delimiter", ",")
-          skip_leading_rows    = lookup(csv_options.value, "skip_leading_rows", 0)
+          encoding              = lookup(csv_options.value, "encoding", "UTF-8")
+          field_delimiter       = lookup(csv_options.value, "field_delimiter", ",")
+          skip_leading_rows     = lookup(csv_options.value, "skip_leading_rows", 0)
         }
       }
 
@@ -228,8 +228,8 @@ resource "google_bigquery_table" "tables" {
     for_each = lookup(each.value, "time_partitioning", null) != null ? [each.value.time_partitioning] : []
     content {
       type                     = time_partitioning.value.type
-      field                   = lookup(time_partitioning.value, "field", null)
-      expiration_ms           = lookup(time_partitioning.value, "expiration_ms", null)
+      field                    = lookup(time_partitioning.value, "field", null)
+      expiration_ms            = lookup(time_partitioning.value, "expiration_ms", null)
       require_partition_filter = lookup(time_partitioning.value, "require_partition_filter", false)
     }
   }
@@ -254,9 +254,9 @@ resource "google_bigquery_table" "tables" {
   dynamic "materialized_view" {
     for_each = lookup(each.value, "materialized_view", null) != null ? [each.value.materialized_view] : []
     content {
-      query                = materialized_view.value.query
-      enable_refresh       = lookup(materialized_view.value, "enable_refresh", true)
-      refresh_interval_ms  = lookup(materialized_view.value, "refresh_interval_ms", null)
+      query                            = materialized_view.value.query
+      enable_refresh                   = lookup(materialized_view.value, "enable_refresh", true)
+      refresh_interval_ms              = lookup(materialized_view.value, "refresh_interval_ms", null)
       allow_non_incremental_definition = lookup(materialized_view.value, "allow_non_incremental_definition", false)
     }
   }
@@ -373,10 +373,10 @@ resource "google_bigquery_routine" "routines" {
   dynamic "remote_function_options" {
     for_each = lookup(each.value, "remote_function_options", null) != null ? [each.value.remote_function_options] : []
     content {
-      endpoint                       = remote_function_options.value.endpoint
-      connection                     = remote_function_options.value.connection
-      user_defined_context           = lookup(remote_function_options.value, "user_defined_context", null)
-      max_batching_rows              = lookup(remote_function_options.value, "max_batching_rows", null)
+      endpoint             = remote_function_options.value.endpoint
+      connection           = remote_function_options.value.connection
+      user_defined_context = lookup(remote_function_options.value, "user_defined_context", null)
+      max_batching_rows    = lookup(remote_function_options.value, "max_batching_rows", null)
     }
   }
 
@@ -387,13 +387,13 @@ resource "google_bigquery_routine" "routines" {
       connection      = spark_options.value.connection
       runtime_version = spark_options.value.runtime_version
       container_image = lookup(spark_options.value, "container_image", null)
-      properties     = lookup(spark_options.value, "properties", null)
-      main_file_uri  = lookup(spark_options.value, "main_file_uri", null)
-      main_class     = lookup(spark_options.value, "main_class", null)
-      py_file_uris   = lookup(spark_options.value, "py_file_uris", null)
-      jar_uris       = lookup(spark_options.value, "jar_uris", null)
-      file_uris      = lookup(spark_options.value, "file_uris", null)
-      archive_uris   = lookup(spark_options.value, "archive_uris", null)
+      properties      = lookup(spark_options.value, "properties", null)
+      main_file_uri   = lookup(spark_options.value, "main_file_uri", null)
+      main_class      = lookup(spark_options.value, "main_class", null)
+      py_file_uris    = lookup(spark_options.value, "py_file_uris", null)
+      jar_uris        = lookup(spark_options.value, "jar_uris", null)
+      file_uris       = lookup(spark_options.value, "file_uris", null)
+      archive_uris    = lookup(spark_options.value, "archive_uris", null)
     }
   }
 
@@ -404,8 +404,8 @@ resource "google_bigquery_routine" "routines" {
 resource "google_bigquery_dataset_iam_policy" "dataset_policy" {
   count = var.dataset_iam_policy != null ? 1 : 0
 
-  project    = var.project_id
-  dataset_id = google_bigquery_dataset.dataset.dataset_id
+  project     = var.project_id
+  dataset_id  = google_bigquery_dataset.dataset.dataset_id
   policy_data = var.dataset_iam_policy
 }
 
@@ -471,11 +471,11 @@ resource "google_bigquery_table_iam_member" "table_members" {
 resource "google_bigquery_data_transfer_config" "transfers" {
   for_each = var.data_transfers
 
-  project              = var.project_id
-  location             = var.location
-  data_source_id       = each.value.data_source_id
+  project                = var.project_id
+  location               = var.location
+  data_source_id         = each.value.data_source_id
   destination_dataset_id = google_bigquery_dataset.dataset.dataset_id
-  display_name         = each.value.display_name
+  display_name           = each.value.display_name
 
   # Schedule
   schedule = lookup(each.value, "schedule", null)
@@ -484,8 +484,8 @@ resource "google_bigquery_data_transfer_config" "transfers" {
   dynamic "schedule_options" {
     for_each = lookup(each.value, "schedule_options", null) != null ? [each.value.schedule_options] : []
     content {
-      start_time           = lookup(schedule_options.value, "start_time", null)
-      end_time             = lookup(schedule_options.value, "end_time", null)
+      start_time              = lookup(schedule_options.value, "start_time", null)
+      end_time                = lookup(schedule_options.value, "end_time", null)
       disable_auto_scheduling = lookup(schedule_options.value, "disable_auto_scheduling", false)
     }
   }

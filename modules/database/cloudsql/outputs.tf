@@ -165,10 +165,10 @@ output "read_replicas" {
   description = "Information about read replicas"
   value = {
     for k, v in google_sql_database_instance.read_replica : k => {
-      name                = v.name
-      connection_name     = v.connection_name
-      public_ip_address   = v.public_ip_address
-      private_ip_address  = v.private_ip_address
+      name               = v.name
+      connection_name    = v.connection_name
+      public_ip_address  = v.public_ip_address
+      private_ip_address = v.private_ip_address
       region             = v.region
       self_link          = v.self_link
       service_account    = v.service_account_email_address
@@ -220,13 +220,13 @@ output "connection_strings" {
   value = {
     public = var.database_type == "POSTGRES" ? (
       "postgresql://${var.database_type == "POSTGRES" ? "postgres" : "root"}:${urlencode(var.root_password != null ? var.root_password : (length(random_password.root_password) > 0 ? random_password.root_password[0].result : ""))}@${google_sql_database_instance.instance.public_ip_address}:5432/postgres"
-    ) : var.database_type == "MYSQL" ? (
+      ) : var.database_type == "MYSQL" ? (
       "mysql://${var.database_type == "POSTGRES" ? "postgres" : "root"}:${urlencode(var.root_password != null ? var.root_password : (length(random_password.root_password) > 0 ? random_password.root_password[0].result : ""))}@${google_sql_database_instance.instance.public_ip_address}:3306/"
     ) : null
 
     private = var.database_type == "POSTGRES" && google_sql_database_instance.instance.private_ip_address != null ? (
       "postgresql://${var.database_type == "POSTGRES" ? "postgres" : "root"}:${urlencode(var.root_password != null ? var.root_password : (length(random_password.root_password) > 0 ? random_password.root_password[0].result : ""))}@${google_sql_database_instance.instance.private_ip_address}:5432/postgres"
-    ) : var.database_type == "MYSQL" && google_sql_database_instance.instance.private_ip_address != null ? (
+      ) : var.database_type == "MYSQL" && google_sql_database_instance.instance.private_ip_address != null ? (
       "mysql://${var.database_type == "POSTGRES" ? "postgres" : "root"}:${urlencode(var.root_password != null ? var.root_password : (length(random_password.root_password) > 0 ? random_password.root_password[0].result : ""))}@${google_sql_database_instance.instance.private_ip_address}:3306/"
     ) : null
 
@@ -247,9 +247,9 @@ output "gcloud_commands" {
   value = {
     connect = var.database_type == "POSTGRES" ? (
       "gcloud sql connect ${google_sql_database_instance.instance.name} --user=postgres --database=postgres"
-    ) : var.database_type == "MYSQL" ? (
+      ) : var.database_type == "MYSQL" ? (
       "gcloud sql connect ${google_sql_database_instance.instance.name} --user=root"
-    ) : (
+      ) : (
       "gcloud sql connect ${google_sql_database_instance.instance.name}"
     )
 
@@ -259,7 +259,7 @@ output "gcloud_commands" {
 
     export = var.database_type == "POSTGRES" ? (
       "gcloud sql export sql ${google_sql_database_instance.instance.name} gs://BUCKET/FILENAME.sql --database=postgres"
-    ) : (
+      ) : (
       "gcloud sql export sql ${google_sql_database_instance.instance.name} gs://BUCKET/FILENAME.sql"
     )
   }

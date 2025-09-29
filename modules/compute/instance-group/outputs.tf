@@ -144,7 +144,7 @@ output "list_managed_instances_url" {
   description = "URL for listing managed instances"
   value = var.regional ? (
     "https://console.cloud.google.com/compute/instanceGroups/details/${var.region}/${var.name}?project=${var.project_id}"
-  ) : (
+    ) : (
     "https://console.cloud.google.com/compute/instanceGroups/details/${var.zone}/${var.name}?project=${var.project_id}"
   )
 }
@@ -166,7 +166,7 @@ output "versions" {
   description = "The versions configured for the managed instance group"
   value = var.regional ? (
     google_compute_region_instance_group_manager.mig[0].version
-  ) : (
+    ) : (
     google_compute_instance_group_manager.mig[0].version
   )
 }
@@ -197,14 +197,14 @@ output "instance_lifecycle_policy" {
 output "autoscaling_configuration" {
   description = "The autoscaling configuration"
   value = var.autoscaling_enabled ? {
-    enabled              = var.autoscaling_enabled
-    min_replicas        = var.min_replicas
-    max_replicas        = var.max_replicas
-    cooldown_period     = var.autoscaling_cooldown_period
-    cpu_target          = var.autoscaling_cpu != null ? var.autoscaling_cpu.target : null
-    custom_metrics      = var.autoscaling_metrics
+    enabled               = var.autoscaling_enabled
+    min_replicas          = var.min_replicas
+    max_replicas          = var.max_replicas
+    cooldown_period       = var.autoscaling_cooldown_period
+    cpu_target            = var.autoscaling_cpu != null ? var.autoscaling_cpu.target : null
+    custom_metrics        = var.autoscaling_metrics
     load_balancing_target = var.autoscaling_load_balancing_utilization != null ? var.autoscaling_load_balancing_utilization.target : null
-    mode               = var.autoscaling_mode
+    mode                  = var.autoscaling_mode
   } : null
 }
 
@@ -217,9 +217,9 @@ output "instance_template_configuration" {
     boot_disk_size  = var.boot_disk_size_gb
     boot_disk_type  = var.boot_disk_type
     network_tags    = var.tags
-    labels         = var.labels
+    labels          = var.labels
     service_account = local.service_account_email
-    metadata       = var.metadata
+    metadata        = var.metadata
   }
 }
 
@@ -228,7 +228,7 @@ output "instance_group_urls" {
   description = "List of instance group URLs for backend service configuration"
   value = var.regional ? (
     [google_compute_region_instance_group_manager.mig[0].instance_group]
-  ) : (
+    ) : (
     [google_compute_instance_group_manager.mig[0].instance_group]
   )
 }
@@ -247,13 +247,13 @@ output "instance_urls" {
   value = {
     instances_list = var.regional ? (
       "https://console.cloud.google.com/compute/instanceGroups/details/${var.region}/${var.name}?project=${var.project_id}&tab=instances"
-    ) : (
+      ) : (
       "https://console.cloud.google.com/compute/instanceGroups/details/${var.zone}/${var.name}?project=${var.project_id}&tab=instances"
     )
 
     monitoring = var.regional ? (
       "https://console.cloud.google.com/compute/instanceGroups/details/${var.region}/${var.name}?project=${var.project_id}&tab=monitoring"
-    ) : (
+      ) : (
       "https://console.cloud.google.com/compute/instanceGroups/details/${var.zone}/${var.name}?project=${var.project_id}&tab=monitoring"
     )
   }

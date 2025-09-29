@@ -28,11 +28,11 @@ variable "security_policies" {
   type = map(object({
     name        = optional(string)
     description = optional(string)
-    type        = optional(string)  # "CLOUD_ARMOR", "CLOUD_ARMOR_EDGE"
+    type        = optional(string) # "CLOUD_ARMOR", "CLOUD_ARMOR_EDGE"
 
     # Default rule configuration
     default_rule = optional(object({
-      action      = optional(string)  # "allow", "deny"
+      action      = optional(string) # "allow", "deny"
       priority    = optional(number)
       description = optional(string)
       preview     = optional(bool)
@@ -46,7 +46,7 @@ variable "security_policies" {
 
     # Rate limiting rules
     rate_limit_rules = optional(list(object({
-      action      = string  # "rate_based_ban", "throttle"
+      action      = string # "rate_based_ban", "throttle"
       priority    = number
       description = optional(string)
       preview     = optional(bool)
@@ -59,8 +59,8 @@ variable "security_policies" {
       })
 
       rate_limit_options = object({
-        conform_action = string  # "allow"
-        exceed_action  = string  # "deny", "redirect"
+        conform_action = string # "allow"
+        exceed_action  = string # "deny", "redirect"
 
         rate_limit_threshold = object({
           count        = number
@@ -68,7 +68,7 @@ variable "security_policies" {
         })
 
         enforce_on_key = optional(object({
-          enforce_on_key_type = string  # "IP", "HTTP_HEADER", "XFF_IP"
+          enforce_on_key_type = string # "IP", "HTTP_HEADER", "XFF_IP"
           enforce_on_key_name = optional(string)
         }))
 
@@ -88,11 +88,11 @@ variable "security_policies" {
 
     # Geographic rules
     geo_rules = optional(list(object({
-      action      = string  # "allow", "deny"
+      action      = string # "allow", "deny"
       priority    = number
       description = optional(string)
       preview     = optional(bool)
-      expression  = string  # CEL expression for geographic filtering
+      expression  = string # CEL expression for geographic filtering
 
       header_action = optional(object({
         request_headers_to_adds = optional(list(object({
@@ -105,7 +105,7 @@ variable "security_policies" {
 
     # IP allowlist/blocklist rules
     ip_rules = optional(list(object({
-      action        = string  # "allow", "deny"
+      action        = string # "allow", "deny"
       priority      = number
       description   = optional(string)
       preview       = optional(bool)
@@ -114,11 +114,11 @@ variable "security_policies" {
 
     # Custom expression rules
     custom_rules = optional(list(object({
-      action      = string  # "allow", "deny", "redirect"
+      action      = string # "allow", "deny", "redirect"
       priority    = number
       description = optional(string)
       preview     = optional(bool)
-      expression  = string  # CEL expression
+      expression  = string # CEL expression
 
       redirect_options = optional(object({
         type   = string
@@ -128,11 +128,11 @@ variable "security_policies" {
 
     # OWASP ModSecurity CRS rules
     owasp_rules = optional(list(object({
-      action      = string  # "allow", "deny"
+      action      = string # "allow", "deny"
       priority    = number
       description = optional(string)
       preview     = optional(bool)
-      expression  = string  # CEL expression for OWASP rules
+      expression  = string # CEL expression for OWASP rules
 
       preconfigured_waf_config = optional(object({
         exclusions = optional(list(object({
@@ -164,26 +164,26 @@ variable "security_policies" {
 
     # Bot management rules
     bot_management_rules = optional(list(object({
-      action      = string  # "allow", "deny"
+      action      = string # "allow", "deny"
       priority    = number
       description = optional(string)
       preview     = optional(bool)
-      expression  = string  # CEL expression for bot detection
+      expression  = string # CEL expression for bot detection
     })))
 
     # Adaptive protection configuration
     adaptive_protection_config = optional(object({
       layer_7_ddos_defense_config = optional(object({
         enable          = optional(bool)
-        rule_visibility = optional(string)  # "STANDARD", "PREMIUM"
+        rule_visibility = optional(string) # "STANDARD", "PREMIUM"
 
         threshold_configs = optional(list(object({
-          name                                   = string
-          threshold_config_type                  = string
-          auto_deploy_load_threshold            = optional(number)
-          auto_deploy_confidence_threshold      = optional(number)
+          name                                    = string
+          threshold_config_type                   = string
+          auto_deploy_load_threshold              = optional(number)
+          auto_deploy_confidence_threshold        = optional(number)
           auto_deploy_impacted_baseline_threshold = optional(number)
-          auto_deploy_expiration_sec            = optional(number)
+          auto_deploy_expiration_sec              = optional(number)
         })))
       }))
 
@@ -191,14 +191,14 @@ variable "security_policies" {
         load_threshold              = optional(number)
         confidence_threshold        = optional(number)
         impacted_baseline_threshold = optional(number)
-        expiration_sec             = optional(number)
+        expiration_sec              = optional(number)
       }))
     }))
 
     # Advanced options configuration
     advanced_options_config = optional(object({
-      json_parsing = optional(string)  # "STANDARD", "DISABLED"
-      log_level    = optional(string)  # "NORMAL", "VERBOSE"
+      json_parsing            = optional(string) # "STANDARD", "DISABLED"
+      log_level               = optional(string) # "NORMAL", "VERBOSE"
       user_ip_request_headers = optional(list(string))
 
       json_custom_config = optional(object({
@@ -327,27 +327,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -368,7 +368,7 @@ variable "create_log_metrics" {
 variable "log_metrics" {
   description = "Log-based metrics configuration"
   type = map(object({
-    filter = string
+    filter           = string
     label_extractors = optional(map(string))
 
     metric_descriptor = optional(object({
@@ -405,7 +405,7 @@ variable "notification_channels" {
   description = "Map of notification channel configurations"
   type = map(object({
     display_name = string
-    type         = string  # "email", "slack", "pagerduty", "webhook"
+    type         = string # "email", "slack", "pagerduty", "webhook"
     labels       = map(string)
     description  = optional(string)
     enabled      = optional(bool)
@@ -423,15 +423,15 @@ variable "create_security_response_functions" {
 variable "security_response_functions" {
   description = "Security response function configurations"
   type = map(object({
-    runtime          = string
-    entry_point      = string
-    source_bucket    = string
-    source_object    = string
-    trigger_topic    = string
-    memory_mb        = optional(number)
-    timeout_seconds  = optional(number)
+    runtime               = string
+    entry_point           = string
+    source_bucket         = string
+    source_object         = string
+    trigger_topic         = string
+    memory_mb             = optional(number)
+    timeout_seconds       = optional(number)
     environment_variables = optional(map(string))
-    labels          = optional(map(string))
+    labels                = optional(map(string))
   }))
   default = {}
 }
@@ -475,13 +475,13 @@ variable "default_rate_limit" {
   description = "Default rate limit configuration"
   type = object({
     requests_per_minute = number
-    burst_capacity     = number
-    ban_duration_sec   = number
+    burst_capacity      = number
+    ban_duration_sec    = number
   })
   default = {
     requests_per_minute = 1000
-    burst_capacity     = 100
-    ban_duration_sec   = 300
+    burst_capacity      = 100
+    ban_duration_sec    = 300
   }
 }
 
@@ -508,10 +508,10 @@ variable "allowed_countries" {
 variable "ip_allowlists" {
   description = "Map of IP allowlist configurations"
   type = map(object({
-    priority      = number
-    description   = string
-    ip_ranges     = list(string)
-    action        = optional(string)  # "allow"
+    priority    = number
+    description = string
+    ip_ranges   = list(string)
+    action      = optional(string) # "allow"
   }))
   default = {}
 }
@@ -519,10 +519,10 @@ variable "ip_allowlists" {
 variable "ip_blocklists" {
   description = "Map of IP blocklist configurations"
   type = map(object({
-    priority      = number
-    description   = string
-    ip_ranges     = list(string)
-    action        = optional(string)  # "deny"
+    priority    = number
+    description = string
+    ip_ranges   = list(string)
+    action      = optional(string) # "deny"
   }))
   default = {}
 }
@@ -532,22 +532,22 @@ variable "advanced_security_config" {
   description = "Advanced security configuration"
   type = object({
     enable_adaptive_protection = optional(bool)
-    enable_preview_mode       = optional(bool)
-    enable_json_parsing       = optional(bool)
-    enable_verbose_logging    = optional(bool)
-    custom_error_pages        = optional(map(string))
+    enable_preview_mode        = optional(bool)
+    enable_json_parsing        = optional(bool)
+    enable_verbose_logging     = optional(bool)
+    custom_error_pages         = optional(map(string))
     security_headers = optional(object({
-      enable_hsts              = optional(bool)
+      enable_hsts                 = optional(bool)
       enable_content_type_options = optional(bool)
-      enable_frame_options     = optional(bool)
-      enable_xss_protection    = optional(bool)
+      enable_frame_options        = optional(bool)
+      enable_xss_protection       = optional(bool)
     }))
   })
   default = {
     enable_adaptive_protection = true
-    enable_preview_mode       = false
-    enable_json_parsing       = true
-    enable_verbose_logging    = false
+    enable_preview_mode        = false
+    enable_json_parsing        = true
+    enable_verbose_logging     = false
   }
 }
 
@@ -556,11 +556,11 @@ variable "compliance_config" {
   description = "Compliance configuration for security policies"
   type = object({
     pci_dss_compliance     = optional(bool)
-    gdpr_compliance       = optional(bool)
-    hipaa_compliance      = optional(bool)
-    sox_compliance        = optional(bool)
+    gdpr_compliance        = optional(bool)
+    hipaa_compliance       = optional(bool)
+    sox_compliance         = optional(bool)
     data_residency_regions = optional(list(string))
-    audit_logging_enabled = optional(bool)
+    audit_logging_enabled  = optional(bool)
   })
   default = {
     audit_logging_enabled = true
@@ -571,18 +571,18 @@ variable "compliance_config" {
 variable "integration_config" {
   description = "Integration configuration with other services"
   type = object({
-    cloud_logging_enabled   = optional(bool)
+    cloud_logging_enabled    = optional(bool)
     cloud_monitoring_enabled = optional(bool)
-    security_command_center = optional(bool)
-    forseti_integration    = optional(bool)
-    third_party_siem       = optional(object({
+    security_command_center  = optional(bool)
+    forseti_integration      = optional(bool)
+    third_party_siem = optional(object({
       enabled      = bool
       endpoint_url = string
       auth_token   = string
     }))
   })
   default = {
-    cloud_logging_enabled   = true
+    cloud_logging_enabled    = true
     cloud_monitoring_enabled = true
   }
 }
@@ -598,9 +598,9 @@ variable "labels" {
 variable "lifecycle_config" {
   description = "Lifecycle configuration for resources"
   type = object({
-    prevent_destroy          = optional(bool)
-    ignore_changes          = optional(list(string))
-    create_before_destroy   = optional(bool)
+    prevent_destroy       = optional(bool)
+    ignore_changes        = optional(list(string))
+    create_before_destroy = optional(bool)
   })
   default = {
     prevent_destroy = false

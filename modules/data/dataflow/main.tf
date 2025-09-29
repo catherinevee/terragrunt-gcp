@@ -31,17 +31,17 @@ locals {
   labels = merge(
     var.labels,
     {
-      managed_by   = "terraform"
-      module       = "dataflow"
-      environment  = var.environment
-      job_type     = var.template_type
-      created_at   = formatdate("YYYY-MM-DD", timestamp())
+      managed_by  = "terraform"
+      module      = "dataflow"
+      environment = var.environment
+      job_type    = var.template_type
+      created_at  = formatdate("YYYY-MM-DD", timestamp())
     }
   )
 
   # Default job parameters
   default_parameters = {
-    maxNumWorkers          = var.max_workers
+    maxNumWorkers         = var.max_workers
     numWorkers            = var.initial_workers
     workerMachineType     = var.machine_type
     workerDiskType        = var.disk_type
@@ -79,22 +79,22 @@ locals {
         var.flex_template_metadata
       )
       defaultEnvironment = {
-        tempLocation                = var.temp_location
-        maxWorkers                  = var.max_workers
-        numWorkers                  = var.initial_workers
-        workerMachineType           = var.machine_type
-        additionalExperiments       = var.additional_experiments
-        additionalUserLabels        = local.labels
-        enableStreamingEngine       = var.enable_streaming_engine
-        network                     = local.network
-        subnetwork                  = local.subnetwork
-        serviceAccountEmail         = var.service_account_email
-        kmsKeyName                  = var.kms_key_name
-        ipConfiguration            = var.ip_configuration
-        workerRegion               = var.worker_region
-        workerZone                 = var.worker_zone
+        tempLocation                   = var.temp_location
+        maxWorkers                     = var.max_workers
+        numWorkers                     = var.initial_workers
+        workerMachineType              = var.machine_type
+        additionalExperiments          = var.additional_experiments
+        additionalUserLabels           = local.labels
+        enableStreamingEngine          = var.enable_streaming_engine
+        network                        = local.network
+        subnetwork                     = local.subnetwork
+        serviceAccountEmail            = var.service_account_email
+        kmsKeyName                     = var.kms_key_name
+        ipConfiguration                = var.ip_configuration
+        workerRegion                   = var.worker_region
+        workerZone                     = var.worker_zone
         enableLauncherVmKerberosConfig = var.enable_kerberos
-        stagingLocation            = var.staging_location
+        stagingLocation                = var.staging_location
       }
       parameterMetadata = var.parameter_metadata
     } : null
@@ -103,12 +103,12 @@ locals {
   # Streaming update parameters
   streaming_update_params = var.enable_streaming_update ? {
     updateCompatibilityVersion = var.update_compatibility_version
-    transformNameMapping      = var.transform_name_mapping
+    transformNameMapping       = var.transform_name_mapping
   } : {}
 
   # Autoscaling configuration
   autoscaling_config = var.enable_autoscaling ? {
-    algorithm                    = var.autoscaling_algorithm
+    algorithm                   = var.autoscaling_algorithm
     maxNumWorkers               = var.max_workers
     enableAutoScalingFlexRSGoal = var.enable_flexrs_goal
   } : {}
@@ -135,7 +135,7 @@ resource "google_storage_bucket" "staging_bucket" {
   storage_class = "STANDARD"
 
   uniform_bucket_level_access = true
-  force_destroy              = var.staging_bucket_force_destroy
+  force_destroy               = var.staging_bucket_force_destroy
 
   lifecycle_rule {
     condition {
@@ -163,7 +163,7 @@ resource "google_storage_bucket" "temp_bucket" {
   storage_class = "STANDARD"
 
   uniform_bucket_level_access = true
-  force_destroy              = var.temp_bucket_force_destroy
+  force_destroy               = var.temp_bucket_force_destroy
 
   lifecycle_rule {
     condition {
@@ -214,20 +214,20 @@ resource "google_dataflow_job" "classic_job" {
 
   labels = local.labels
 
-  machine_type      = var.machine_type
-  max_workers       = var.max_workers
-  on_delete         = var.on_delete_action
+  machine_type                 = var.machine_type
+  max_workers                  = var.max_workers
+  on_delete                    = var.on_delete_action
   skip_wait_on_job_termination = var.skip_wait_on_job_termination
 
-  network            = local.network
-  subnetwork         = local.subnetwork
-  ip_configuration   = var.ip_configuration
+  network               = local.network
+  subnetwork            = local.subnetwork
+  ip_configuration      = var.ip_configuration
   service_account_email = var.service_account_email
-  kms_key_name      = var.kms_key_name
+  kms_key_name          = var.kms_key_name
 
-  additional_experiments = var.additional_experiments
+  additional_experiments  = var.additional_experiments
   enable_streaming_engine = var.enable_streaming_engine
-  transform_name_mapping = var.transform_name_mapping
+  transform_name_mapping  = var.transform_name_mapping
 
   lifecycle {
     ignore_changes = var.ignore_job_changes
@@ -251,8 +251,8 @@ resource "google_dataflow_flex_template_job" "flex_job" {
 
   container_spec_gcs_path = var.flex_template_spec_path != null ? (
     var.create_flex_template_spec ?
-      "gs://${var.flex_template_bucket}/${google_storage_bucket_object.flex_template_spec[0].name}" :
-      var.flex_template_spec_path
+    "gs://${var.flex_template_bucket}/${google_storage_bucket_object.flex_template_spec[0].name}" :
+    var.flex_template_spec_path
   ) : null
 
   parameters = merge(
@@ -272,8 +272,8 @@ resource "google_dataflow_flex_template_job" "flex_job" {
   temp_location                = var.temp_location
   staging_location             = var.staging_location
   service_account_email        = var.service_account_email
-  kms_key_name                = var.kms_key_name
-  ip_configuration            = var.ip_configuration
+  kms_key_name                 = var.kms_key_name
+  ip_configuration             = var.ip_configuration
   additional_experiments       = var.additional_experiments
   launcher_machine_type        = var.launcher_machine_type
   enable_streaming_engine      = var.enable_streaming_engine
@@ -308,33 +308,33 @@ resource "google_dataflow_job" "sql_job" {
   parameters = merge(
     local.job_parameters,
     {
-      sqlQuery              = var.sql_query
-      outputTable          = var.sql_output_table
-      bigQueryProject      = var.sql_bigquery_project != null ? var.sql_bigquery_project : var.project_id
-      bigQueryDataset      = var.sql_bigquery_dataset
-      bigQueryLoadingTemporaryDirectory = var.sql_temp_directory
-      outputTableSpec      = var.sql_output_table_spec
-      inputSubscription    = var.sql_input_subscription
-      outputTopic         = var.sql_output_topic
-      javascriptTextTransformGcsPath = var.sql_udf_gcs_path
+      sqlQuery                            = var.sql_query
+      outputTable                         = var.sql_output_table
+      bigQueryProject                     = var.sql_bigquery_project != null ? var.sql_bigquery_project : var.project_id
+      bigQueryDataset                     = var.sql_bigquery_dataset
+      bigQueryLoadingTemporaryDirectory   = var.sql_temp_directory
+      outputTableSpec                     = var.sql_output_table_spec
+      inputSubscription                   = var.sql_input_subscription
+      outputTopic                         = var.sql_output_topic
+      javascriptTextTransformGcsPath      = var.sql_udf_gcs_path
       javascriptTextTransformFunctionName = var.sql_udf_function_name
     }
   )
 
   labels = local.labels
 
-  machine_type      = var.machine_type
-  max_workers       = var.max_workers
-  on_delete         = var.on_delete_action
+  machine_type                 = var.machine_type
+  max_workers                  = var.max_workers
+  on_delete                    = var.on_delete_action
   skip_wait_on_job_termination = var.skip_wait_on_job_termination
 
-  network            = local.network
-  subnetwork         = local.subnetwork
-  ip_configuration   = var.ip_configuration
+  network               = local.network
+  subnetwork            = local.subnetwork
+  ip_configuration      = var.ip_configuration
   service_account_email = var.service_account_email
-  kms_key_name      = var.kms_key_name
+  kms_key_name          = var.kms_key_name
 
-  additional_experiments = var.additional_experiments
+  additional_experiments  = var.additional_experiments
   enable_streaming_engine = var.enable_streaming_engine
 
   lifecycle {
@@ -457,7 +457,7 @@ resource "google_monitoring_alert_policy" "dataflow_alerts" {
 resource "google_monitoring_dashboard" "dataflow_dashboard" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.job_name} Dataflow Dashboard"
     mosaicLayout = {
@@ -572,7 +572,7 @@ resource "google_monitoring_dashboard" "dataflow_dashboard" {
                       filter = "metric.type=\"dataflow.googleapis.com/job/current_num_vcpus\" resource.type=\"dataflow_job\" resource.label.\"job_name\"=\"${local.job_name}\""
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 },
                 {
@@ -581,7 +581,7 @@ resource "google_monitoring_dashboard" "dataflow_dashboard" {
                       filter = "metric.type=\"dataflow.googleapis.com/job/target_num_vcpus\" resource.type=\"dataflow_job\" resource.label.\"job_name\"=\"${local.job_name}\""
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 }
               ]
@@ -652,8 +652,8 @@ resource "google_service_account_key" "dataflow_sa_key" {
   count = var.create_service_account && var.create_service_account_key ? 1 : 0
 
   service_account_id = google_service_account.dataflow_sa[0].name
-  key_algorithm     = "KEY_ALG_RSA_2048"
-  private_key_type  = "TYPE_GOOGLE_CREDENTIALS_FILE"
+  key_algorithm      = "KEY_ALG_RSA_2048"
+  private_key_type   = "TYPE_GOOGLE_CREDENTIALS_FILE"
 }
 
 # VPC Firewall rules for Dataflow (optional)
@@ -666,7 +666,7 @@ resource "google_compute_firewall" "dataflow_ingress" {
 
   allow {
     protocol = "tcp"
-    ports    = ["12345", "12346"]  # Dataflow shuffle service ports
+    ports    = ["12345", "12346"] # Dataflow shuffle service ports
   }
 
   source_tags = ["dataflow"]

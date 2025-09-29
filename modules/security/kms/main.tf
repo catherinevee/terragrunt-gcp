@@ -18,7 +18,7 @@ resource "google_kms_key_ring" "key_ring" {
   depends_on = [google_project_service.kms_api]
 
   lifecycle {
-    ignore_changes = [name, location, project]
+    ignore_changes  = [name, location, project]
     prevent_destroy = true
   }
 }

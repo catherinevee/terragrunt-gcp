@@ -92,12 +92,12 @@ variable "kms_key_name" {
 variable "access" {
   description = "Access control rules for the dataset"
   type = list(object({
-    role          = optional(string)
-    user_by_email = optional(string)
+    role           = optional(string)
+    user_by_email  = optional(string)
     group_by_email = optional(string)
-    domain        = optional(string)
-    special_group = optional(string)
-    iam_member    = optional(string)
+    domain         = optional(string)
+    special_group  = optional(string)
+    iam_member     = optional(string)
     view = optional(object({
       dataset_id = string
       project_id = string
@@ -152,23 +152,23 @@ variable "table_labels" {
 variable "tables" {
   description = "Map of tables to create in the dataset"
   type = map(object({
-    friendly_name = optional(string)
-    description   = optional(string)
-    schema        = optional(string)
-    deletion_protection = optional(bool)
-    expiration_time    = optional(number)
-    max_staleness      = optional(string)
+    friendly_name            = optional(string)
+    description              = optional(string)
+    schema                   = optional(string)
+    deletion_protection      = optional(bool)
+    expiration_time          = optional(number)
+    max_staleness            = optional(string)
     require_partition_filter = optional(bool)
-    labels = optional(map(string))
+    labels                   = optional(map(string))
 
     external_data_configuration = optional(object({
-      source_uris    = list(string)
-      source_format  = string
-      autodetect     = optional(bool)
-      compression    = optional(string)
-      ignore_unknown_values = optional(bool)
-      max_bad_records = optional(number)
-      schema         = optional(string)
+      source_uris               = list(string)
+      source_format             = string
+      autodetect                = optional(bool)
+      compression               = optional(string)
+      ignore_unknown_values     = optional(bool)
+      max_bad_records           = optional(number)
+      schema                    = optional(string)
       reference_file_schema_uri = optional(string)
 
       csv_options = optional(object({
@@ -281,15 +281,15 @@ variable "routines" {
       data_type     = optional(string)
     })))
 
-    return_type       = optional(string)
-    return_table_type = optional(string)
+    return_type        = optional(string)
+    return_table_type  = optional(string)
     imported_libraries = optional(list(string))
 
     remote_function_options = optional(object({
-      endpoint                = string
-      connection              = string
-      user_defined_context    = optional(map(string))
-      max_batching_rows       = optional(number)
+      endpoint             = string
+      connection           = string
+      user_defined_context = optional(map(string))
+      max_batching_rows    = optional(number)
     }))
 
     spark_options = optional(object({
@@ -364,9 +364,9 @@ variable "table_iam_members" {
 variable "data_transfers" {
   description = "Data transfer configurations"
   type = map(object({
-    data_source_id    = string
-    display_name      = string
-    schedule          = optional(string)
+    data_source_id = string
+    display_name   = string
+    schedule       = optional(string)
     schedule_options = optional(object({
       start_time              = optional(string)
       end_time                = optional(string)

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/your-org/terragrunt-gcp/internal/gcp"
+	"github.com/terragrunt-gcp/terragrunt-gcp/internal/gcp"
 )
 
 type AnalysisConfig struct {

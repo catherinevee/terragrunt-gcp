@@ -29,14 +29,14 @@ locals {
 
   # Instance configuration with defaults
   instance_config = merge({
-    name         = "${local.name_prefix}-${local.environment}"
-    config       = "regional-us-central1"
-    display_name = "Spanner Instance for ${title(local.environment)}"
-    num_nodes    = 1
+    name             = "${local.name_prefix}-${local.environment}"
+    config           = "regional-us-central1"
+    display_name     = "Spanner Instance for ${title(local.environment)}"
+    num_nodes        = 1
     processing_units = null
-    labels       = {}
-    force_destroy = false
-    edition      = "STANDARD"
+    labels           = {}
+    force_destroy    = false
+    edition          = "STANDARD"
   }, var.instance_config)
 
   # Database configurations with defaults
@@ -44,10 +44,10 @@ locals {
     for db_name, db_config in var.databases : db_name => merge({
       name                     = db_name
       version_retention_period = "1h"
-      ddl                     = []
-      deletion_protection     = true
-      enable_drop_protection  = true
-      database_dialect        = "GOOGLE_STANDARD_SQL"
+      ddl                      = []
+      deletion_protection      = true
+      enable_drop_protection   = true
+      database_dialect         = "GOOGLE_STANDARD_SQL"
       encryption_config = {
         kms_key_name = null
       }
@@ -58,13 +58,13 @@ locals {
   backup_configs = {
     for backup_name, backup_config in var.backup_configs : backup_name => merge({
       database_id      = backup_config.database_id
-      backup_id       = backup_name
-      expire_time     = null
+      backup_id        = backup_name
+      expire_time      = null
       retention_period = "72h"
-      version_time    = null
+      version_time     = null
       encryption_config = {
         encryption_type = "USE_DATABASE_ENCRYPTION"
-        kms_key_name   = null
+        kms_key_name    = null
       }
     }, backup_config)
   }
@@ -72,17 +72,17 @@ locals {
   # IAM policy configurations
   instance_iam_policies = {
     for policy_name, policy in var.instance_iam_policies : policy_name => merge({
-      role    = policy.role
-      members = policy.members
+      role      = policy.role
+      members   = policy.members
       condition = null
     }, policy)
   }
 
   database_iam_policies = {
     for policy_name, policy in var.database_iam_policies : policy_name => merge({
-      database = policy.database
-      role     = policy.role
-      members  = policy.members
+      database  = policy.database
+      role      = policy.role
+      members   = policy.members
       condition = null
     }, policy)
   }
@@ -106,7 +106,7 @@ resource "google_project_service" "spanner_api" {
   service = "spanner.googleapis.com"
 
   disable_dependent_services = false
-  disable_on_destroy        = false
+  disable_on_destroy         = false
 }
 
 # Service account for Spanner operations
@@ -134,15 +134,15 @@ resource "google_project_iam_member" "spanner_roles" {
 resource "google_spanner_instance" "instance" {
   count = var.use_existing_instance ? 0 : 1
 
-  project      = var.project_id
-  name         = local.instance_config.name
-  config       = local.instance_config.config
-  display_name = local.instance_config.display_name
-  num_nodes    = local.instance_config.processing_units == null ? local.instance_config.num_nodes : null
+  project          = var.project_id
+  name             = local.instance_config.name
+  config           = local.instance_config.config
+  display_name     = local.instance_config.display_name
+  num_nodes        = local.instance_config.processing_units == null ? local.instance_config.num_nodes : null
   processing_units = local.instance_config.processing_units
-  labels       = merge(local.default_labels, local.instance_config.labels)
-  force_destroy = local.instance_config.force_destroy
-  edition      = local.instance_config.edition
+  labels           = merge(local.default_labels, local.instance_config.labels)
+  force_destroy    = local.instance_config.force_destroy
+  edition          = local.instance_config.edition
 
   depends_on = [google_project_service.spanner_api]
 
@@ -160,10 +160,10 @@ resource "google_spanner_database" "databases" {
   name     = each.value.name
 
   version_retention_period = each.value.version_retention_period
-  ddl                     = each.value.ddl
-  deletion_protection     = each.value.deletion_protection
-  enable_drop_protection  = each.value.enable_drop_protection
-  database_dialect        = each.value.database_dialect
+  ddl                      = each.value.ddl
+  deletion_protection      = each.value.deletion_protection
+  enable_drop_protection   = each.value.enable_drop_protection
+  database_dialect         = each.value.database_dialect
 
   dynamic "encryption_config" {
     for_each = each.value.encryption_config.kms_key_name != null ? [1] : []
@@ -191,15 +191,15 @@ resource "google_spanner_backup" "backups" {
   database_id = each.value.database_id
   backup_id   = each.value.backup_id
 
-  expire_time     = each.value.expire_time
+  expire_time      = each.value.expire_time
   retention_period = each.value.retention_period
-  version_time    = each.value.version_time
+  version_time     = each.value.version_time
 
   dynamic "encryption_config" {
     for_each = each.value.encryption_config.kms_key_name != null ? [1] : []
     content {
       encryption_type = each.value.encryption_config.encryption_type
-      kms_key_name   = each.value.encryption_config.kms_key_name
+      kms_key_name    = each.value.encryption_config.kms_key_name
     }
   }
 
@@ -248,7 +248,7 @@ resource "google_spanner_backup_schedule" "backup_schedules" {
     for_each = each.value.encryption_config != null ? [1] : []
     content {
       encryption_type = each.value.encryption_config.encryption_type
-      kms_key_name   = each.value.encryption_config.kms_key_name
+      kms_key_name    = each.value.encryption_config.kms_key_name
     }
   }
 
@@ -311,9 +311,9 @@ resource "google_monitoring_alert_policy" "spanner_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -367,7 +367,7 @@ resource "google_monitoring_alert_policy" "spanner_alerts" {
 resource "google_monitoring_dashboard" "spanner" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Cloud Spanner - ${title(local.environment)}"
     mosaicLayout = {
@@ -516,9 +516,9 @@ resource "google_logging_metric" "spanner_metrics" {
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
     content {
-      metric_kind = each.value.metric_descriptor.metric_kind
-      value_type  = each.value.metric_descriptor.value_type
-      unit        = each.value.metric_descriptor.unit
+      metric_kind  = each.value.metric_descriptor.metric_kind
+      value_type   = each.value.metric_descriptor.value_type
+      unit         = each.value.metric_descriptor.unit
       display_name = each.value.metric_descriptor.display_name
 
       dynamic "labels" {
@@ -564,8 +564,8 @@ resource "google_cloudfunctions_function" "spanner_operations" {
   region  = var.region
   name    = "${local.name_prefix}-${each.key}-operation-${local.environment}"
 
-  runtime     = each.value.runtime
-  entry_point = each.value.entry_point
+  runtime               = each.value.runtime
+  entry_point           = each.value.entry_point
   source_archive_bucket = each.value.source_bucket
   source_archive_object = each.value.source_object
 
@@ -593,7 +593,7 @@ resource "google_cloudfunctions_function" "spanner_operations" {
   )
 
   available_memory_mb = each.value.memory_mb
-  timeout            = each.value.timeout_seconds
+  timeout             = each.value.timeout_seconds
 
   labels = merge(local.default_labels, each.value.labels != null ? each.value.labels : {})
 
@@ -612,8 +612,8 @@ resource "google_bigquery_dataset" "spanner_export" {
   location   = var.bigquery_export_location
 
   description                     = "BigQuery dataset for Spanner exports"
-  default_table_expiration_ms    = var.bigquery_table_expiration_ms
-  delete_contents_on_destroy     = false
+  default_table_expiration_ms     = var.bigquery_table_expiration_ms
+  delete_contents_on_destroy      = false
   default_partition_expiration_ms = var.bigquery_partition_expiration_ms
 
   labels = merge(local.default_labels, {
@@ -623,10 +623,10 @@ resource "google_bigquery_dataset" "spanner_export" {
   dynamic "access" {
     for_each = var.bigquery_access_config
     content {
-      role          = access.value.role
-      user_by_email = access.value.user_by_email
+      role           = access.value.role
+      user_by_email  = access.value.user_by_email
       group_by_email = access.value.group_by_email
-      special_group = access.value.special_group
+      special_group  = access.value.special_group
     }
   }
 }
@@ -636,8 +636,8 @@ resource "google_dataflow_job" "spanner_to_bigquery" {
   count = var.enable_dataflow_export ? 1 : 0
 
   project           = var.project_id
-  region           = var.region
-  name             = "${local.name_prefix}-to-bigquery-${local.environment}"
+  region            = var.region
+  name              = "${local.name_prefix}-to-bigquery-${local.environment}"
   template_gcs_path = var.dataflow_template_path
   temp_gcs_location = var.dataflow_temp_location
 
@@ -646,7 +646,7 @@ resource "google_dataflow_job" "spanner_to_bigquery" {
     {
       spannerInstanceId = var.use_existing_instance ? data.google_spanner_instance.existing_instance[0].name : google_spanner_instance.instance[0].name
       spannerDatabaseId = var.dataflow_source_database
-      outputTableSpec  = "${var.project_id}:${google_bigquery_dataset.spanner_export[0].dataset_id}.${var.dataflow_output_table}"
+      outputTableSpec   = "${var.project_id}:${google_bigquery_dataset.spanner_export[0].dataset_id}.${var.dataflow_output_table}"
     }
   )
 
@@ -710,7 +710,7 @@ resource "google_cloud_scheduler_job" "spanner_maintenance" {
       for_each = each.value.service_account_email != null ? [1] : []
       content {
         service_account_email = each.value.service_account_email
-        audience             = each.value.target_url
+        audience              = each.value.target_url
       }
     }
   }

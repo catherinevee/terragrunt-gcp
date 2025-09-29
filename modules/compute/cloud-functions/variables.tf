@@ -233,11 +233,11 @@ variable "trigger_http" {
 variable "event_trigger_config" {
   description = "Event trigger configuration for Gen 1"
   type = object({
-    event_type      = string
-    resource        = optional(string)
-    service         = optional(string)
-    trigger_region  = optional(string)
-    retry_policy    = optional(bool)
+    event_type     = string
+    resource       = optional(string)
+    service        = optional(string)
+    trigger_region = optional(string)
+    retry_policy   = optional(bool)
   })
   default = null
 }
@@ -245,7 +245,7 @@ variable "event_trigger_config" {
 variable "event_trigger_v2_config" {
   description = "Event trigger configuration for Gen 2"
   type = object({
-    event_type             = string
+    event_type            = string
     pubsub_topic          = optional(string)
     trigger_region        = optional(string)
     service_account_email = optional(string)
@@ -549,7 +549,7 @@ variable "scheduler_oidc_token" {
   description = "OIDC token configuration"
   type = object({
     service_account_email = string
-    audience             = optional(string)
+    audience              = optional(string)
   })
   default = null
 }
@@ -558,7 +558,7 @@ variable "scheduler_oauth_token" {
   description = "OAuth token configuration"
   type = object({
     service_account_email = string
-    scope                = string
+    scope                 = string
   })
   default = null
 }
@@ -585,27 +585,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -633,8 +633,8 @@ variable "budget_amount" {
   description = "Budget amount"
   type = object({
     currency_code = string
-    units        = number
-    nanos        = optional(number)
+    units         = number
+    nanos         = optional(number)
   })
   default = null
 }
@@ -662,7 +662,7 @@ variable "budget_threshold_rules" {
   description = "Budget threshold rules"
   type = list(object({
     threshold_percent = number
-    spend_basis      = optional(string)
+    spend_basis       = optional(string)
   }))
   default = [
     { threshold_percent = 0.5 },

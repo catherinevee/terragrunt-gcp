@@ -127,8 +127,8 @@ variable "automatic_scaling" {
     standard_scheduler_settings = optional(object({
       target_cpu_utilization        = optional(number)
       target_throughput_utilization = optional(number)
-      min_instances                = optional(number)
-      max_instances                = optional(number)
+      min_instances                 = optional(number)
+      max_instances                 = optional(number)
     }))
   })
   default = {
@@ -143,9 +143,9 @@ variable "automatic_scaling" {
 variable "automatic_scaling_flex" {
   description = "Automatic scaling for flexible environment"
   type = object({
-    min_total_instances       = number
-    max_total_instances       = number
-    cool_down_period         = optional(string)
+    min_total_instances = number
+    max_total_instances = number
+    cool_down_period    = optional(string)
     cpu_utilization = optional(object({
       target_utilization        = number
       aggregation_window_length = optional(string)
@@ -330,18 +330,18 @@ variable "handlers" {
   description = "URL handlers for standard"
   type = list(object({
     url_regex                   = string
-    security_level             = optional(string)
-    login                      = optional(string)
-    auth_fail_action           = optional(string)
+    security_level              = optional(string)
+    login                       = optional(string)
+    auth_fail_action            = optional(string)
     redirect_http_response_code = optional(string)
     static_files = optional(object({
       path                  = string
       upload_path_regex     = string
-      http_headers         = optional(map(string))
-      mime_type            = optional(string)
-      expiration           = optional(string)
+      http_headers          = optional(map(string))
+      mime_type             = optional(string)
+      expiration            = optional(string)
       require_matching_file = optional(bool)
-      application_readable = optional(bool)
+      application_readable  = optional(bool)
     }))
     script = optional(object({
       script_path = string
@@ -415,8 +415,8 @@ variable "endpoints_api_service" {
   description = "Endpoints API service"
   type = object({
     name                   = string
-    config_id             = optional(string)
-    rollout_strategy      = optional(string)
+    config_id              = optional(string)
+    rollout_strategy       = optional(string)
     disable_trace_sampling = optional(bool)
   })
   default = null
@@ -426,10 +426,10 @@ variable "api_config" {
   description = "API configuration"
   type = object({
     auth_fail_action = optional(string)
-    login           = optional(string)
-    script          = optional(string)
-    security_level  = optional(string)
-    url             = optional(string)
+    login            = optional(string)
+    script           = optional(string)
+    security_level   = optional(string)
+    url              = optional(string)
   })
   default = null
 }
@@ -441,7 +441,7 @@ variable "domain_mappings" {
     domain_name = string
     ssl_settings = optional(object({
       ssl_management_type = string
-      certificate_id     = optional(string)
+      certificate_id      = optional(string)
     }))
   }))
   default = {}

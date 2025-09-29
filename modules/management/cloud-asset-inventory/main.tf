@@ -27,8 +27,8 @@ resource "google_cloud_asset_project_feed" "asset_feeds" {
   feed_id      = each.key
   content_type = each.value.content_type
 
-  asset_types  = each.value.asset_types
-  asset_names  = each.value.asset_names
+  asset_types = each.value.asset_types
+  asset_names = each.value.asset_names
 
   feed_output_config {
     pubsub_destination {
@@ -61,8 +61,8 @@ resource "google_cloud_asset_organization_feed" "org_asset_feeds" {
   feed_id      = each.key
   content_type = each.value.content_type
 
-  asset_types  = each.value.asset_types
-  asset_names  = each.value.asset_names
+  asset_types = each.value.asset_types
+  asset_names = each.value.asset_names
 
   feed_output_config {
     pubsub_destination {
@@ -95,8 +95,8 @@ resource "google_cloud_asset_folder_feed" "folder_asset_feeds" {
   feed_id      = each.key
   content_type = each.value.content_type
 
-  asset_types  = each.value.asset_types
-  asset_names  = each.value.asset_names
+  asset_types = each.value.asset_types
+  asset_names = each.value.asset_names
 
   feed_output_config {
     pubsub_destination {
@@ -136,7 +136,7 @@ resource "google_pubsub_topic" "asset_feed_topics" {
   }
 
   message_retention_duration = each.value.message_retention_duration
-  kms_key_name              = each.value.kms_key_name
+  kms_key_name               = each.value.kms_key_name
 
   labels = merge(var.labels, each.value.labels)
 
@@ -149,14 +149,14 @@ resource "google_pubsub_topic" "asset_feed_topics" {
 resource "google_pubsub_subscription" "asset_feed_subscriptions" {
   for_each = var.create_pubsub_subscriptions ? var.pubsub_subscriptions : {}
 
-  name  = each.key
-  topic = google_pubsub_topic.asset_feed_topics[each.value.topic_name].name
+  name    = each.key
+  topic   = google_pubsub_topic.asset_feed_topics[each.value.topic_name].name
   project = var.project_id
 
   ack_deadline_seconds       = each.value.ack_deadline_seconds
   message_retention_duration = each.value.message_retention_duration
-  retain_acked_messages     = each.value.retain_acked_messages
-  enable_message_ordering   = each.value.enable_message_ordering
+  retain_acked_messages      = each.value.retain_acked_messages
+  enable_message_ordering    = each.value.enable_message_ordering
 
   dynamic "expiration_policy" {
     for_each = each.value.expiration_policy != null ? [each.value.expiration_policy] : []
@@ -177,7 +177,7 @@ resource "google_pubsub_subscription" "asset_feed_subscriptions" {
         for_each = push_config.value.oidc_token != null ? [push_config.value.oidc_token] : []
         content {
           service_account_email = oidc_token.value.service_account_email
-          audience             = oidc_token.value.audience
+          audience              = oidc_token.value.audience
         }
       }
     }
@@ -215,7 +215,7 @@ resource "google_bigquery_dataset" "asset_inventory_dataset" {
   location    = var.bigquery_location
   description = "Dataset for Cloud Asset Inventory exports and analysis"
 
-  default_table_expiration_ms = var.bigquery_table_expiration_ms
+  default_table_expiration_ms     = var.bigquery_table_expiration_ms
   default_partition_expiration_ms = var.bigquery_partition_expiration_ms
 
   delete_contents_on_destroy = var.delete_dataset_on_destroy
@@ -223,11 +223,11 @@ resource "google_bigquery_dataset" "asset_inventory_dataset" {
   dynamic "access" {
     for_each = var.bigquery_dataset_access
     content {
-      role          = access.value.role
-      user_by_email = access.value.user_by_email
+      role           = access.value.role
+      user_by_email  = access.value.user_by_email
       group_by_email = access.value.group_by_email
-      domain        = access.value.domain
-      special_group = access.value.special_group
+      domain         = access.value.domain
+      special_group  = access.value.special_group
 
       dynamic "dataset" {
         for_each = access.value.dataset != null ? [access.value.dataset] : []
@@ -281,8 +281,8 @@ resource "google_bigquery_table" "asset_tables" {
     for_each = each.value.time_partitioning != null ? [each.value.time_partitioning] : []
     content {
       type                     = time_partitioning.value.type
-      expiration_ms           = time_partitioning.value.expiration_ms
-      field                   = time_partitioning.value.field
+      expiration_ms            = time_partitioning.value.expiration_ms
+      field                    = time_partitioning.value.field
       require_partition_filter = time_partitioning.value.require_partition_filter
     }
   }
@@ -344,14 +344,14 @@ resource "google_storage_bucket" "asset_export_bucket" {
 
       condition {
         age                        = lifecycle_rule.value.condition.age
-        created_before            = lifecycle_rule.value.condition.created_before
-        with_state                = lifecycle_rule.value.condition.with_state
-        matches_storage_class     = lifecycle_rule.value.condition.matches_storage_class
-        num_newer_versions        = lifecycle_rule.value.condition.num_newer_versions
-        custom_time_before        = lifecycle_rule.value.condition.custom_time_before
-        days_since_custom_time    = lifecycle_rule.value.condition.days_since_custom_time
+        created_before             = lifecycle_rule.value.condition.created_before
+        with_state                 = lifecycle_rule.value.condition.with_state
+        matches_storage_class      = lifecycle_rule.value.condition.matches_storage_class
+        num_newer_versions         = lifecycle_rule.value.condition.num_newer_versions
+        custom_time_before         = lifecycle_rule.value.condition.custom_time_before
+        days_since_custom_time     = lifecycle_rule.value.condition.days_since_custom_time
         days_since_noncurrent_time = lifecycle_rule.value.condition.days_since_noncurrent_time
-        noncurrent_time_before    = lifecycle_rule.value.condition.noncurrent_time_before
+        noncurrent_time_before     = lifecycle_rule.value.condition.noncurrent_time_before
       }
     }
   }
@@ -418,10 +418,10 @@ resource "google_cloudfunctions_function" "asset_processor" {
   region      = each.value.region
   description = each.value.description
 
-  runtime             = each.value.runtime
-  available_memory_mb = each.value.memory_mb
-  timeout             = each.value.timeout
-  entry_point         = each.value.entry_point
+  runtime               = each.value.runtime
+  available_memory_mb   = each.value.memory_mb
+  timeout               = each.value.timeout
+  entry_point           = each.value.entry_point
   service_account_email = var.create_service_account ? google_service_account.asset_inventory_sa[0].email : each.value.service_account_email
 
   source_archive_bucket = each.value.source_bucket
@@ -463,11 +463,11 @@ resource "google_cloudfunctions_function" "asset_processor" {
 resource "google_cloud_scheduler_job" "asset_export_jobs" {
   for_each = var.enable_scheduled_exports ? var.scheduled_export_jobs : {}
 
-  name     = each.key
-  project  = var.project_id
-  region   = each.value.region
-  schedule = each.value.schedule
-  time_zone = each.value.time_zone
+  name        = each.key
+  project     = var.project_id
+  region      = each.value.region
+  schedule    = each.value.schedule
+  time_zone   = each.value.time_zone
   description = each.value.description
 
   dynamic "pubsub_target" {
@@ -491,7 +491,7 @@ resource "google_cloud_scheduler_job" "asset_export_jobs" {
         for_each = http_target.value.oauth_token != null ? [http_target.value.oauth_token] : []
         content {
           service_account_email = oauth_token.value.service_account_email
-          scope                = oauth_token.value.scope
+          scope                 = oauth_token.value.scope
         }
       }
 
@@ -499,7 +499,7 @@ resource "google_cloud_scheduler_job" "asset_export_jobs" {
         for_each = http_target.value.oidc_token != null ? [http_target.value.oidc_token] : []
         content {
           service_account_email = oidc_token.value.service_account_email
-          audience             = oidc_token.value.audience
+          audience              = oidc_token.value.audience
         }
       }
     }
@@ -651,10 +651,10 @@ resource "google_monitoring_alert_policy" "asset_inventory_alerts" {
       threshold_value = each.value.threshold_value
 
       aggregations {
-        alignment_period   = each.value.alignment_period
-        per_series_aligner = each.value.per_series_aligner
+        alignment_period     = each.value.alignment_period
+        per_series_aligner   = each.value.per_series_aligner
         cross_series_reducer = each.value.cross_series_reducer
-        group_by_fields    = each.value.group_by_fields
+        group_by_fields      = each.value.group_by_fields
       }
 
       dynamic "trigger" {
@@ -751,7 +751,7 @@ resource "google_logging_project_sink" "asset_audit_sink" {
   ])
 
   unique_writer_identity = true
-  project               = var.project_id
+  project                = var.project_id
 
   depends_on = [
     google_project_service.asset_inventory_apis

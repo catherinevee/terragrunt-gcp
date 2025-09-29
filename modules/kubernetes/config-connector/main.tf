@@ -51,16 +51,16 @@ resource "google_gke_hub_feature_membership" "config_connector_memberships" {
       source_format = each.value.source_format
 
       git {
-        sync_repo               = each.value.sync_repo
-        sync_branch             = each.value.sync_branch
-        policy_dir              = each.value.policy_dir
-        sync_wait_secs          = each.value.sync_wait_secs
-        secret_type             = each.value.secret_type
-        https_proxy             = each.value.https_proxy
+        sync_repo                 = each.value.sync_repo
+        sync_branch               = each.value.sync_branch
+        policy_dir                = each.value.policy_dir
+        sync_wait_secs            = each.value.sync_wait_secs
+        secret_type               = each.value.secret_type
+        https_proxy               = each.value.https_proxy
         gcp_service_account_email = each.value.gcp_service_account_email
       }
 
-      prevent_drift                = each.value.prevent_drift
+      prevent_drift                     = each.value.prevent_drift
       metrics_gcp_service_account_email = each.value.metrics_gcp_service_account_email
     }
 
@@ -82,9 +82,9 @@ resource "google_gke_hub_feature_membership" "config_connector_memberships" {
     }
 
     hierarchy_controller {
-      enabled                             = each.value.hierarchy_controller_enabled
-      enable_pod_tree_labels              = each.value.enable_pod_tree_labels
-      enable_hierarchical_resource_quota  = each.value.enable_hierarchical_resource_quota
+      enabled                            = each.value.hierarchy_controller_enabled
+      enable_pod_tree_labels             = each.value.enable_pod_tree_labels
+      enable_hierarchical_resource_quota = each.value.enable_hierarchical_resource_quota
     }
 
     binauthz {
@@ -141,12 +141,12 @@ resource "kubernetes_manifest" "config_connector_operator" {
       actuationMode = var.actuation_mode
 
       webhookConfiguration = {
-        failurePolicy = var.webhook_failure_policy
+        failurePolicy  = var.webhook_failure_policy
         timeoutSeconds = var.webhook_timeout_seconds
       }
 
       resourceWatcherConfiguration = {
-        watchFleetWorkloads       = var.watch_fleet_workloads
+        watchFleetWorkloads        = var.watch_fleet_workloads
         watchFleetWorkloadIdentity = var.watch_fleet_workload_identity
       }
     }
@@ -167,7 +167,7 @@ resource "kubernetes_manifest" "config_connector_contexts" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       googleServiceAccount = each.value.google_service_account_email
@@ -252,9 +252,9 @@ resource "kubernetes_manifest" "config_connector_crds" {
     apiVersion = each.value.api_version
     kind       = each.value.kind
     metadata = {
-      name      = each.key
-      namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      name        = each.key
+      namespace   = each.value.namespace
+      labels      = merge(var.labels, each.value.labels)
       annotations = each.value.annotations
     }
     spec = each.value.spec
@@ -273,7 +273,7 @@ resource "kubernetes_manifest" "policy_constraints" {
     apiVersion = each.value.api_version
     kind       = each.value.kind
     metadata = {
-      name = each.key
+      name   = each.key
       labels = merge(var.labels, each.value.labels)
     }
     spec = each.value.spec
@@ -292,7 +292,7 @@ resource "kubernetes_manifest" "constraint_templates" {
     apiVersion = "templates.gatekeeper.sh/v1beta1"
     kind       = "ConstraintTemplate"
     metadata = {
-      name = each.key
+      name   = each.key
       labels = merge(var.labels, each.value.labels)
     }
     spec = {
@@ -346,7 +346,7 @@ resource "kubernetes_manifest" "hierarchy_configs" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = each.value.spec
   }
@@ -369,7 +369,7 @@ resource "kubernetes_resource_quota" "config_connector_quotas" {
   }
 
   spec {
-    hard = each.value.hard_limits
+    hard   = each.value.hard_limits
     scopes = each.value.scopes
     scope_selector {
       dynamic "match_expression" {
@@ -510,7 +510,7 @@ resource "kubernetes_cluster_role" "config_connector_roles" {
       api_groups        = rule.value.api_groups
       resources         = rule.value.resources
       resource_names    = rule.value.resource_names
-      verbs            = rule.value.verbs
+      verbs             = rule.value.verbs
       non_resource_urls = rule.value.non_resource_urls
     }
   }
@@ -681,10 +681,10 @@ resource "google_monitoring_alert_policy" "config_connector_alerts" {
       threshold_value = each.value.threshold_value
 
       aggregations {
-        alignment_period   = each.value.alignment_period
-        per_series_aligner = each.value.per_series_aligner
+        alignment_period     = each.value.alignment_period
+        per_series_aligner   = each.value.per_series_aligner
         cross_series_reducer = each.value.cross_series_reducer
-        group_by_fields    = each.value.group_by_fields
+        group_by_fields      = each.value.group_by_fields
       }
 
       dynamic "trigger" {
@@ -743,7 +743,7 @@ resource "google_logging_project_sink" "config_connector_audit_sink" {
   ])
 
   unique_writer_identity = true
-  project               = var.project_id
+  project                = var.project_id
 
   depends_on = [
     google_project_service.config_connector_apis
@@ -790,7 +790,7 @@ locals {
 
   # Default Config Connector annotations
   default_cc_annotations = {
-    "cnrm.cloud.google.com/project-id" = var.project_id
+    "cnrm.cloud.google.com/project-id"      = var.project_id
     "cnrm.cloud.google.com/managed-by-cnrm" = "true"
   }
 

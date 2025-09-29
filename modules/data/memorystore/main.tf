@@ -31,21 +31,21 @@ locals {
   redis_instances = {
     for name, config in var.redis_instances : name => merge({
       tier                    = "STANDARD_HA"
-      memory_size_gb         = 1
-      redis_version          = "REDIS_6_X"
-      display_name           = "${local.name_prefix}-${name}-${local.environment}"
-      reserved_ip_range      = null
-      connect_mode           = "DIRECT_PEERING"
-      auth_enabled           = true
+      memory_size_gb          = 1
+      redis_version           = "REDIS_6_X"
+      display_name            = "${local.name_prefix}-${name}-${local.environment}"
+      reserved_ip_range       = null
+      connect_mode            = "DIRECT_PEERING"
+      auth_enabled            = true
       transit_encryption_mode = "SERVER_AUTHENTICATION"
       persistence_config = {
-        persistence_mode    = "RDB"
-        rdb_snapshot_period = "TWENTY_FOUR_HOURS"
+        persistence_mode        = "RDB"
+        rdb_snapshot_period     = "TWENTY_FOUR_HOURS"
         rdb_snapshot_start_time = "02:00"
       }
       maintenance_policy = {
         weekly_maintenance_window = [{
-          day        = "SUNDAY"
+          day = "SUNDAY"
           start_time = {
             hours   = 3
             minutes = 0
@@ -62,14 +62,14 @@ locals {
   # Memcached instances configuration with defaults
   memcached_instances = {
     for name, config in var.memcached_instances : name => merge({
-      node_count     = 1
+      node_count = 1
       node_config = [{
         cpu_count      = 1
         memory_size_mb = 1024
       }]
-      memcache_version = "MEMCACHE_1_5"
-      display_name     = "${local.name_prefix}-${name}-${local.environment}"
-      zones           = []
+      memcache_version    = "MEMCACHE_1_5"
+      display_name        = "${local.name_prefix}-${name}-${local.environment}"
+      zones               = []
       memcache_parameters = {}
     }, config)
   }
@@ -110,7 +110,7 @@ resource "google_project_service" "apis" {
   service = each.key
 
   disable_dependent_services = false
-  disable_on_destroy        = false
+  disable_on_destroy         = false
 }
 
 # Service account for Memorystore operations
@@ -176,9 +176,9 @@ resource "google_redis_instance" "redis" {
 
   location_id             = var.location_id
   alternative_location_id = var.alternative_location_id
-  reserved_ip_range      = each.value.reserved_ip_range
-  connect_mode           = each.value.connect_mode
-  auth_enabled           = each.value.auth_enabled
+  reserved_ip_range       = each.value.reserved_ip_range
+  connect_mode            = each.value.connect_mode
+  auth_enabled            = each.value.auth_enabled
   transit_encryption_mode = each.value.transit_encryption_mode
 
   authorized_network = var.network_name != null ? data.google_compute_network.vpc[0].id : null
@@ -186,8 +186,8 @@ resource "google_redis_instance" "redis" {
   dynamic "persistence_config" {
     for_each = each.value.persistence_config != null ? [1] : []
     content {
-      persistence_mode    = each.value.persistence_config.persistence_mode
-      rdb_snapshot_period = each.value.persistence_config.rdb_snapshot_period
+      persistence_mode        = each.value.persistence_config.persistence_mode
+      rdb_snapshot_period     = each.value.persistence_config.rdb_snapshot_period
       rdb_snapshot_start_time = each.value.persistence_config.rdb_snapshot_start_time
     }
   }
@@ -270,7 +270,7 @@ resource "google_compute_firewall" "memorystore_access" {
 
   allow {
     protocol = "tcp"
-    ports    = ["6379", "11211"]  # Redis and Memcached default ports
+    ports    = ["6379", "11211"] # Redis and Memcached default ports
   }
 
   source_ranges = var.allowed_source_ranges
@@ -305,9 +305,9 @@ resource "google_monitoring_alert_policy" "memorystore_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -361,7 +361,7 @@ resource "google_monitoring_alert_policy" "memorystore_alerts" {
 resource "google_monitoring_dashboard" "memorystore" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Memorystore - ${title(local.environment)}"
     mosaicLayout = {
@@ -488,9 +488,9 @@ resource "google_logging_metric" "memorystore_metrics" {
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
     content {
-      metric_kind = each.value.metric_descriptor.metric_kind
-      value_type  = each.value.metric_descriptor.value_type
-      unit        = each.value.metric_descriptor.unit
+      metric_kind  = each.value.metric_descriptor.metric_kind
+      value_type   = each.value.metric_descriptor.value_type
+      unit         = each.value.metric_descriptor.unit
       display_name = each.value.metric_descriptor.display_name
 
       dynamic "labels" {
@@ -564,8 +564,8 @@ resource "google_cloudfunctions_function" "redis_backup" {
   region  = var.region
   name    = "${local.name_prefix}-${each.key}-backup-${local.environment}"
 
-  runtime     = each.value.runtime
-  entry_point = each.value.entry_point
+  runtime               = each.value.runtime
+  entry_point           = each.value.entry_point
   source_archive_bucket = each.value.source_bucket
   source_archive_object = each.value.source_object
 
@@ -590,7 +590,7 @@ resource "google_cloudfunctions_function" "redis_backup" {
   )
 
   available_memory_mb = each.value.memory_mb
-  timeout            = each.value.timeout_seconds
+  timeout             = each.value.timeout_seconds
 
   labels = merge(local.default_labels, each.value.labels != null ? each.value.labels : {})
 

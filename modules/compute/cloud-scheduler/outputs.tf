@@ -99,9 +99,9 @@ output "cloud_function_job_uris" {
 output "all_job_ids" {
   description = "All scheduler job identifiers by type"
   value = {
-    http          = { for k, v in google_cloud_scheduler_job.http_jobs : k => v.id }
-    pubsub        = { for k, v in google_cloud_scheduler_job.pubsub_jobs : k => v.id }
-    app_engine    = { for k, v in google_cloud_scheduler_job.app_engine_jobs : k => v.id }
+    http           = { for k, v in google_cloud_scheduler_job.http_jobs : k => v.id }
+    pubsub         = { for k, v in google_cloud_scheduler_job.pubsub_jobs : k => v.id }
+    app_engine     = { for k, v in google_cloud_scheduler_job.app_engine_jobs : k => v.id }
     cloud_function = { for k, v in google_cloud_scheduler_job.cloud_function_jobs : k => v.id }
   }
 }
@@ -109,9 +109,9 @@ output "all_job_ids" {
 output "all_job_names" {
   description = "All scheduler job names by type"
   value = {
-    http          = { for k, v in google_cloud_scheduler_job.http_jobs : k => v.name }
-    pubsub        = { for k, v in google_cloud_scheduler_job.pubsub_jobs : k => v.name }
-    app_engine    = { for k, v in google_cloud_scheduler_job.app_engine_jobs : k => v.name }
+    http           = { for k, v in google_cloud_scheduler_job.http_jobs : k => v.name }
+    pubsub         = { for k, v in google_cloud_scheduler_job.pubsub_jobs : k => v.name }
+    app_engine     = { for k, v in google_cloud_scheduler_job.app_engine_jobs : k => v.name }
     cloud_function = { for k, v in google_cloud_scheduler_job.cloud_function_jobs : k => v.name }
   }
 }
@@ -203,35 +203,35 @@ output "job_configurations" {
   value = {
     http = {
       count = length(local.http_jobs)
-      jobs  = { for k, v in local.http_jobs : k => {
+      jobs = { for k, v in local.http_jobs : k => {
         schedule = v.schedule
         enabled  = v.enabled
         uri      = v.http_config != null ? v.http_config.uri : null
-      }}
+      } }
     }
     pubsub = {
       count = length(local.pubsub_jobs)
-      jobs  = { for k, v in local.pubsub_jobs : k => {
+      jobs = { for k, v in local.pubsub_jobs : k => {
         schedule = v.schedule
         enabled  = v.enabled
         topic    = v.pubsub_config != null ? v.pubsub_config.topic_name : null
-      }}
+      } }
     }
     app_engine = {
       count = length(local.app_engine_jobs)
-      jobs  = { for k, v in local.app_engine_jobs : k => {
+      jobs = { for k, v in local.app_engine_jobs : k => {
         schedule = v.schedule
         enabled  = v.enabled
         uri      = v.app_engine_config != null ? v.app_engine_config.relative_uri : null
-      }}
+      } }
     }
     cloud_function = {
       count = length(local.cloud_function_jobs)
-      jobs  = { for k, v in local.cloud_function_jobs : k => {
+      jobs = { for k, v in local.cloud_function_jobs : k => {
         schedule = v.schedule
         enabled  = v.enabled
         url      = v.cloud_function_config != null ? v.cloud_function_config.function_url : null
-      }}
+      } }
     }
   }
 }
@@ -252,17 +252,17 @@ output "iam_members" {
 output "module_configuration" {
   description = "Module configuration summary"
   value = {
-    project_id                  = var.project_id
-    region                     = var.region
-    environment                = local.environment
-    name_prefix                = local.name_prefix
-    service_account_created    = var.create_service_account
-    pubsub_topics_created      = var.create_pubsub_topics
-    monitoring_enabled         = var.create_monitoring_alerts
-    dashboard_created          = var.create_monitoring_dashboard
-    log_metrics_enabled        = var.create_log_metrics
-    default_time_zone         = var.default_time_zone
-    default_attempt_deadline  = var.default_attempt_deadline
+    project_id               = var.project_id
+    region                   = var.region
+    environment              = local.environment
+    name_prefix              = local.name_prefix
+    service_account_created  = var.create_service_account
+    pubsub_topics_created    = var.create_pubsub_topics
+    monitoring_enabled       = var.create_monitoring_alerts
+    dashboard_created        = var.create_monitoring_dashboard
+    log_metrics_enabled      = var.create_log_metrics
+    default_time_zone        = var.default_time_zone
+    default_attempt_deadline = var.default_attempt_deadline
   }
 }
 
@@ -285,9 +285,9 @@ output "schedule_summary" {
   description = "Summary of job schedules and time zones"
   value = {
     for job_name, job_config in local.job_configs : job_name => {
-      schedule   = job_config.schedule
-      time_zone  = job_config.time_zone
-      enabled    = job_config.enabled
+      schedule    = job_config.schedule
+      time_zone   = job_config.time_zone
+      enabled     = job_config.enabled
       target_type = job_config.target_type
     }
   }
@@ -303,12 +303,12 @@ output "applied_labels" {
 output "resource_counts" {
   description = "Count of each resource type created"
   value = {
-    scheduler_jobs       = var.scheduler_jobs != null ? length(var.scheduler_jobs) : 0
-    service_accounts     = var.create_service_account ? 1 : 0
-    pubsub_topics       = var.create_pubsub_topics ? length(var.pubsub_topic_names) : 0
-    alert_policies      = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
-    dashboards          = var.create_monitoring_dashboard ? 1 : 0
-    log_metrics         = var.create_log_metrics ? length(var.log_metrics) : 0
-    iam_bindings        = length(var.job_iam_bindings)
+    scheduler_jobs   = var.scheduler_jobs != null ? length(var.scheduler_jobs) : 0
+    service_accounts = var.create_service_account ? 1 : 0
+    pubsub_topics    = var.create_pubsub_topics ? length(var.pubsub_topic_names) : 0
+    alert_policies   = var.create_monitoring_alerts ? length(var.monitoring_alerts) : 0
+    dashboards       = var.create_monitoring_dashboard ? 1 : 0
+    log_metrics      = var.create_log_metrics ? length(var.log_metrics) : 0
+    iam_bindings     = length(var.job_iam_bindings)
   }
 }

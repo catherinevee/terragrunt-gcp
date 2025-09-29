@@ -43,8 +43,8 @@ variable "cluster_memberships" {
   description = "Configuration for GKE Hub cluster memberships"
   type = map(object({
     cluster_resource_link = string
-    issuer               = string
-    labels               = optional(map(string), {})
+    issuer                = string
+    labels                = optional(map(string), {})
   }))
   default = {}
 }
@@ -65,31 +65,31 @@ variable "enable_service_mesh" {
 variable "service_mesh_memberships" {
   description = "Configuration for service mesh memberships"
   type = map(object({
-    membership_name                = string
-    management_type               = optional(string, "MANAGEMENT_AUTOMATIC")
-    control_plane_management      = optional(string, "MANAGEMENT_AUTOMATIC")
-    config_management_version     = optional(string, "1.15.1")
-    config_sync_enabled          = optional(bool, true)
-    source_format                = optional(string, "hierarchy")
-    sync_repo                    = optional(string)
-    sync_branch                  = optional(string, "main")
-    policy_dir                   = optional(string, "config")
-    sync_wait_secs              = optional(number, 15)
-    secret_type                 = optional(string, "none")
-    prevent_drift               = optional(bool, true)
-    policy_controller_enabled    = optional(bool, true)
-    template_library_installed   = optional(bool, true)
-    audit_interval_seconds       = optional(number, 60)
-    exemptable_namespaces       = optional(list(string), ["kube-system"])
-    log_denies_enabled          = optional(bool, true)
-    mutation_enabled            = optional(bool, true)
-    referential_rules_enabled   = optional(bool, true)
+    membership_name            = string
+    management_type            = optional(string, "MANAGEMENT_AUTOMATIC")
+    control_plane_management   = optional(string, "MANAGEMENT_AUTOMATIC")
+    config_management_version  = optional(string, "1.15.1")
+    config_sync_enabled        = optional(bool, true)
+    source_format              = optional(string, "hierarchy")
+    sync_repo                  = optional(string)
+    sync_branch                = optional(string, "main")
+    policy_dir                 = optional(string, "config")
+    sync_wait_secs             = optional(number, 15)
+    secret_type                = optional(string, "none")
+    prevent_drift              = optional(bool, true)
+    policy_controller_enabled  = optional(bool, true)
+    template_library_installed = optional(bool, true)
+    audit_interval_seconds     = optional(number, 60)
+    exemptable_namespaces      = optional(list(string), ["kube-system"])
+    log_denies_enabled         = optional(bool, true)
+    mutation_enabled           = optional(bool, true)
+    referential_rules_enabled  = optional(bool, true)
     policy_controller_monitoring = optional(object({
       backends = list(string)
     }))
-    hierarchy_controller_enabled             = optional(bool, true)
-    enable_pod_tree_labels                  = optional(bool, true)
-    enable_hierarchical_resource_quota      = optional(bool, false)
+    hierarchy_controller_enabled       = optional(bool, true)
+    enable_pod_tree_labels             = optional(bool, true)
+    enable_hierarchical_resource_quota = optional(bool, false)
   }))
   default = {}
 }
@@ -104,13 +104,13 @@ variable "create_istio_namespaces" {
 variable "istio_control_plane_configs" {
   description = "Configuration for Istio control plane"
   type = map(object({
-    hub      = optional(string, "gcr.io/istio-release")
-    tag      = optional(string, "1.18.2-asm.3")
-    revision = optional(string, "asm-managed")
-    mesh_id  = string
-    network  = string
+    hub          = optional(string, "gcr.io/istio-release")
+    tag          = optional(string, "1.18.2-asm.3")
+    revision     = optional(string, "asm-managed")
+    mesh_id      = string
+    network      = string
     trust_domain = string
-    labels   = optional(map(string), {})
+    labels       = optional(map(string), {})
 
     # Proxy configuration
     proxy_resources = object({
@@ -125,7 +125,7 @@ variable "istio_control_plane_configs" {
     })
     proxy_log_level           = optional(string, "warning")
     proxy_component_log_level = optional(string, "misc:error")
-    proxy_privileged         = optional(bool, false)
+    proxy_privileged          = optional(bool, false)
 
     # Pilot configuration
     pilot_resources = object({
@@ -138,12 +138,12 @@ variable "istio_control_plane_configs" {
         memory = string
       })
     })
-    pilot_env_vars        = optional(map(string), {})
-    pilot_trace_sampling  = optional(number, 1.0)
-    pilot_k8s_env        = optional(map(string), {})
+    pilot_env_vars         = optional(map(string), {})
+    pilot_trace_sampling   = optional(number, 1.0)
+    pilot_k8s_env          = optional(map(string), {})
     pilot_hpa_min_replicas = optional(number, 1)
     pilot_hpa_max_replicas = optional(number, 3)
-    pilot_hpa_metrics     = optional(list(any), [])
+    pilot_hpa_metrics      = optional(list(any), [])
 
     # Gateway configuration
     ingress_gateway_enabled = optional(bool, true)
@@ -174,23 +174,23 @@ variable "istio_control_plane_configs" {
       protocol   = string
       targetPort = number
     })), [])
-    ingress_gateway_load_balancer_ip = optional(string)
+    ingress_gateway_load_balancer_ip    = optional(string)
     ingress_gateway_service_annotations = optional(map(string), {})
 
     # Gateway scheduling
     gateway_node_selector = optional(map(string), {})
-    gateway_tolerations  = optional(list(any), [])
-    gateway_affinity     = optional(any)
+    gateway_tolerations   = optional(list(any), [])
+    gateway_affinity      = optional(any)
 
     # Security configuration
     security_namespace_default = optional(bool, true)
-    workload_cert_ttl         = optional(string, "24h")
+    workload_cert_ttl          = optional(string, "24h")
 
     # Telemetry configuration
-    telemetry_v2_enabled        = optional(bool, true)
-    prometheus_config_override = optional(map(string), {})
-    stackdriver_telemetry_enabled = optional(bool, true)
-    stackdriver_logging_enabled   = optional(bool, true)
+    telemetry_v2_enabled           = optional(bool, true)
+    prometheus_config_override     = optional(map(string), {})
+    stackdriver_telemetry_enabled  = optional(bool, true)
+    stackdriver_logging_enabled    = optional(bool, true)
     stackdriver_monitoring_enabled = optional(bool, true)
     stackdriver_topology_enabled   = optional(bool, true)
     stackdriver_disable_outbound   = optional(bool, false)
@@ -198,8 +198,8 @@ variable "istio_control_plane_configs" {
 
     # Tracing configuration
     stackdriver_tracing_enabled = optional(bool, true)
-    zipkin_address             = optional(string)
-    logging_level              = optional(string, "default:info")
+    zipkin_address              = optional(string)
+    logging_level               = optional(string, "default:info")
 
     # SDS configuration
     sds_token_audience = optional(string)
@@ -208,10 +208,10 @@ variable "istio_control_plane_configs" {
     certificates_config = optional(map(string), {})
 
     # Mesh configuration
-    proxy_stats_matcher = optional(map(string), {})
+    proxy_stats_matcher                 = optional(map(string), {})
     hold_application_until_proxy_starts = optional(bool, false)
-    proxy_status_port = optional(number, 15020)
-    termination_drain_duration = optional(string, "5s")
+    proxy_status_port                   = optional(number, 15020)
+    termination_drain_duration          = optional(string, "5s")
 
     # Default providers
     default_metrics_provider        = optional(string, "prometheus")
@@ -242,14 +242,14 @@ variable "istio_gateways" {
       })
       hosts = list(string)
       tls = optional(object({
-        mode               = string
-        credential_name    = optional(string)
-        server_certificate = optional(string)
-        private_key        = optional(string)
-        ca_certificates    = optional(string)
+        mode                 = string
+        credential_name      = optional(string)
+        server_certificate   = optional(string)
+        private_key          = optional(string)
+        ca_certificates      = optional(string)
         min_protocol_version = optional(string)
         max_protocol_version = optional(string)
-        cipher_suites      = optional(list(string))
+        cipher_suites        = optional(list(string))
       }))
     }))
   }))
@@ -273,9 +273,9 @@ variable "virtual_services" {
           prefix = optional(string)
           regex  = optional(string)
         }))
-        headers     = optional(map(string))
+        headers      = optional(map(string))
         query_params = optional(map(string))
-        method      = optional(string)
+        method       = optional(string)
       }))
       routes = list(object({
         destination = object({
@@ -302,9 +302,9 @@ variable "virtual_services" {
       }))
       timeout = optional(string)
       retries = optional(object({
-        attempts       = number
+        attempts        = number
         per_try_timeout = optional(string)
-        retry_on       = optional(string)
+        retry_on        = optional(string)
       }))
       fault = optional(object({
         delay = optional(object({
@@ -325,7 +325,7 @@ variable "virtual_services" {
         allow_methods     = list(string)
         allow_headers     = list(string)
         expose_headers    = optional(list(string))
-        max_age          = optional(string)
+        max_age           = optional(string)
         allow_credentials = optional(bool)
       }))
     })), [])
@@ -333,9 +333,9 @@ variable "virtual_services" {
     tcp_routes = optional(list(object({
       matches = list(object({
         destination_subnets = optional(list(string))
-        port               = optional(number)
-        source_labels      = optional(map(string))
-        gateways           = optional(list(string))
+        port                = optional(number)
+        source_labels       = optional(map(string))
+        gateways            = optional(list(string))
       }))
       routes = list(object({
         destination = object({
@@ -353,9 +353,9 @@ variable "virtual_services" {
       matches = list(object({
         sni_hosts           = list(string)
         destination_subnets = optional(list(string))
-        port               = optional(number)
-        source_labels      = optional(map(string))
-        gateways           = optional(list(string))
+        port                = optional(number)
+        source_labels       = optional(map(string))
+        gateways            = optional(list(string))
       }))
       routes = list(object({
         destination = object({
@@ -403,7 +403,7 @@ variable "destination_rules" {
           }))
         }))
         http = optional(object({
-          http1_max_pending_requests   = optional(number)
+          http1_max_pending_requests  = optional(number)
           http2_max_requests          = optional(number)
           max_requests_per_connection = optional(number)
           max_retries                 = optional(number)
@@ -413,23 +413,23 @@ variable "destination_rules" {
       }))
 
       outlier_detection = optional(object({
-        consecutive_errors           = optional(number)
-        consecutive_gateway_errors   = optional(number)
-        consecutive_5xx_errors       = optional(number)
-        interval                    = optional(string)
-        base_ejection_time          = optional(string)
-        max_ejection_percent        = optional(number)
-        min_health_percent          = optional(number)
+        consecutive_errors         = optional(number)
+        consecutive_gateway_errors = optional(number)
+        consecutive_5xx_errors     = optional(number)
+        interval                   = optional(string)
+        base_ejection_time         = optional(string)
+        max_ejection_percent       = optional(number)
+        min_health_percent         = optional(number)
       }))
 
       tls = optional(object({
-        mode              = string
+        mode               = string
         client_certificate = optional(string)
-        private_key       = optional(string)
-        ca_certificates   = optional(string)
-        credential_name   = optional(string)
-        subject_alt_names = optional(list(string))
-        sni              = optional(string)
+        private_key        = optional(string)
+        ca_certificates    = optional(string)
+        credential_name    = optional(string)
+        subject_alt_names  = optional(list(string))
+        sni                = optional(string)
       }))
     }))
 
@@ -447,7 +447,7 @@ variable "destination_rules" {
           }))
           http = optional(object({
             http1_max_pending_requests = optional(number)
-            http2_max_requests        = optional(number)
+            http2_max_requests         = optional(number)
           }))
         }))
       }))
@@ -507,8 +507,8 @@ variable "sidecar_configs" {
         name        = string
         target_port = optional(number)
       })
-      bind            = optional(string)
-      capture_mode    = optional(string)
+      bind             = optional(string)
+      capture_mode     = optional(string)
       default_endpoint = optional(string)
     })), [])
 
@@ -518,9 +518,9 @@ variable "sidecar_configs" {
         protocol = string
         name     = string
       }))
-      bind        = optional(string)
+      bind         = optional(string)
       capture_mode = optional(string)
-      hosts       = list(string)
+      hosts        = list(string)
     })), [])
 
     outbound_traffic_policy = optional(object({
@@ -573,11 +573,11 @@ variable "authorization_policies" {
     rules = optional(list(object({
       from = optional(list(object({
         source = optional(object({
-          principals        = optional(list(string))
+          principals         = optional(list(string))
           request_principals = optional(list(string))
-          namespaces        = optional(list(string))
-          ip_blocks         = optional(list(string))
-          remote_ip_blocks  = optional(list(string))
+          namespaces         = optional(list(string))
+          ip_blocks          = optional(list(string))
+          remote_ip_blocks   = optional(list(string))
         }))
       })))
 
@@ -637,7 +637,7 @@ variable "telemetry_configs" {
         literal     = optional(string)
         environment = optional(string)
         header = optional(object({
-          name         = string
+          name          = string
           default_value = optional(string)
         }))
       })), {})
@@ -687,23 +687,23 @@ variable "alert_policies" {
   description = "Alert policies configuration"
   type = map(object({
     display_name           = string
-    combiner              = optional(string, "OR")
-    enabled               = optional(bool, true)
-    documentation         = optional(string)
+    combiner               = optional(string, "OR")
+    enabled                = optional(bool, true)
+    documentation          = optional(string)
     condition_display_name = string
-    filter                = string
-    duration              = string
-    comparison            = string
-    threshold_value       = number
-    alignment_period      = optional(string, "60s")
-    per_series_aligner    = optional(string, "ALIGN_RATE")
-    cross_series_reducer  = optional(string, "REDUCE_SUM")
-    group_by_fields       = optional(list(string), [])
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string), [])
-    auto_close_duration   = optional(string, "86400s")
-    rate_limit           = optional(string)
+    filter                 = string
+    duration               = string
+    comparison             = string
+    threshold_value        = number
+    alignment_period       = optional(string, "60s")
+    per_series_aligner     = optional(string, "ALIGN_RATE")
+    cross_series_reducer   = optional(string, "REDUCE_SUM")
+    group_by_fields        = optional(list(string), [])
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string), [])
+    auto_close_duration    = optional(string, "86400s")
+    rate_limit             = optional(string)
   }))
   default = {}
 }
@@ -741,7 +741,7 @@ variable "multi_cluster_config" {
     remote_clusters   = list(string)
     network_endpoints = map(string)
     cross_network_policy = optional(object({
-      enabled = bool
+      enabled       = bool
       trust_domains = list(string)
     }))
   })
@@ -761,13 +761,13 @@ variable "enable_fleet_workload_identity" {
 variable "fleet_workload_identity_config" {
   description = "Fleet Workload Identity configuration"
   type = object({
-    fleet_project_id = string
-    workload_identity_pool = string
+    fleet_project_id        = string
+    workload_identity_pool  = string
     service_account_mapping = map(string)
   })
   default = {
-    fleet_project_id = ""
-    workload_identity_pool = ""
+    fleet_project_id        = ""
+    workload_identity_pool  = ""
     service_account_mapping = {}
   }
 }
@@ -783,16 +783,16 @@ variable "certificate_config" {
   type = object({
     ca_pool              = string
     certificate_lifetime = string
-    key_algorithm       = string
-    key_size           = number
-    automatic_renewal   = bool
+    key_algorithm        = string
+    key_size             = number
+    automatic_renewal    = bool
   })
   default = {
     ca_pool              = ""
     certificate_lifetime = "24h"
-    key_algorithm       = "RSA"
-    key_size           = 2048
-    automatic_renewal   = true
+    key_algorithm        = "RSA"
+    key_size             = 2048
+    automatic_renewal    = true
   }
 }
 
@@ -806,19 +806,19 @@ variable "observability_config" {
   description = "Observability configuration"
   type = object({
     enable_distributed_tracing = bool
-    enable_access_logging     = bool
-    enable_metrics_collection = bool
-    trace_sampling_rate      = number
-    custom_dashboards        = list(string)
-    alerting_rules          = list(string)
+    enable_access_logging      = bool
+    enable_metrics_collection  = bool
+    trace_sampling_rate        = number
+    custom_dashboards          = list(string)
+    alerting_rules             = list(string)
   })
   default = {
     enable_distributed_tracing = true
-    enable_access_logging     = true
-    enable_metrics_collection = true
-    trace_sampling_rate      = 0.01
-    custom_dashboards        = []
-    alerting_rules          = []
+    enable_access_logging      = true
+    enable_metrics_collection  = true
+    trace_sampling_rate        = 0.01
+    custom_dashboards          = []
+    alerting_rules             = []
   }
 }
 
@@ -835,16 +835,16 @@ variable "traffic_management_config" {
     enable_circuit_breaker   = bool
     enable_retry_policies    = bool
     enable_timeout_policies  = bool
-    default_timeout         = string
-    default_retry_attempts  = number
+    default_timeout          = string
+    default_retry_attempts   = number
   })
   default = {
     enable_traffic_splitting = true
     enable_circuit_breaker   = true
     enable_retry_policies    = true
     enable_timeout_policies  = true
-    default_timeout         = "30s"
-    default_retry_attempts  = 3
+    default_timeout          = "30s"
+    default_retry_attempts   = 3
   }
 }
 
@@ -861,14 +861,14 @@ variable "security_policy_config" {
     enable_mtls_strict     = bool
     enable_authorization   = bool
     custom_ca_certificates = list(string)
-    jwt_policies          = list(string)
+    jwt_policies           = list(string)
   })
   default = {
     default_deny_all       = false
     enable_mtls_strict     = true
     enable_authorization   = true
     custom_ca_certificates = []
-    jwt_policies          = []
+    jwt_policies           = []
   }
 }
 
@@ -894,8 +894,8 @@ variable "environment" {
 variable "mesh_feature_configs" {
   description = "Advanced mesh feature configurations"
   type = map(object({
-    feature_name = string
-    enabled     = bool
+    feature_name  = string
+    enabled       = bool
     configuration = map(string)
   }))
   default = {}
@@ -921,8 +921,8 @@ variable "workload_annotations" {
 variable "namespace_configurations" {
   description = "Namespace-specific configurations"
   type = map(object({
-    namespace_name = string
-    istio_injection = bool
+    namespace_name    = string
+    istio_injection   = bool
     security_policies = list(string)
     network_policies  = list(string)
     resource_quotas   = map(string)

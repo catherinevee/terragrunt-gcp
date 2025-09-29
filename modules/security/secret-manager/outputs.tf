@@ -91,7 +91,7 @@ output "secret_replication_policies" {
       automatic = try(v.replication[0].automatic, false)
       user_managed = try([
         for r in v.replication[0].user_managed[0].replicas : {
-          location = r.location
+          location                    = r.location
           customer_managed_encryption = r.customer_managed_encryption
         }
       ], [])
@@ -377,13 +377,13 @@ output "secrets_by_state" {
 output "secrets_summary" {
   description = "Summary of secret configurations"
   value = {
-    total_secrets                = length(google_secret_manager_secret.secrets)
-    cmek_encrypted_count         = length([for k, v in google_secret_manager_secret.secrets : k if length(v.encryption) > 0])
-    automatic_replication_count  = length([for k, v in google_secret_manager_secret.secrets : k if try(v.replication[0].automatic, false)])
+    total_secrets                  = length(google_secret_manager_secret.secrets)
+    cmek_encrypted_count           = length([for k, v in google_secret_manager_secret.secrets : k if length(v.encryption) > 0])
+    automatic_replication_count    = length([for k, v in google_secret_manager_secret.secrets : k if try(v.replication[0].automatic, false)])
     user_managed_replication_count = length([for k, v in google_secret_manager_secret.secrets : k if length(try(v.replication[0].user_managed, [])) > 0])
-    rotating_secrets_count       = length([for k, v in google_secret_manager_secret.secrets : k if length(v.rotation) > 0])
-    expiring_secrets_count       = length([for k, v in google_secret_manager_secret.secrets : k if v.expire_time != null])
-    with_pubsub_topics_count     = length([for k, v in google_secret_manager_secret.secrets : k if length(v.topics) > 0])
+    rotating_secrets_count         = length([for k, v in google_secret_manager_secret.secrets : k if length(v.rotation) > 0])
+    expiring_secrets_count         = length([for k, v in google_secret_manager_secret.secrets : k if v.expire_time != null])
+    with_pubsub_topics_count       = length([for k, v in google_secret_manager_secret.secrets : k if length(v.topics) > 0])
   }
 }
 

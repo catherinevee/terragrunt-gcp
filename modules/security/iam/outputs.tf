@@ -39,7 +39,7 @@ output "service_account_keys" {
   description = "Map of service account names to their key information"
   value = {
     for k, v in google_service_account_key.keys : k => {
-      id               = v.id
+      id              = v.id
       name            = v.name
       public_key_type = v.public_key_type
       valid_after     = v.valid_after
@@ -149,12 +149,12 @@ output "workload_identity_pool_providers" {
   description = "Map of workload identity pool provider details"
   value = {
     for k, v in google_iam_workload_identity_pool_provider.providers : k => {
-      id                        = v.id
-      name                     = v.name
-      state                    = v.state
-      attribute_mapping        = v.attribute_mapping
-      attribute_condition      = v.attribute_condition
-      disabled                 = v.disabled
+      id                  = v.id
+      name                = v.name
+      state               = v.state
+      attribute_mapping   = v.attribute_mapping
+      attribute_condition = v.attribute_condition
+      disabled            = v.disabled
     }
   }
 }
@@ -178,12 +178,12 @@ output "workforce_identity_pool_providers" {
   description = "Map of workforce identity pool provider details"
   value = {
     for k, v in google_iam_workforce_pool_provider.workforce_providers : k => {
-      id                   = v.id
+      id                  = v.id
       name                = v.name
       state               = v.state
       attribute_mapping   = v.attribute_mapping
       attribute_condition = v.attribute_condition
-      disabled           = v.disabled
+      disabled            = v.disabled
     }
   }
 }
@@ -218,7 +218,7 @@ output "audit_config" {
   description = "IAM audit configuration for the project"
   value = {
     for k, v in google_project_iam_audit_config.audit_configs : k => {
-      service          = v.service
+      service           = v.service
       audit_log_configs = v.audit_log_config
     }
   }
@@ -246,13 +246,13 @@ output "deny_policies" {
 output "access_approval_settings" {
   description = "Access approval settings for the project"
   value = try({
-    name                      = google_project_access_approval_settings.settings[0].name
-    notification_emails       = google_project_access_approval_settings.settings[0].notification_emails
-    enrolled_services         = google_project_access_approval_settings.settings[0].enrolled_services
-    active_key_version       = google_project_access_approval_settings.settings[0].active_key_version
+    name                            = google_project_access_approval_settings.settings[0].name
+    notification_emails             = google_project_access_approval_settings.settings[0].notification_emails
+    enrolled_services               = google_project_access_approval_settings.settings[0].enrolled_services
+    active_key_version              = google_project_access_approval_settings.settings[0].active_key_version
     ancestor_has_active_key_version = google_project_access_approval_settings.settings[0].ancestor_has_active_key_version
-    enrolled_ancestor        = google_project_access_approval_settings.settings[0].enrolled_ancestor
-    invalid_key_version      = google_project_access_approval_settings.settings[0].invalid_key_version
+    enrolled_ancestor               = google_project_access_approval_settings.settings[0].enrolled_ancestor
+    invalid_key_version             = google_project_access_approval_settings.settings[0].invalid_key_version
   }, {})
 }
 
@@ -260,12 +260,12 @@ output "essential_contacts" {
   description = "Map of essential contacts configured"
   value = {
     for k, v in google_essential_contacts_contact.contacts : k => {
-      name                          = v.name
-      email                        = v.email
+      name                                = v.name
+      email                               = v.email
       notification_category_subscriptions = v.notification_category_subscriptions
-      language_tag                 = v.language_tag
-      validation_state             = v.validation_state
-      validation_time              = v.validate_time
+      language_tag                        = v.language_tag
+      validation_state                    = v.validation_state
+      validation_time                     = v.validate_time
     }
   }
 }
@@ -273,10 +273,10 @@ output "essential_contacts" {
 output "binary_authorization_policy" {
   description = "Binary authorization policy details"
   value = try({
-    id                         = google_binary_authorization_policy.policy[0].id
+    id                            = google_binary_authorization_policy.policy[0].id
     global_policy_evaluation_mode = google_binary_authorization_policy.policy[0].global_policy_evaluation_mode
-    admission_whitelist_patterns = google_binary_authorization_policy.policy[0].admission_whitelist_patterns
-    cluster_admission_rules      = google_binary_authorization_policy.policy[0].cluster_admission_rules
+    admission_whitelist_patterns  = google_binary_authorization_policy.policy[0].admission_whitelist_patterns
+    cluster_admission_rules       = google_binary_authorization_policy.policy[0].cluster_admission_rules
   }, {})
 }
 
@@ -295,7 +295,7 @@ output "iam_conditions_summary" {
   description = "Summary of IAM conditions applied"
   value = {
     total_conditions = length([for k, v in google_project_iam_binding.conditional_bindings : v.condition if v.condition != null])
-    condition_types = distinct([for k, v in google_project_iam_binding.conditional_bindings : v.condition[0].title if v.condition != null])
+    condition_types  = distinct([for k, v in google_project_iam_binding.conditional_bindings : v.condition[0].title if v.condition != null])
   }
 }
 
@@ -303,16 +303,16 @@ output "service_accounts_summary" {
   description = "Summary of service accounts created"
   value = {
     total_accounts = length(google_service_account.service_accounts)
-    with_keys     = length(google_service_account_key.keys)
-    accounts_list = [for k, v in google_service_account.service_accounts : v.email]
+    with_keys      = length(google_service_account_key.keys)
+    accounts_list  = [for k, v in google_service_account.service_accounts : v.email]
   }
 }
 
 output "custom_roles_summary" {
   description = "Summary of custom roles created"
   value = {
-    total_roles        = length(google_project_iam_custom_role.custom_roles)
-    total_permissions  = length(distinct(flatten([for k, v in google_project_iam_custom_role.custom_roles : v.permissions])))
+    total_roles       = length(google_project_iam_custom_role.custom_roles)
+    total_permissions = length(distinct(flatten([for k, v in google_project_iam_custom_role.custom_roles : v.permissions])))
     roles_list        = [for k, v in google_project_iam_custom_role.custom_roles : v.role_id]
   }
 }

@@ -68,7 +68,7 @@ locals {
   secret_env_vars = var.generation == 2 ? var.secret_environment_variables : {}
 
   event_trigger = var.event_trigger_config != null ? {
-    trigger_region        = try(var.event_trigger_config.trigger_region, var.region)
+    trigger_region       = try(var.event_trigger_config.trigger_region, var.region)
     event_type           = var.event_trigger_config.event_type
     resource             = try(var.event_trigger_config.resource, null)
     service              = try(var.event_trigger_config.service, null)
@@ -76,11 +76,11 @@ locals {
   } : null
 
   event_trigger_v2 = var.event_trigger_v2_config != null ? {
-    trigger_region          = try(var.event_trigger_v2_config.trigger_region, var.region)
-    event_type             = var.event_trigger_v2_config.event_type
-    pubsub_topic           = try(var.event_trigger_v2_config.pubsub_topic, null)
-    service_account_email  = try(var.event_trigger_v2_config.service_account_email, local.service_account_email)
-    retry_policy           = try(var.event_trigger_v2_config.retry_policy, "RETRY_POLICY_DO_NOT_RETRY")
+    trigger_region        = try(var.event_trigger_v2_config.trigger_region, var.region)
+    event_type            = var.event_trigger_v2_config.event_type
+    pubsub_topic          = try(var.event_trigger_v2_config.pubsub_topic, null)
+    service_account_email = try(var.event_trigger_v2_config.service_account_email, local.service_account_email)
+    retry_policy          = try(var.event_trigger_v2_config.retry_policy, "RETRY_POLICY_DO_NOT_RETRY")
   } : null
 
   timeout = var.generation == 2 ? min(var.timeout, 3600) : min(var.timeout, 540)
@@ -101,7 +101,7 @@ resource "google_service_account_key" "function_sa_key" {
   count = var.create_service_account && var.create_service_account_key ? 1 : 0
 
   service_account_id = google_service_account.function_sa[0].name
-  key_algorithm     = "KEY_ALG_RSA_2048"
+  key_algorithm      = "KEY_ALG_RSA_2048"
 }
 
 # IAM Roles for Service Account
@@ -123,7 +123,7 @@ resource "google_storage_bucket" "source_bucket" {
   storage_class = var.source_bucket_storage_class
 
   uniform_bucket_level_access = true
-  force_destroy              = var.source_bucket_force_destroy
+  force_destroy               = var.source_bucket_force_destroy
 
   versioning {
     enabled = var.source_bucket_versioning
@@ -190,20 +190,20 @@ resource "google_cloudfunctions_function" "function_v1" {
   description = var.description
   runtime     = var.runtime
 
-  available_memory_mb   = var.available_memory_mb
-  timeout              = local.timeout
-  entry_point          = var.entry_point
-  max_instances        = var.max_instances_v1
-  min_instances        = var.min_instances_v1
+  available_memory_mb = var.available_memory_mb
+  timeout             = local.timeout
+  entry_point         = var.entry_point
+  max_instances       = var.max_instances_v1
+  min_instances       = var.min_instances_v1
 
   source_archive_bucket = local.source_archive_bucket
   source_archive_object = local.source_archive_object
 
   # Build configuration
-  docker_registry = var.docker_registry
-  docker_repository = var.docker_repository
+  docker_registry             = var.docker_registry
+  docker_repository           = var.docker_repository
   build_environment_variables = var.build_environment_variables
-  build_worker_pool = var.build_worker_pool
+  build_worker_pool           = var.build_worker_pool
 
   # Trigger configuration
   trigger_http = var.trigger_http && local.event_trigger == null
@@ -224,13 +224,13 @@ resource "google_cloudfunctions_function" "function_v1" {
   }
 
   # Network configuration
-  vpc_connector                  = local.vpc_connector_name
-  vpc_connector_egress_settings  = var.vpc_connector_egress_settings
+  vpc_connector                 = local.vpc_connector_name
+  vpc_connector_egress_settings = var.vpc_connector_egress_settings
   ingress_settings              = local.ingress_settings
 
   # Security
   service_account_email = local.service_account_email
-  kms_key_name         = var.kms_key_name
+  kms_key_name          = var.kms_key_name
 
   # Environment variables
   environment_variables = local.env_vars
@@ -308,7 +308,7 @@ resource "google_cloudfunctions2_function" "function_v2" {
 
   build_config {
     runtime               = var.runtime
-    entry_point          = var.entry_point
+    entry_point           = var.entry_point
     environment_variables = var.build_environment_variables
 
     source {
@@ -319,7 +319,7 @@ resource "google_cloudfunctions2_function" "function_v2" {
     }
 
     docker_repository = var.docker_repository
-    worker_pool      = var.build_worker_pool
+    worker_pool       = var.build_worker_pool
   }
 
   service_config {
@@ -330,11 +330,11 @@ resource "google_cloudfunctions2_function" "function_v2" {
     timeout_seconds                  = local.timeout
     environment_variables            = local.env_vars
     max_instance_request_concurrency = var.max_instance_request_concurrency
-    service_account_email           = local.service_account_email
-    ingress_settings                = local.ingress_settings
-    all_traffic_on_latest_revision  = var.all_traffic_on_latest_revision
+    service_account_email            = local.service_account_email
+    ingress_settings                 = local.ingress_settings
+    all_traffic_on_latest_revision   = var.all_traffic_on_latest_revision
     vpc_connector                    = local.vpc_connector_name
-    vpc_connector_egress_settings   = var.vpc_connector_egress_settings
+    vpc_connector_egress_settings    = var.vpc_connector_egress_settings
 
     # Secret environment variables
     dynamic "secret_environment_variables" {
@@ -371,10 +371,10 @@ resource "google_cloudfunctions2_function" "function_v2" {
     for_each = local.event_trigger_v2 != null ? [local.event_trigger_v2] : []
     content {
       trigger_region        = event_trigger.value.trigger_region
-      event_type           = event_trigger.value.event_type
-      pubsub_topic         = event_trigger.value.pubsub_topic
+      event_type            = event_trigger.value.event_type
+      pubsub_topic          = event_trigger.value.pubsub_topic
       service_account_email = event_trigger.value.service_account_email
-      retry_policy         = event_trigger.value.retry_policy
+      retry_policy          = event_trigger.value.retry_policy
 
       dynamic "event_filters" {
         for_each = var.event_filters
@@ -480,7 +480,7 @@ resource "google_monitoring_alert_policy" "function_alerts" {
 resource "google_monitoring_dashboard" "function_dashboard" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "${local.function_name} Dashboard"
     mosaicLayout = {
@@ -645,8 +645,8 @@ resource "google_cloud_scheduler_job" "function_scheduler" {
   name     = var.scheduler_job_name != null ? var.scheduler_job_name : "${local.function_name}-scheduler"
   schedule = var.scheduler_cron_schedule
 
-  description     = var.scheduler_description
-  time_zone      = var.scheduler_time_zone
+  description      = var.scheduler_description
+  time_zone        = var.scheduler_time_zone
   attempt_deadline = var.scheduler_attempt_deadline
 
   retry_config {
@@ -669,7 +669,7 @@ resource "google_cloud_scheduler_job" "function_scheduler" {
         for_each = var.scheduler_oidc_token != null ? [var.scheduler_oidc_token] : []
         content {
           service_account_email = oidc_token.value.service_account_email
-          audience             = try(oidc_token.value.audience, null)
+          audience              = try(oidc_token.value.audience, null)
         }
       }
 
@@ -677,7 +677,7 @@ resource "google_cloud_scheduler_job" "function_scheduler" {
         for_each = var.scheduler_oauth_token != null ? [var.scheduler_oauth_token] : []
         content {
           service_account_email = oauth_token.value.service_account_email
-          scope                = oauth_token.value.scope
+          scope                 = oauth_token.value.scope
         }
       }
     }
@@ -695,7 +695,7 @@ resource "google_cloud_scheduler_job" "function_scheduler" {
         for_each = var.scheduler_oidc_token != null ? [var.scheduler_oidc_token] : []
         content {
           service_account_email = oidc_token.value.service_account_email
-          audience             = try(oidc_token.value.audience, null)
+          audience              = try(oidc_token.value.audience, null)
         }
       }
 
@@ -703,7 +703,7 @@ resource "google_cloud_scheduler_job" "function_scheduler" {
         for_each = var.scheduler_oauth_token != null ? [var.scheduler_oauth_token] : []
         content {
           service_account_email = oauth_token.value.service_account_email
-          scope                = oauth_token.value.scope
+          scope                 = oauth_token.value.scope
         }
       }
     }
@@ -728,10 +728,10 @@ resource "google_billing_budget" "function_budget" {
 
   budget_filter {
     projects               = ["projects/${var.project_id}"]
-    labels                = local.labels
-    services              = ["cloudfunctions.googleapis.com"]
+    labels                 = local.labels
+    services               = ["cloudfunctions.googleapis.com"]
     credit_types_treatment = "INCLUDE_ALL_CREDITS"
-    calendar_period       = var.budget_calendar_period
+    calendar_period        = var.budget_calendar_period
 
     dynamic "custom_period" {
       for_each = var.budget_custom_period != null ? [var.budget_custom_period] : []
@@ -755,8 +755,8 @@ resource "google_billing_budget" "function_budget" {
       for_each = var.budget_amount != null ? [var.budget_amount] : []
       content {
         currency_code = specified_amount.value.currency_code
-        units        = tostring(specified_amount.value.units)
-        nanos        = try(specified_amount.value.nanos, null)
+        units         = tostring(specified_amount.value.units)
+        nanos         = try(specified_amount.value.nanos, null)
       }
     }
 
@@ -771,14 +771,14 @@ resource "google_billing_budget" "function_budget" {
     for_each = var.budget_threshold_rules
     content {
       threshold_percent = threshold_rules.value.threshold_percent
-      spend_basis      = try(threshold_rules.value.spend_basis, "CURRENT_SPEND")
+      spend_basis       = try(threshold_rules.value.spend_basis, "CURRENT_SPEND")
     }
   }
 
   all_updates_rule {
-    pubsub_topic                       = var.budget_pubsub_topic
-    schema_version                     = "1.0"
-    monitoring_notification_channels   = var.budget_notification_channels
-    disable_default_iam_recipients    = var.budget_disable_default_recipients
+    pubsub_topic                     = var.budget_pubsub_topic
+    schema_version                   = "1.0"
+    monitoring_notification_channels = var.budget_notification_channels
+    disable_default_iam_recipients   = var.budget_disable_default_recipients
   }
 }

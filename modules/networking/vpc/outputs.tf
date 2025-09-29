@@ -195,11 +195,11 @@ output "route_next_hops" {
   description = "Map of route names to their next hop information"
   value = {
     for k, v in google_compute_route.routes : k => {
-      next_hop_gateway   = v.next_hop_gateway
-      next_hop_instance  = v.next_hop_instance
-      next_hop_ip        = v.next_hop_ip
+      next_hop_gateway    = v.next_hop_gateway
+      next_hop_instance   = v.next_hop_instance
+      next_hop_ip         = v.next_hop_ip
       next_hop_vpn_tunnel = v.next_hop_vpn_tunnel
-      next_hop_ilb       = v.next_hop_ilb
+      next_hop_ilb        = v.next_hop_ilb
     }
   }
 }
@@ -234,10 +234,10 @@ output "shared_vpc_service_projects" {
 output "private_service_connection" {
   description = "Private Service Connection details"
   value = {
-    network                = try(google_compute_global_address.private_service_connection[0].network, "")
-    address                = try(google_compute_global_address.private_service_connection[0].address, "")
-    prefix_length          = try(google_compute_global_address.private_service_connection[0].prefix_length, 0)
-    peering                = try(google_service_networking_connection.private_service_connection[0].peering, "")
+    network                 = try(google_compute_global_address.private_service_connection[0].network, "")
+    address                 = try(google_compute_global_address.private_service_connection[0].address, "")
+    prefix_length           = try(google_compute_global_address.private_service_connection[0].prefix_length, 0)
+    peering                 = try(google_service_networking_connection.private_service_connection[0].peering, "")
     reserved_peering_ranges = try(google_service_networking_connection.private_service_connection[0].reserved_peering_ranges, [])
   }
 }
@@ -253,14 +253,14 @@ output "interconnect_attachments" {
   description = "Map of interconnect attachment details"
   value = {
     for k, v in google_compute_interconnect_attachment.attachments : k => {
-      id                   = v.id
-      self_link            = v.self_link
-      cloud_router_ip_address = v.cloud_router_ip_address
+      id                         = v.id
+      self_link                  = v.self_link
+      cloud_router_ip_address    = v.cloud_router_ip_address
       customer_router_ip_address = v.customer_router_ip_address
-      pairing_key          = v.pairing_key
-      partner_asn          = v.partner_asn
-      state                = v.state
-      vlan_tag8021q        = v.vlan_tag8021q
+      pairing_key                = v.pairing_key
+      partner_asn                = v.partner_asn
+      state                      = v.state
+      vlan_tag8021q              = v.vlan_tag8021q
     }
   }
 }
@@ -288,11 +288,11 @@ output "network_connectivity_spokes" {
   description = "Map of Network Connectivity Center spoke details"
   value = {
     for k, v in google_network_connectivity_spoke.spokes : k => {
-      id          = v.id
-      hub         = v.hub
-      location    = v.location
-      state       = v.state
-      unique_id   = v.unique_id
+      id        = v.id
+      hub       = v.hub
+      location  = v.location
+      state     = v.state
+      unique_id = v.unique_id
     }
   }
 }
@@ -301,9 +301,9 @@ output "dns_policies" {
   description = "Map of DNS policy details for the network"
   value = {
     for k, v in google_dns_policy.policies : k => {
-      id                            = v.id
-      enable_inbound_forwarding     = v.enable_inbound_forwarding
-      enable_logging                = v.enable_logging
+      id                        = v.id
+      enable_inbound_forwarding = v.enable_inbound_forwarding
+      enable_logging            = v.enable_logging
     }
   }
 }

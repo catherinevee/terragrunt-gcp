@@ -51,10 +51,10 @@ locals {
   labels = merge(
     var.labels,
     {
-      managed_by   = "terraform"
-      module       = "compute-instance"
-      environment  = var.environment
-      created_at   = formatdate("YYYY-MM-DD", timestamp())
+      managed_by  = "terraform"
+      module      = "compute-instance"
+      environment = var.environment
+      created_at  = formatdate("YYYY-MM-DD", timestamp())
     }
   )
 
@@ -76,7 +76,7 @@ resource "random_id" "instance_suffix" {
 
   keepers = {
     machine_type = var.machine_type
-    zone        = local.zone
+    zone         = local.zone
   }
 }
 
@@ -113,27 +113,27 @@ resource "google_compute_instance" "instance" {
   zone    = local.zone
 
   machine_type              = var.machine_type
-  min_cpu_platform         = var.min_cpu_platform
-  enable_display           = var.enable_display
-  deletion_protection      = var.deletion_protection
+  min_cpu_platform          = var.min_cpu_platform
+  enable_display            = var.enable_display
+  deletion_protection       = var.deletion_protection
   allow_stopping_for_update = var.allow_stopping_for_update
-  can_ip_forward           = var.can_ip_forward
-  hostname                 = var.hostname
-  description              = var.description
+  can_ip_forward            = var.can_ip_forward
+  hostname                  = var.hostname
+  description               = var.description
 
   # Boot disk configuration
   boot_disk {
     auto_delete             = var.boot_disk_auto_delete
-    device_name            = var.boot_disk_device_name
-    mode                   = var.boot_disk_mode
+    device_name             = var.boot_disk_device_name
+    mode                    = var.boot_disk_mode
     disk_encryption_key_raw = var.boot_disk_encryption_key_raw
-    kms_key_self_link      = var.boot_disk_kms_key_self_link
+    kms_key_self_link       = var.boot_disk_kms_key_self_link
 
     initialize_params {
       size                  = var.boot_disk_size
       type                  = var.boot_disk_type
       image                 = var.boot_disk_image
-      labels               = var.boot_disk_labels
+      labels                = var.boot_disk_labels
       resource_manager_tags = var.boot_disk_resource_manager_tags
     }
   }
@@ -143,10 +143,10 @@ resource "google_compute_instance" "instance" {
     for_each = var.attached_disks
     content {
       source                  = attached_disk.value.source
-      device_name            = attached_disk.value.device_name
-      mode                   = lookup(attached_disk.value, "mode", "READ_WRITE")
+      device_name             = attached_disk.value.device_name
+      mode                    = lookup(attached_disk.value, "mode", "READ_WRITE")
       disk_encryption_key_raw = lookup(attached_disk.value, "disk_encryption_key_raw", null)
-      kms_key_self_link      = lookup(attached_disk.value, "kms_key_self_link", null)
+      kms_key_self_link       = lookup(attached_disk.value, "kms_key_self_link", null)
     }
   }
 
@@ -166,9 +166,9 @@ resource "google_compute_instance" "instance" {
       subnetwork         = lookup(network_interface.value, "subnetwork", null)
       subnetwork_project = lookup(network_interface.value, "subnetwork_project", var.project_id)
       network_ip         = lookup(network_interface.value, "network_ip", null)
-      nic_type          = lookup(network_interface.value, "nic_type", null)
-      stack_type        = lookup(network_interface.value, "stack_type", "IPV4_ONLY")
-      queue_count       = lookup(network_interface.value, "queue_count", null)
+      nic_type           = lookup(network_interface.value, "nic_type", null)
+      stack_type         = lookup(network_interface.value, "stack_type", "IPV4_ONLY")
+      queue_count        = lookup(network_interface.value, "queue_count", null)
 
       dynamic "access_config" {
         for_each = lookup(network_interface.value, "access_config", [])
@@ -215,9 +215,9 @@ resource "google_compute_instance" "instance" {
   # Scheduling configuration
   scheduling {
     preemptible                 = var.preemptible
-    automatic_restart          = var.preemptible ? false : var.automatic_restart
-    on_host_maintenance        = var.on_host_maintenance
-    provisioning_model         = var.provisioning_model
+    automatic_restart           = var.preemptible ? false : var.automatic_restart
+    on_host_maintenance         = var.on_host_maintenance
+    provisioning_model          = var.provisioning_model
     instance_termination_action = var.instance_termination_action
 
     dynamic "node_affinities" {
@@ -258,8 +258,8 @@ resource "google_compute_instance" "instance" {
     for_each = var.advanced_machine_features != null ? [var.advanced_machine_features] : []
     content {
       enable_nested_virtualization = lookup(advanced_machine_features.value, "enable_nested_virtualization", null)
-      threads_per_core            = lookup(advanced_machine_features.value, "threads_per_core", null)
-      visible_core_count          = lookup(advanced_machine_features.value, "visible_core_count", null)
+      threads_per_core             = lookup(advanced_machine_features.value, "threads_per_core", null)
+      visible_core_count           = lookup(advanced_machine_features.value, "visible_core_count", null)
     }
   }
 

@@ -20,12 +20,12 @@ output "cluster_membership_details" {
   value = {
     for k, v in google_gke_hub_membership.cluster_memberships : k => {
       membership_id = v.membership_id
-      name         = v.name
-      project      = v.project
-      endpoint     = v.endpoint
-      authority    = v.authority
-      labels       = v.labels
-      state        = v.state
+      name          = v.name
+      project       = v.project
+      endpoint      = v.endpoint
+      authority     = v.authority
+      labels        = v.labels
+      state         = v.state
     }
   }
 }
@@ -59,11 +59,11 @@ output "service_mesh_membership_details" {
   description = "Detailed information about service mesh memberships"
   value = {
     for k, v in google_gke_hub_feature_membership.service_mesh_memberships : k => {
-      location      = v.location
-      feature       = v.feature
-      membership    = v.membership
-      project       = v.project
-      mesh          = v.mesh
+      location         = v.location
+      feature          = v.feature
+      membership       = v.membership
+      project          = v.project
+      mesh             = v.mesh
       configmanagement = v.configmanagement
     }
   }
@@ -100,13 +100,13 @@ output "istio_control_plane_details" {
   description = "Detailed information about Istio control plane configurations"
   value = {
     for k, v in kubernetes_manifest.istio_control_plane : k => {
-      name      = v.manifest.metadata.name
-      namespace = v.manifest.metadata.namespace
-      hub       = v.manifest.spec.hub
-      tag       = v.manifest.spec.tag
-      revision  = v.manifest.spec.revision
-      mesh_id   = v.manifest.spec.values.global.meshID
-      network   = v.manifest.spec.values.global.network
+      name         = v.manifest.metadata.name
+      namespace    = v.manifest.metadata.namespace
+      hub          = v.manifest.spec.hub
+      tag          = v.manifest.spec.tag
+      revision     = v.manifest.spec.revision
+      mesh_id      = v.manifest.spec.values.global.meshID
+      network      = v.manifest.spec.values.global.network
       trust_domain = v.manifest.spec.values.global.trustDomain
     }
   }
@@ -241,12 +241,12 @@ output "peer_authentication_details" {
   description = "Detailed information about Istio Peer Authentication policies"
   value = {
     for k, v in kubernetes_manifest.peer_authentications : k => {
-      name             = v.manifest.metadata.name
-      namespace        = v.manifest.metadata.namespace
-      selector         = v.manifest.spec.selector
-      mtls             = v.manifest.spec.mtls
-      port_level_mtls  = v.manifest.spec.portLevelMtls
-      labels           = v.manifest.metadata.labels
+      name            = v.manifest.metadata.name
+      namespace       = v.manifest.metadata.namespace
+      selector        = v.manifest.spec.selector
+      mtls            = v.manifest.spec.mtls
+      port_level_mtls = v.manifest.spec.portLevelMtls
+      labels          = v.manifest.metadata.labels
     }
   }
 }
@@ -346,24 +346,24 @@ output "configuration_metadata" {
     service_mesh_enabled            = var.enable_service_mesh
     cluster_memberships_count       = length(google_gke_hub_membership.cluster_memberships)
     service_mesh_memberships_count  = length(google_gke_hub_feature_membership.service_mesh_memberships)
-    istio_namespaces_count         = length(kubernetes_namespace.istio_system)
-    istio_control_planes_count     = length(kubernetes_manifest.istio_control_plane)
-    istio_gateways_count           = length(kubernetes_manifest.istio_gateways)
-    virtual_services_count         = length(kubernetes_manifest.virtual_services)
-    destination_rules_count        = length(kubernetes_manifest.destination_rules)
-    service_entries_count          = length(kubernetes_manifest.service_entries)
-    sidecar_configs_count          = length(kubernetes_manifest.sidecars)
-    peer_authentications_count     = length(kubernetes_manifest.peer_authentications)
-    authorization_policies_count   = length(kubernetes_manifest.authorization_policies)
-    telemetry_configs_count        = length(kubernetes_manifest.telemetry_configs)
-    monitoring_enabled             = var.enable_monitoring
-    audit_logging_enabled          = var.enable_audit_logging
-    multi_cluster_enabled          = var.enable_multi_cluster
+    istio_namespaces_count          = length(kubernetes_namespace.istio_system)
+    istio_control_planes_count      = length(kubernetes_manifest.istio_control_plane)
+    istio_gateways_count            = length(kubernetes_manifest.istio_gateways)
+    virtual_services_count          = length(kubernetes_manifest.virtual_services)
+    destination_rules_count         = length(kubernetes_manifest.destination_rules)
+    service_entries_count           = length(kubernetes_manifest.service_entries)
+    sidecar_configs_count           = length(kubernetes_manifest.sidecars)
+    peer_authentications_count      = length(kubernetes_manifest.peer_authentications)
+    authorization_policies_count    = length(kubernetes_manifest.authorization_policies)
+    telemetry_configs_count         = length(kubernetes_manifest.telemetry_configs)
+    monitoring_enabled              = var.enable_monitoring
+    audit_logging_enabled           = var.enable_audit_logging
+    multi_cluster_enabled           = var.enable_multi_cluster
     fleet_workload_identity_enabled = var.enable_fleet_workload_identity
-    observability_enabled          = var.enable_observability
-    traffic_management_enabled     = var.enable_traffic_management
-    security_policies_enabled      = var.enable_security_policies
-    total_alert_policies           = length(google_monitoring_alert_policy.asm_alerts)
+    observability_enabled           = var.enable_observability
+    traffic_management_enabled      = var.enable_traffic_management
+    security_policies_enabled       = var.enable_security_policies
+    total_alert_policies            = length(google_monitoring_alert_policy.asm_alerts)
   }
 }
 
@@ -389,10 +389,10 @@ output "service_mesh_summary" {
       ]
     }
     networking = {
-      gateways         = length(var.istio_gateways)
-      virtual_services = length(var.virtual_services)
+      gateways          = length(var.istio_gateways)
+      virtual_services  = length(var.virtual_services)
       destination_rules = length(var.destination_rules)
-      service_entries  = length(var.service_entries)
+      service_entries   = length(var.service_entries)
     }
     security = {
       peer_authentications   = length(var.peer_authentications)
@@ -402,10 +402,10 @@ output "service_mesh_summary" {
       ]) > 0
     }
     observability = {
-      telemetry_configs = length(var.telemetry_configs)
-      monitoring_enabled = var.enable_monitoring
-      tracing_enabled = var.observability_config.enable_distributed_tracing
-      metrics_enabled = var.observability_config.enable_metrics_collection
+      telemetry_configs      = length(var.telemetry_configs)
+      monitoring_enabled     = var.enable_monitoring
+      tracing_enabled        = var.observability_config.enable_distributed_tracing
+      metrics_enabled        = var.observability_config.enable_metrics_collection
       access_logging_enabled = var.observability_config.enable_access_logging
     }
   }
@@ -415,10 +415,10 @@ output "service_mesh_summary" {
 output "multi_cluster_configuration" {
   description = "Multi-cluster configuration details"
   value = var.enable_multi_cluster ? {
-    enabled         = var.enable_multi_cluster
-    primary_cluster = var.multi_cluster_config.primary_cluster
-    remote_clusters = var.multi_cluster_config.remote_clusters
-    network_endpoints = var.multi_cluster_config.network_endpoints
+    enabled              = var.enable_multi_cluster
+    primary_cluster      = var.multi_cluster_config.primary_cluster
+    remote_clusters      = var.multi_cluster_config.remote_clusters
+    network_endpoints    = var.multi_cluster_config.network_endpoints
     cross_network_policy = var.multi_cluster_config.cross_network_policy
   } : null
 }
@@ -438,13 +438,13 @@ output "fleet_workload_identity_configuration" {
 output "observability_configuration" {
   description = "Observability configuration details"
   value = {
-    enabled                    = var.enable_observability
-    distributed_tracing        = var.observability_config.enable_distributed_tracing
-    access_logging            = var.observability_config.enable_access_logging
-    metrics_collection        = var.observability_config.enable_metrics_collection
-    trace_sampling_rate       = var.observability_config.trace_sampling_rate
-    custom_dashboards         = var.observability_config.custom_dashboards
-    alerting_rules           = var.observability_config.alerting_rules
+    enabled             = var.enable_observability
+    distributed_tracing = var.observability_config.enable_distributed_tracing
+    access_logging      = var.observability_config.enable_access_logging
+    metrics_collection  = var.observability_config.enable_metrics_collection
+    trace_sampling_rate = var.observability_config.trace_sampling_rate
+    custom_dashboards   = var.observability_config.custom_dashboards
+    alerting_rules      = var.observability_config.alerting_rules
   }
 }
 
@@ -452,12 +452,12 @@ output "observability_configuration" {
 output "traffic_management_configuration" {
   description = "Traffic management configuration details"
   value = {
-    enabled               = var.enable_traffic_management
-    traffic_splitting     = var.traffic_management_config.enable_traffic_splitting
-    circuit_breaker       = var.traffic_management_config.enable_circuit_breaker
-    retry_policies        = var.traffic_management_config.enable_retry_policies
-    timeout_policies      = var.traffic_management_config.enable_timeout_policies
-    default_timeout       = var.traffic_management_config.default_timeout
+    enabled                = var.enable_traffic_management
+    traffic_splitting      = var.traffic_management_config.enable_traffic_splitting
+    circuit_breaker        = var.traffic_management_config.enable_circuit_breaker
+    retry_policies         = var.traffic_management_config.enable_retry_policies
+    timeout_policies       = var.traffic_management_config.enable_timeout_policies
+    default_timeout        = var.traffic_management_config.default_timeout
     default_retry_attempts = var.traffic_management_config.default_retry_attempts
   }
 }
@@ -466,12 +466,12 @@ output "traffic_management_configuration" {
 output "security_policy_configuration" {
   description = "Security policy configuration details"
   value = {
-    enabled               = var.enable_security_policies
-    default_deny_all      = var.security_policy_config.default_deny_all
-    mtls_strict           = var.security_policy_config.enable_mtls_strict
-    authorization_enabled = var.security_policy_config.enable_authorization
+    enabled                = var.enable_security_policies
+    default_deny_all       = var.security_policy_config.default_deny_all
+    mtls_strict            = var.security_policy_config.enable_mtls_strict
+    authorization_enabled  = var.security_policy_config.enable_authorization
     custom_ca_certificates = length(var.security_policy_config.custom_ca_certificates)
-    jwt_policies          = length(var.security_policy_config.jwt_policies)
+    jwt_policies           = length(var.security_policy_config.jwt_policies)
   }
 }
 
@@ -483,7 +483,7 @@ output "certificate_configuration" {
     ca_pool              = var.certificate_config.ca_pool
     certificate_lifetime = var.certificate_config.certificate_lifetime
     key_algorithm        = var.certificate_config.key_algorithm
-    key_size            = var.certificate_config.key_size
+    key_size             = var.certificate_config.key_size
     automatic_renewal    = var.certificate_config.automatic_renewal
   } : null
 }
@@ -492,13 +492,13 @@ output "certificate_configuration" {
 output "management_urls" {
   description = "URLs for managing Anthos Service Mesh resources"
   value = {
-    anthos_console = "https://console.cloud.google.com/anthos?project=${var.project_id}"
-    gke_hub_console = "https://console.cloud.google.com/kubernetes/clusters?project=${var.project_id}"
+    anthos_console       = "https://console.cloud.google.com/anthos?project=${var.project_id}"
+    gke_hub_console      = "https://console.cloud.google.com/kubernetes/clusters?project=${var.project_id}"
     service_mesh_console = "https://console.cloud.google.com/anthos/services?project=${var.project_id}"
-    monitoring_console = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
-    logs_console = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
-    security_console = "https://console.cloud.google.com/security?project=${var.project_id}"
-    istio_dashboard = var.enable_monitoring && var.create_dashboard ? google_monitoring_dashboard.asm_dashboard[0].id : null
+    monitoring_console   = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
+    logs_console         = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
+    security_console     = "https://console.cloud.google.com/security?project=${var.project_id}"
+    istio_dashboard      = var.enable_monitoring && var.create_dashboard ? google_monitoring_dashboard.asm_dashboard[0].id : null
   }
 }
 
@@ -544,14 +544,14 @@ output "network_connectivity_summary" {
     total_gateways = length(var.istio_gateways)
     gateway_configurations = {
       for k, v in var.istio_gateways : k => {
-        namespace = v.namespace
+        namespace     = v.namespace
         servers_count = length(v.servers)
-        tls_enabled = length([for server in v.servers : server if server.tls != null]) > 0
+        tls_enabled   = length([for server in v.servers : server if server.tls != null]) > 0
       }
     }
     external_services = length(var.service_entries)
-    traffic_policies = length(var.destination_rules)
-    virtual_services = length(var.virtual_services)
+    traffic_policies  = length(var.destination_rules)
+    virtual_services  = length(var.virtual_services)
   }
 }
 
@@ -559,11 +559,11 @@ output "network_connectivity_summary" {
 output "health_status" {
   description = "Health and status indicators for the service mesh"
   value = {
-    service_mesh_feature_status = var.enable_service_mesh ? "enabled" : "disabled"
-    cluster_memberships_healthy = length(local.all_cluster_memberships) == length(google_gke_hub_membership.cluster_memberships)
-    control_plane_configured = length(var.istio_control_plane_configs) > 0
+    service_mesh_feature_status  = var.enable_service_mesh ? "enabled" : "disabled"
+    cluster_memberships_healthy  = length(local.all_cluster_memberships) == length(google_gke_hub_membership.cluster_memberships)
+    control_plane_configured     = length(var.istio_control_plane_configs) > 0
     security_policies_configured = length(var.peer_authentications) > 0 || length(var.authorization_policies) > 0
-    monitoring_configured = var.enable_monitoring
-    observability_configured = var.enable_observability
+    monitoring_configured        = var.enable_monitoring
+    observability_configured     = var.enable_observability
   }
 }

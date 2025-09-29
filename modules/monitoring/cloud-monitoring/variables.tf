@@ -14,7 +14,7 @@ variable "alert_policies" {
   type = map(object({
     display_name = string
     documentation = object({
-      content  = string
+      content   = string
       mime_type = string
     })
     conditions = list(object({
@@ -38,8 +38,8 @@ variable "alert_policies" {
 variable "monitoring_services" {
   description = "Monitoring services to create"
   type = map(object({
-    display_name = string
-    service_type = string
+    display_name   = string
+    service_type   = string
     service_labels = map(string)
   }))
   default = {}
@@ -48,9 +48,9 @@ variable "monitoring_services" {
 variable "slos" {
   description = "SLOs to create"
   type = map(object({
-    display_name = string
-    goal = number
-    service = string
+    display_name        = string
+    goal                = number
+    service             = string
     rolling_period_days = number
     sli = object({
       request_based = object({

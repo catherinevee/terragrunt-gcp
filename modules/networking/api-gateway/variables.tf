@@ -192,17 +192,17 @@ variable "backend_services" {
     timeout_sec = optional(number)
 
     backends = list(object({
-      group                       = string
-      balancing_mode             = optional(string)
-      capacity_scaler            = optional(number)
-      description                = optional(string)
-      max_connections            = optional(number)
+      group                        = string
+      balancing_mode               = optional(string)
+      capacity_scaler              = optional(number)
+      description                  = optional(string)
+      max_connections              = optional(number)
       max_connections_per_instance = optional(number)
       max_connections_per_endpoint = optional(number)
-      max_rate                   = optional(number)
-      max_rate_per_instance      = optional(number)
-      max_rate_per_endpoint      = optional(number)
-      max_utilization           = optional(number)
+      max_rate                     = optional(number)
+      max_rate_per_instance        = optional(number)
+      max_rate_per_endpoint        = optional(number)
+      max_utilization              = optional(number)
     }))
 
     health_checks                   = list(string)
@@ -210,18 +210,18 @@ variable "backend_services" {
 
     circuit_breakers = optional(object({
       max_requests_per_connection = optional(number)
-      max_connections            = optional(number)
-      max_pending_requests       = optional(number)
-      max_requests              = optional(number)
-      max_retries               = optional(number)
+      max_connections             = optional(number)
+      max_pending_requests        = optional(number)
+      max_requests                = optional(number)
+      max_retries                 = optional(number)
     }))
 
     consistent_hash = optional(object({
       http_cookie_ttl_seconds = optional(number)
-      http_cookie_name       = optional(string)
-      http_cookie_path       = optional(string)
-      http_header_name       = optional(string)
-      minimum_ring_size      = optional(number)
+      http_cookie_name        = optional(string)
+      http_cookie_path        = optional(string)
+      http_header_name        = optional(string)
+      minimum_ring_size       = optional(number)
     }))
 
     enable_cdn = optional(bool)
@@ -232,13 +232,13 @@ variable "backend_services" {
       max_ttl                      = optional(number)
       client_ttl                   = optional(number)
       negative_caching             = optional(bool)
-      serve_while_stale           = optional(number)
+      serve_while_stale            = optional(number)
       negative_caching_policy = optional(list(object({
         code = number
         ttl  = number
       })))
       cache_key_policy = optional(object({
-        include_protocol        = optional(bool)
+        include_protocol       = optional(bool)
         include_host           = optional(bool)
         include_query_string   = optional(bool)
         query_string_whitelist = optional(list(string))
@@ -257,7 +257,7 @@ variable "backend_services" {
     }))
 
     load_balancing_scheme = optional(string)
-    locality_lb_policy   = optional(string)
+    locality_lb_policy    = optional(string)
 
     log_config = optional(object({
       enable      = bool
@@ -266,21 +266,21 @@ variable "backend_services" {
 
     outlier_detection = optional(object({
       consecutive_errors                    = optional(number)
-      consecutive_gateway_failure          = optional(number)
-      enforcing_consecutive_errors         = optional(number)
+      consecutive_gateway_failure           = optional(number)
+      enforcing_consecutive_errors          = optional(number)
       enforcing_consecutive_gateway_failure = optional(number)
-      enforcing_success_rate               = optional(number)
-      interval_seconds                     = optional(number)
-      base_ejection_time_seconds           = optional(number)
-      max_ejection_percent                 = optional(number)
-      split_external_local_origin_errors   = optional(bool)
-      success_rate_minimum_hosts           = optional(number)
-      success_rate_request_volume          = optional(number)
-      success_rate_stdev_factor            = optional(number)
+      enforcing_success_rate                = optional(number)
+      interval_seconds                      = optional(number)
+      base_ejection_time_seconds            = optional(number)
+      max_ejection_percent                  = optional(number)
+      split_external_local_origin_errors    = optional(bool)
+      success_rate_minimum_hosts            = optional(number)
+      success_rate_request_volume           = optional(number)
+      success_rate_stdev_factor             = optional(number)
     }))
 
     security_policy         = optional(string)
-    session_affinity       = optional(string)
+    session_affinity        = optional(string)
     affinity_cookie_ttl_sec = optional(number)
   }))
   default = {}
@@ -326,27 +326,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }

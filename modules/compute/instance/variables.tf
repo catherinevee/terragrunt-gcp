@@ -150,10 +150,10 @@ variable "attached_disks" {
   description = "List of disks to attach to the instance"
   type = list(object({
     source                  = string
-    device_name            = optional(string)
-    mode                   = optional(string)
+    device_name             = optional(string)
+    mode                    = optional(string)
     disk_encryption_key_raw = optional(string)
-    kms_key_self_link      = optional(string)
+    kms_key_self_link       = optional(string)
   }))
   default = []
 }
@@ -241,9 +241,9 @@ variable "network_interface" {
     subnetwork         = optional(string)
     subnetwork_project = optional(string)
     network_ip         = optional(string)
-    nic_type          = optional(string)
-    stack_type        = optional(string)
-    queue_count       = optional(number)
+    nic_type           = optional(string)
+    stack_type         = optional(string)
+    queue_count        = optional(number)
     access_config = optional(list(object({
       nat_ip                 = optional(string)
       network_tier           = optional(string)
@@ -377,8 +377,8 @@ variable "advanced_machine_features" {
   description = "Advanced machine features configuration"
   type = object({
     enable_nested_virtualization = optional(bool)
-    threads_per_core            = optional(number)
-    visible_core_count          = optional(number)
+    threads_per_core             = optional(number)
+    visible_core_count           = optional(number)
   })
   default = null
 }

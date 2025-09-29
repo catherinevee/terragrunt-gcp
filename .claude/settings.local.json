@@ -72,7 +72,8 @@
       "Bash(gsutil mb:*)",
       "Bash(gsutil versioning:*)",
       "Bash(gcloud storage buckets update:*)",
-      "Bash(gcloud storage buckets create:*)"
+      "Bash(gcloud storage buckets create:*)",
+      "Bash(do terraform fmt -check \"$dir\")"
     ],
     "deny": [],
     "ask": []

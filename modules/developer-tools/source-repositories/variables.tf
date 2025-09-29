@@ -51,8 +51,8 @@ variable "repository_iam_bindings" {
   description = "IAM bindings for Source Repositories"
   type = map(object({
     repository_name = string
-    role           = string
-    members        = list(string)
+    role            = string
+    members         = list(string)
   }))
   default = {}
 }
@@ -68,12 +68,12 @@ variable "cloud_build_triggers" {
   description = "Configuration for Cloud Build triggers"
   type = map(object({
     repository_name = string
-    description    = string
-    branch_name    = optional(string)
-    tag_name       = optional(string)
-    commit_sha     = optional(string)
-    dir            = optional(string)
-    invert_regex   = optional(bool, false)
+    description     = string
+    branch_name     = optional(string)
+    tag_name        = optional(string)
+    commit_sha      = optional(string)
+    dir             = optional(string)
+    invert_regex    = optional(bool, false)
     build_config = optional(object({
       steps = list(object({
         name       = string
@@ -91,13 +91,13 @@ variable "cloud_build_triggers" {
           path = string
         })))
       }))
-      timeout         = optional(string)
-      images          = optional(list(string))
-      substitutions   = optional(map(string))
-      tags            = optional(list(string))
-      logs_bucket     = optional(string)
-      machine_type    = optional(string)
-      disk_size_gb    = optional(number)
+      timeout                = optional(string)
+      images                 = optional(list(string))
+      substitutions          = optional(map(string))
+      tags                   = optional(list(string))
+      logs_bucket            = optional(string)
+      machine_type           = optional(string)
+      disk_size_gb           = optional(number)
       source_provenance_hash = optional(list(string))
       artifacts = optional(object({
         images = optional(list(string))
@@ -107,17 +107,17 @@ variable "cloud_build_triggers" {
         }))
       }))
       options = optional(object({
-        disk_size_gb                = optional(number)
-        machine_type               = optional(string)
-        requested_verify_option    = optional(string)
-        source_provenance_hash     = optional(list(string))
-        substitution_option        = optional(string)
-        dynamic_substitutions      = optional(bool)
-        log_streaming_option       = optional(string)
-        worker_pool                = optional(string)
-        logging                    = optional(string)
-        env                        = optional(list(string))
-        secret_env                 = optional(list(string))
+        disk_size_gb            = optional(number)
+        machine_type            = optional(string)
+        requested_verify_option = optional(string)
+        source_provenance_hash  = optional(list(string))
+        substitution_option     = optional(string)
+        dynamic_substitutions   = optional(bool)
+        log_streaming_option    = optional(string)
+        worker_pool             = optional(string)
+        logging                 = optional(string)
+        env                     = optional(list(string))
+        secret_env              = optional(list(string))
         volumes = optional(list(object({
           name = string
           path = string
@@ -134,13 +134,13 @@ variable "cloud_build_triggers" {
         })))
       }))
     }))
-    filename       = optional(string)
-    ignored_files  = optional(list(string))
-    included_files = optional(list(string))
-    disabled       = optional(bool, false)
-    substitutions  = optional(map(string))
+    filename        = optional(string)
+    ignored_files   = optional(list(string))
+    included_files  = optional(list(string))
+    disabled        = optional(bool, false)
+    substitutions   = optional(map(string))
     service_account = optional(string)
-    tags           = optional(list(string))
+    tags            = optional(list(string))
   }))
   default = {}
 }
@@ -159,8 +159,8 @@ variable "pubsub_topics" {
       allowed_persistence_regions = list(string)
     }))
     message_retention_duration = optional(string, "604800s")
-    kms_key_name              = optional(string)
-    labels                    = optional(map(string), {})
+    kms_key_name               = optional(string)
+    labels                     = optional(map(string), {})
   }))
   default = {}
 }
@@ -171,9 +171,9 @@ variable "pubsub_subscriptions" {
     topic_name                 = string
     ack_deadline_seconds       = optional(number, 20)
     message_retention_duration = optional(string, "604800s")
-    retain_acked_messages     = optional(bool, false)
-    enable_message_ordering   = optional(bool, false)
-    filter                    = optional(string)
+    retain_acked_messages      = optional(bool, false)
+    enable_message_ordering    = optional(bool, false)
+    filter                     = optional(string)
     expiration_policy = optional(object({
       ttl = string
     }))
@@ -182,7 +182,7 @@ variable "pubsub_subscriptions" {
       attributes    = optional(map(string))
       oidc_token = optional(object({
         service_account_email = string
-        audience             = optional(string)
+        audience              = optional(string)
       }))
     }))
     retry_policy = optional(object({
@@ -254,14 +254,14 @@ variable "bucket_lifecycle_rules" {
     })
     condition = object({
       age                        = optional(number)
-      created_before            = optional(string)
-      with_state                = optional(string)
-      matches_storage_class     = optional(list(string))
-      num_newer_versions        = optional(number)
-      custom_time_before        = optional(string)
-      days_since_custom_time    = optional(number)
+      created_before             = optional(string)
+      with_state                 = optional(string)
+      matches_storage_class      = optional(list(string))
+      num_newer_versions         = optional(number)
+      custom_time_before         = optional(string)
+      days_since_custom_time     = optional(number)
       days_since_noncurrent_time = optional(number)
-      noncurrent_time_before    = optional(string)
+      noncurrent_time_before     = optional(string)
     })
   }))
   default = []
@@ -356,24 +356,24 @@ variable "enable_webhook_functions" {
 variable "webhook_functions" {
   description = "Configuration for webhook Cloud Functions"
   type = map(object({
-    region      = string
-    description = string
-    runtime     = string
-    memory_mb   = optional(number, 256)
-    timeout     = optional(number, 60)
-    entry_point = string
+    region                = string
+    description           = string
+    runtime               = string
+    memory_mb             = optional(number, 256)
+    timeout               = optional(number, 60)
+    entry_point           = string
     service_account_email = optional(string)
-    source_bucket = string
-    source_object = string
+    source_bucket         = string
+    source_object         = string
     event_trigger = optional(object({
-      event_type             = string
-      resource              = string
-      failure_policy_retry  = optional(bool, false)
+      event_type           = string
+      resource             = string
+      failure_policy_retry = optional(bool, false)
     }))
     https_trigger_enabled = optional(bool, false)
     https_security_level  = optional(string, "SECURE_ALWAYS")
     environment_variables = optional(map(string), {})
-    labels               = optional(map(string), {})
+    labels                = optional(map(string), {})
   }))
   default = {}
 }
@@ -407,23 +407,23 @@ variable "alert_policies" {
   description = "Alert policies configuration"
   type = map(object({
     display_name           = string
-    combiner              = optional(string, "OR")
-    enabled               = optional(bool, true)
-    documentation         = optional(string)
+    combiner               = optional(string, "OR")
+    enabled                = optional(bool, true)
+    documentation          = optional(string)
     condition_display_name = string
-    filter                = string
-    duration              = string
-    comparison            = string
-    threshold_value       = number
-    alignment_period      = optional(string, "60s")
-    per_series_aligner    = optional(string, "ALIGN_RATE")
-    cross_series_reducer  = optional(string, "REDUCE_SUM")
-    group_by_fields       = optional(list(string), [])
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string), [])
-    auto_close_duration   = optional(string, "86400s")
-    rate_limit           = optional(string)
+    filter                 = string
+    duration               = string
+    comparison             = string
+    threshold_value        = number
+    alignment_period       = optional(string, "60s")
+    per_series_aligner     = optional(string, "ALIGN_RATE")
+    cross_series_reducer   = optional(string, "REDUCE_SUM")
+    group_by_fields        = optional(list(string), [])
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string), [])
+    auto_close_duration    = optional(string, "86400s")
+    rate_limit             = optional(string)
   }))
   default = {}
 }
@@ -460,12 +460,12 @@ variable "branch_protection_rules" {
     repository_name = string
     branch_pattern  = string
     protection_rules = object({
-      require_pull_request     = bool
-      required_status_checks   = list(string)
+      require_pull_request      = bool
+      required_status_checks    = list(string)
       require_code_owner_review = bool
-      dismiss_stale_reviews    = bool
-      require_signed_commits   = bool
-      enforce_admins          = bool
+      dismiss_stale_reviews     = bool
+      require_signed_commits    = bool
+      enforce_admins            = bool
       restrictions = optional(object({
         users = list(string)
         teams = list(string)
@@ -484,10 +484,10 @@ variable "enable_code_scanning" {
 variable "code_scanning_config" {
   description = "Code scanning configuration"
   type = map(object({
-    repository_name = string
-    scan_types = list(string)
-    scan_schedule  = optional(string, "daily")
-    exclude_paths  = optional(list(string))
+    repository_name    = string
+    scan_types         = list(string)
+    scan_schedule      = optional(string, "daily")
+    exclude_paths      = optional(list(string))
     severity_threshold = optional(string, "medium")
     fail_on_findings   = optional(bool, false)
   }))
@@ -503,13 +503,13 @@ variable "enable_dependency_scanning" {
 variable "dependency_scanning_config" {
   description = "Dependency scanning configuration"
   type = object({
-    scan_frequency       = string
-    auto_update_enabled  = bool
-    severity_threshold   = string
-    package_ecosystems   = list(string)
+    scan_frequency      = string
+    auto_update_enabled = bool
+    severity_threshold  = string
+    package_ecosystems  = list(string)
     exclude_paths       = optional(list(string))
     notification_config = optional(object({
-      enable_notifications = bool
+      enable_notifications  = bool
       notification_channels = list(string)
     }))
   })
@@ -530,18 +530,18 @@ variable "enable_container_scanning" {
 variable "container_scanning_config" {
   description = "Container scanning configuration"
   type = object({
-    scan_on_build       = bool
-    scan_on_push        = bool
+    scan_on_build           = bool
+    scan_on_push            = bool
     vulnerability_threshold = string
-    fail_on_critical    = bool
-    whitelist_cves     = optional(list(string))
-    scan_timeout       = optional(string, "300s")
+    fail_on_critical        = bool
+    whitelist_cves          = optional(list(string))
+    scan_timeout            = optional(string, "300s")
   })
   default = {
-    scan_on_build       = true
-    scan_on_push        = true
+    scan_on_build           = true
+    scan_on_push            = true
     vulnerability_threshold = "medium"
-    fail_on_critical    = true
+    fail_on_critical        = true
   }
 }
 
@@ -554,10 +554,10 @@ variable "enable_performance_monitoring" {
 variable "performance_monitoring_config" {
   description = "Performance monitoring configuration"
   type = object({
-    enable_build_metrics     = bool
-    enable_clone_metrics     = bool
-    enable_api_metrics       = bool
-    metrics_retention_days   = optional(number, 30)
+    enable_build_metrics   = bool
+    enable_clone_metrics   = bool
+    enable_api_metrics     = bool
+    metrics_retention_days = optional(number, 30)
     alert_thresholds = optional(object({
       build_duration_threshold_minutes = optional(number, 30)
       clone_time_threshold_seconds     = optional(number, 60)
@@ -581,16 +581,16 @@ variable "compliance_config" {
   description = "Compliance monitoring configuration"
   type = object({
     compliance_standards = list(string)
-    audit_frequency     = optional(string, "daily")
+    audit_frequency      = optional(string, "daily")
     compliance_checks = list(object({
-      check_name    = string
-      check_type    = string
-      target_repos  = list(string)
-      severity      = string
+      check_name   = string
+      check_type   = string
+      target_repos = list(string)
+      severity     = string
     }))
     reporting_config = optional(object({
-      generate_reports = bool
-      report_frequency = string
+      generate_reports  = bool
+      report_frequency  = string
       report_recipients = list(string)
     }))
   })
@@ -609,17 +609,17 @@ variable "enable_backup_and_recovery" {
 variable "backup_config" {
   description = "Backup and recovery configuration"
   type = object({
-    backup_frequency     = string
-    backup_retention_days = number
-    backup_destination   = string
+    backup_frequency              = string
+    backup_retention_days         = number
+    backup_destination            = string
     enable_point_in_time_recovery = bool
-    cross_region_backup  = optional(bool, false)
-    backup_encryption_key = optional(string)
+    cross_region_backup           = optional(bool, false)
+    backup_encryption_key         = optional(string)
   })
   default = {
-    backup_frequency     = "daily"
-    backup_retention_days = 30
-    backup_destination   = ""
+    backup_frequency              = "daily"
+    backup_retention_days         = 30
+    backup_destination            = ""
     enable_point_in_time_recovery = false
   }
 }
@@ -634,8 +634,8 @@ variable "integration_configs" {
       credentials = map(string)
     })
     sync_frequency = optional(string, "hourly")
-    enabled       = optional(bool, true)
-    repositories  = optional(list(string))
+    enabled        = optional(bool, true)
+    repositories   = optional(list(string))
   }))
   default = {}
 }
@@ -648,8 +648,8 @@ variable "workflow_templates" {
     build_steps   = list(map(string))
     trigger_config = object({
       branch_patterns = list(string)
-      tag_patterns   = optional(list(string))
-      file_patterns  = optional(list(string))
+      tag_patterns    = optional(list(string))
+      file_patterns   = optional(list(string))
     })
     variables = optional(map(string))
   }))
@@ -667,16 +667,16 @@ variable "automated_testing_config" {
   type = object({
     test_frameworks = list(string)
     test_environments = list(object({
-      name        = string
-      runtime     = string
+      name             = string
+      runtime          = string
       environment_vars = map(string)
     }))
     coverage_threshold = optional(number, 80)
     parallel_testing   = optional(bool, true)
-    test_timeout      = optional(string, "600s")
+    test_timeout       = optional(string, "600s")
   })
   default = {
-    test_frameworks = []
+    test_frameworks   = []
     test_environments = []
   }
 }
@@ -703,13 +703,13 @@ variable "environment" {
 variable "custom_build_environments" {
   description = "Custom build environments configuration"
   type = map(object({
-    base_image    = string
-    packages      = list(string)
+    base_image       = string
+    packages         = list(string)
     environment_vars = map(string)
-    build_timeout = optional(string, "3600s")
-    cpu_count     = optional(number, 1)
-    memory_gb     = optional(number, 4)
-    disk_size_gb  = optional(number, 100)
+    build_timeout    = optional(string, "3600s")
+    cpu_count        = optional(number, 1)
+    memory_gb        = optional(number, 4)
+    disk_size_gb     = optional(number, 100)
   }))
   default = {}
 }
@@ -717,21 +717,21 @@ variable "custom_build_environments" {
 variable "notification_config" {
   description = "Global notification configuration"
   type = object({
-    enable_email_notifications = bool
-    enable_slack_notifications = bool
+    enable_email_notifications   = bool
+    enable_slack_notifications   = bool
     enable_webhook_notifications = bool
-    email_recipients = optional(list(string))
-    slack_webhook_url = optional(string)
+    email_recipients             = optional(list(string))
+    slack_webhook_url            = optional(string)
     custom_webhooks = optional(list(object({
-      name = string
-      url  = string
+      name    = string
+      url     = string
       headers = optional(map(string))
       events  = list(string)
     })))
   })
   default = {
-    enable_email_notifications = false
-    enable_slack_notifications = false
+    enable_email_notifications   = false
+    enable_slack_notifications   = false
     enable_webhook_notifications = false
   }
 }

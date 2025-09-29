@@ -411,11 +411,11 @@ output "import_commands" {
     dataset = "terraform import google_bigquery_dataset.dataset projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}"
 
     table = length(google_bigquery_table.tables) > 0 ?
-      "terraform import 'google_bigquery_table.tables[\"TABLE_ID\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/tables/TABLE_ID" :
+      "terraform import 'google_bigquery_table.tables[\\\"TABLE_ID\\\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/tables/TABLE_ID" :
       null
 
     routine = length(google_bigquery_routine.routines) > 0 ?
-      "terraform import 'google_bigquery_routine.routines[\"ROUTINE_ID\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/routines/ROUTINE_ID" :
+      "terraform import 'google_bigquery_routine.routines[\\\"ROUTINE_ID\\\"]' projects/${var.project_id}/datasets/${google_bigquery_dataset.dataset.dataset_id}/routines/ROUTINE_ID" :
       null
   }
 }

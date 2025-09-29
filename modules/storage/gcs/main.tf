@@ -40,7 +40,7 @@ locals {
     var.enable_default_lifecycle_rules ? [
       {
         action = {
-          type = "SetStorageClass"
+          type          = "SetStorageClass"
           storage_class = "NEARLINE"
         }
         condition = {
@@ -49,7 +49,7 @@ locals {
       },
       {
         action = {
-          type = "SetStorageClass"
+          type          = "SetStorageClass"
           storage_class = "COLDLINE"
         }
         condition = {
@@ -58,7 +58,7 @@ locals {
       },
       {
         action = {
-          type = "SetStorageClass"
+          type          = "SetStorageClass"
           storage_class = "ARCHIVE"
         }
         condition = {
@@ -89,8 +89,8 @@ locals {
   # Retention policy
   retention_policy = var.retention_policy != null ? var.retention_policy : (
     var.retention_days != null ? {
-      retention_period = var.retention_days * 86400  # Convert days to seconds
-      is_locked       = var.retention_policy_is_locked
+      retention_period = var.retention_days * 86400 # Convert days to seconds
+      is_locked        = var.retention_policy_is_locked
     } : null
   )
 
@@ -191,7 +191,7 @@ resource "google_storage_bucket" "bucket" {
     for_each = local.retention_policy != null ? [local.retention_policy] : []
     content {
       retention_period = retention_policy.value.retention_period
-      is_locked       = lookup(retention_policy.value, "is_locked", false)
+      is_locked        = lookup(retention_policy.value, "is_locked", false)
     }
   }
 

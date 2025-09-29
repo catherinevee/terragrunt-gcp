@@ -205,9 +205,9 @@ output "keyring_iam_bindings" {
   description = "Map of key ring IAM bindings"
   value = {
     for k, v in google_kms_key_ring_iam_binding.bindings : k => {
-      key_ring = v.key_ring_id
-      role     = v.role
-      members  = v.members
+      key_ring  = v.key_ring_id
+      role      = v.role
+      members   = v.members
       condition = v.condition
     }
   }
@@ -217,9 +217,9 @@ output "keyring_iam_members" {
   description = "Map of individual key ring IAM member bindings"
   value = {
     for k, v in google_kms_key_ring_iam_member.members : k => {
-      key_ring = v.key_ring_id
-      role     = v.role
-      member   = v.member
+      key_ring  = v.key_ring_id
+      role      = v.role
+      member    = v.member
       condition = v.condition
     }
   }
@@ -416,17 +416,17 @@ output "primary_key_versions" {
 output "key_state_summary" {
   description = "Summary of key states across all crypto keys"
   value = {
-    total_keys            = length(google_kms_crypto_key.keys)
-    total_versions        = length(google_kms_crypto_key_version.versions)
-    hsm_protected_keys    = length([for k, v in google_kms_crypto_key.keys : k if v.version_template[0].protection_level == "HSM"])
-    external_keys_count   = length([for k, v in google_kms_crypto_key.keys : k if v.version_template[0].protection_level == "EXTERNAL"])
-    keys_with_rotation    = length([for k, v in google_kms_crypto_key.keys : k if v.rotation_period != null])
+    total_keys          = length(google_kms_crypto_key.keys)
+    total_versions      = length(google_kms_crypto_key_version.versions)
+    hsm_protected_keys  = length([for k, v in google_kms_crypto_key.keys : k if v.version_template[0].protection_level == "HSM"])
+    external_keys_count = length([for k, v in google_kms_crypto_key.keys : k if v.version_template[0].protection_level == "EXTERNAL"])
+    keys_with_rotation  = length([for k, v in google_kms_crypto_key.keys : k if v.rotation_period != null])
   }
 }
 
 output "kms_locations" {
   description = "List of all KMS resource locations"
-  value       = distinct(concat(
+  value = distinct(concat(
     [google_kms_key_ring.keyring.location],
     [for k in google_kms_key_ring.additional_keyrings : k.location]
   ))

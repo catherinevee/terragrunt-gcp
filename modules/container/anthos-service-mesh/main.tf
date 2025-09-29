@@ -94,15 +94,15 @@ resource "google_gke_hub_feature_membership" "service_mesh_memberships" {
     version = each.value.config_management_version
 
     config_sync {
-      enabled     = each.value.config_sync_enabled
+      enabled       = each.value.config_sync_enabled
       source_format = each.value.source_format
 
       git {
-        sync_repo    = each.value.sync_repo
-        sync_branch  = each.value.sync_branch
-        policy_dir   = each.value.policy_dir
+        sync_repo      = each.value.sync_repo
+        sync_branch    = each.value.sync_branch
+        policy_dir     = each.value.policy_dir
         sync_wait_secs = each.value.sync_wait_secs
-        secret_type  = each.value.secret_type
+        secret_type    = each.value.secret_type
       }
 
       prevent_drift = each.value.prevent_drift
@@ -126,8 +126,8 @@ resource "google_gke_hub_feature_membership" "service_mesh_memberships" {
     }
 
     hierarchy_controller {
-      enabled                = each.value.hierarchy_controller_enabled
-      enable_pod_tree_labels = each.value.enable_pod_tree_labels
+      enabled                            = each.value.hierarchy_controller_enabled
+      enable_pod_tree_labels             = each.value.enable_pod_tree_labels
       enable_hierarchical_resource_quota = each.value.enable_hierarchical_resource_quota
     }
   }
@@ -145,7 +145,7 @@ resource "kubernetes_namespace" "istio_system" {
   metadata {
     name = each.value
     labels = merge(var.labels, {
-      "istio-injection" = "disabled"
+      "istio-injection"              = "disabled"
       "app.kubernetes.io/managed-by" = "terraform"
     })
     annotations = {
@@ -170,11 +170,11 @@ resource "kubernetes_manifest" "istio_control_plane" {
     metadata = {
       name      = each.key
       namespace = "istio-system"
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
-      hub = each.value.hub
-      tag = each.value.tag
+      hub      = each.value.hub
+      tag      = each.value.tag
       revision = each.value.revision
 
       values = {
@@ -194,9 +194,9 @@ resource "kubernetes_manifest" "istio_control_plane" {
                 memory = each.value.proxy_resources.limits.memory
               }
             }
-            logLevel = each.value.proxy_log_level
+            logLevel          = each.value.proxy_log_level
             componentLogLevel = each.value.proxy_component_log_level
-            privileged = each.value.proxy_privileged
+            privileged        = each.value.proxy_privileged
           }
 
           logging = {
@@ -232,7 +232,7 @@ resource "kubernetes_manifest" "istio_control_plane" {
               memory = each.value.pilot_resources.limits.memory
             }
           }
-          env = each.value.pilot_env_vars
+          env           = each.value.pilot_env_vars
           traceSampling = each.value.pilot_trace_sampling
         }
 
@@ -282,7 +282,7 @@ resource "kubernetes_manifest" "istio_control_plane" {
 
         security = {
           enableNamespacesByDefault = each.value.security_namespace_default
-          workloadCertTtl          = each.value.workload_cert_ttl
+          workloadCertTtl           = each.value.workload_cert_ttl
         }
 
         telemetry = {
@@ -292,12 +292,12 @@ resource "kubernetes_manifest" "istio_control_plane" {
               configOverride = each.value.prometheus_config_override
             }
             stackdriver = {
-              enabled           = each.value.stackdriver_telemetry_enabled
-              logging          = each.value.stackdriver_logging_enabled
-              monitoring       = each.value.stackdriver_monitoring_enabled
-              topology         = each.value.stackdriver_topology_enabled
-              disableOutbound  = each.value.stackdriver_disable_outbound
-              configOverride   = each.value.stackdriver_config_override
+              enabled         = each.value.stackdriver_telemetry_enabled
+              logging         = each.value.stackdriver_logging_enabled
+              monitoring      = each.value.stackdriver_monitoring_enabled
+              topology        = each.value.stackdriver_topology_enabled
+              disableOutbound = each.value.stackdriver_disable_outbound
+              configOverride  = each.value.stackdriver_config_override
             }
           }
         }
@@ -320,7 +320,7 @@ resource "kubernetes_manifest" "istio_control_plane" {
             hpaSpec = {
               minReplicas = each.value.pilot_hpa_min_replicas
               maxReplicas = each.value.pilot_hpa_max_replicas
-              metrics = each.value.pilot_hpa_metrics
+              metrics     = each.value.pilot_hpa_metrics
             }
           }
         }
@@ -331,10 +331,10 @@ resource "kubernetes_manifest" "istio_control_plane" {
             enabled = true
             k8s = {
               service = {
-                type = each.value.ingress_gateway_service_type
-                ports = each.value.ingress_gateway_ports
+                type           = each.value.ingress_gateway_service_type
+                ports          = each.value.ingress_gateway_ports
                 loadBalancerIP = each.value.ingress_gateway_load_balancer_ip
-                annotations = each.value.ingress_gateway_service_annotations
+                annotations    = each.value.ingress_gateway_service_annotations
               }
               hpaSpec = {
                 minReplicas = each.value.gateway_autoscale_min
@@ -366,19 +366,19 @@ resource "kubernetes_manifest" "istio_control_plane" {
 
       meshConfig = {
         defaultConfig = {
-          proxyStatsMatcher = each.value.proxy_stats_matcher
+          proxyStatsMatcher               = each.value.proxy_stats_matcher
           holdApplicationUntilProxyStarts = each.value.hold_application_until_proxy_starts
-          statusPort = each.value.proxy_status_port
-          terminationDrainDuration = each.value.termination_drain_duration
+          statusPort                      = each.value.proxy_status_port
+          terminationDrainDuration        = each.value.termination_drain_duration
         }
         defaultProviders = {
-          metrics    = each.value.default_metrics_provider
-          tracing    = each.value.default_tracing_provider
+          metrics       = each.value.default_metrics_provider
+          tracing       = each.value.default_tracing_provider
           accessLogging = each.value.default_access_logging_provider
         }
         extensionProviders = each.value.extension_providers
-        trustDomain = each.value.trust_domain
-        caCertificates = each.value.ca_certificates
+        trustDomain        = each.value.trust_domain
+        caCertificates     = each.value.ca_certificates
       }
     }
   }
@@ -398,7 +398,7 @@ resource "kubernetes_manifest" "istio_gateways" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       selector = each.value.selector
@@ -411,14 +411,14 @@ resource "kubernetes_manifest" "istio_gateways" {
           }
           hosts = server.hosts
           tls = server.tls != null ? {
-            mode           = server.tls.mode
-            credentialName = server.tls.credential_name
-            serverCertificate = server.tls.server_certificate
-            privateKey     = server.tls.private_key
-            caCertificates = server.tls.ca_certificates
+            mode               = server.tls.mode
+            credentialName     = server.tls.credential_name
+            serverCertificate  = server.tls.server_certificate
+            privateKey         = server.tls.private_key
+            caCertificates     = server.tls.ca_certificates
             minProtocolVersion = server.tls.min_protocol_version
             maxProtocolVersion = server.tls.max_protocol_version
-            cipherSuites   = server.tls.cipher_suites
+            cipherSuites       = server.tls.cipher_suites
           } : null
         }
       ]
@@ -440,7 +440,7 @@ resource "kubernetes_manifest" "virtual_services" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       hosts    = each.value.hosts
@@ -456,9 +456,9 @@ resource "kubernetes_manifest" "virtual_services" {
                 prefix = match.uri.prefix
                 regex  = match.uri.regex
               } : null
-              headers = match.headers
+              headers     = match.headers
               queryParams = match.query_params
-              method = match.method
+              method      = match.method
             }
           ]
           route = [
@@ -472,14 +472,14 @@ resource "kubernetes_manifest" "virtual_services" {
               }
               weight = route.weight
               headers = route.headers != null ? {
-                request = route.headers.request
+                request  = route.headers.request
                 response = route.headers.response
               } : null
             }
           ]
           redirect = http_route.redirect != null ? {
-            uri        = http_route.redirect.uri
-            authority  = http_route.redirect.authority
+            uri          = http_route.redirect.uri
+            authority    = http_route.redirect.authority
             redirectCode = http_route.redirect.redirect_code
           } : null
           rewrite = http_route.rewrite != null ? {
@@ -507,11 +507,11 @@ resource "kubernetes_manifest" "virtual_services" {
             subset = http_route.mirror.subset
           } : null
           corsPolicy = http_route.cors_policy != null ? {
-            allowOrigins = http_route.cors_policy.allow_origins
-            allowMethods = http_route.cors_policy.allow_methods
-            allowHeaders = http_route.cors_policy.allow_headers
-            exposeHeaders = http_route.cors_policy.expose_headers
-            maxAge       = http_route.cors_policy.max_age
+            allowOrigins     = http_route.cors_policy.allow_origins
+            allowMethods     = http_route.cors_policy.allow_methods
+            allowHeaders     = http_route.cors_policy.allow_headers
+            exposeHeaders    = http_route.cors_policy.expose_headers
+            maxAge           = http_route.cors_policy.max_age
             allowCredentials = http_route.cors_policy.allow_credentials
           } : null
         }
@@ -522,9 +522,9 @@ resource "kubernetes_manifest" "virtual_services" {
           match = [
             for match in tcp_route.matches : {
               destinationSubnets = match.destination_subnets
-              port              = match.port
-              sourceLabels      = match.source_labels
-              gateways          = match.gateways
+              port               = match.port
+              sourceLabels       = match.source_labels
+              gateways           = match.gateways
             }
           ]
           route = [
@@ -546,11 +546,11 @@ resource "kubernetes_manifest" "virtual_services" {
         for tls_route in each.value.tls_routes : {
           match = [
             for match in tls_route.matches : {
-              sniHosts          = match.sni_hosts
+              sniHosts           = match.sni_hosts
               destinationSubnets = match.destination_subnets
-              port              = match.port
-              sourceLabels      = match.source_labels
-              gateways          = match.gateways
+              port               = match.port
+              sourceLabels       = match.source_labels
+              gateways           = match.gateways
             }
           ]
           route = [
@@ -585,7 +585,7 @@ resource "kubernetes_manifest" "destination_rules" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       host = each.value.host
@@ -614,18 +614,18 @@ resource "kubernetes_manifest" "destination_rules" {
 
           http = each.value.traffic_policy.connection_pool.http != null ? {
             http1MaxPendingRequests  = each.value.traffic_policy.connection_pool.http.http1_max_pending_requests
-            http2MaxRequests        = each.value.traffic_policy.connection_pool.http.http2_max_requests
+            http2MaxRequests         = each.value.traffic_policy.connection_pool.http.http2_max_requests
             maxRequestsPerConnection = each.value.traffic_policy.connection_pool.http.max_requests_per_connection
-            maxRetries              = each.value.traffic_policy.connection_pool.http.max_retries
-            idleTimeout             = each.value.traffic_policy.connection_pool.http.idle_timeout
-            h2UpgradePolicy         = each.value.traffic_policy.connection_pool.http.h2_upgrade_policy
+            maxRetries               = each.value.traffic_policy.connection_pool.http.max_retries
+            idleTimeout              = each.value.traffic_policy.connection_pool.http.idle_timeout
+            h2UpgradePolicy          = each.value.traffic_policy.connection_pool.http.h2_upgrade_policy
           } : null
         } : null
 
         outlierDetection = each.value.traffic_policy.outlier_detection != null ? {
-          consecutiveErrors         = each.value.traffic_policy.outlier_detection.consecutive_errors
-          consecutiveGatewayErrors  = each.value.traffic_policy.outlier_detection.consecutive_gateway_errors
-          consecutive5xxErrors      = each.value.traffic_policy.outlier_detection.consecutive_5xx_errors
+          consecutiveErrors        = each.value.traffic_policy.outlier_detection.consecutive_errors
+          consecutiveGatewayErrors = each.value.traffic_policy.outlier_detection.consecutive_gateway_errors
+          consecutive5xxErrors     = each.value.traffic_policy.outlier_detection.consecutive_5xx_errors
           interval                 = each.value.traffic_policy.outlier_detection.interval
           baseEjectionTime         = each.value.traffic_policy.outlier_detection.base_ejection_time
           maxEjectionPercent       = each.value.traffic_policy.outlier_detection.max_ejection_percent
@@ -639,7 +639,7 @@ resource "kubernetes_manifest" "destination_rules" {
           caCertificates    = each.value.traffic_policy.tls.ca_certificates
           credentialName    = each.value.traffic_policy.tls.credential_name
           subjectAltNames   = each.value.traffic_policy.tls.subject_alt_names
-          sni              = each.value.traffic_policy.tls.sni
+          sni               = each.value.traffic_policy.tls.sni
         } : null
       } : null
 
@@ -658,7 +658,7 @@ resource "kubernetes_manifest" "destination_rules" {
               } : null
               http = subset.traffic_policy.connection_pool.http != null ? {
                 http1MaxPendingRequests = subset.traffic_policy.connection_pool.http.http1_max_pending_requests
-                http2MaxRequests       = subset.traffic_policy.connection_pool.http.http2_max_requests
+                http2MaxRequests        = subset.traffic_policy.connection_pool.http.http2_max_requests
               } : null
             } : null
           } : null
@@ -684,10 +684,10 @@ resource "kubernetes_manifest" "service_entries" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
-      hosts     = each.value.hosts
+      hosts = each.value.hosts
       ports = [
         for port in each.value.ports : {
           number   = port.number
@@ -702,12 +702,12 @@ resource "kubernetes_manifest" "service_entries" {
 
       endpoints = [
         for endpoint in each.value.endpoints : {
-          address = endpoint.address
-          ports   = endpoint.ports
-          labels  = endpoint.labels
-          network = endpoint.network
+          address  = endpoint.address
+          ports    = endpoint.ports
+          labels   = endpoint.labels
+          network  = endpoint.network
           locality = endpoint.locality
-          weight  = endpoint.weight
+          weight   = endpoint.weight
         }
       ]
 
@@ -732,7 +732,7 @@ resource "kubernetes_manifest" "sidecars" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       workloadSelector = each.value.workload_selector != null ? {
@@ -742,14 +742,14 @@ resource "kubernetes_manifest" "sidecars" {
       ingress = [
         for ingress in each.value.ingress : {
           port = {
-            number       = ingress.port.number
-            protocol     = ingress.port.protocol
-            name         = ingress.port.name
-            targetPort   = ingress.port.target_port
+            number     = ingress.port.number
+            protocol   = ingress.port.protocol
+            name       = ingress.port.name
+            targetPort = ingress.port.target_port
           }
-          bind             = ingress.bind
-          captureMode      = ingress.capture_mode
-          defaultEndpoint  = ingress.default_endpoint
+          bind            = ingress.bind
+          captureMode     = ingress.capture_mode
+          defaultEndpoint = ingress.default_endpoint
         }
       ]
 
@@ -794,7 +794,7 @@ resource "kubernetes_manifest" "peer_authentications" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       selector = each.value.selector != null ? {
@@ -828,7 +828,7 @@ resource "kubernetes_manifest" "authorization_policies" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       selector = each.value.selector != null ? {
@@ -842,11 +842,11 @@ resource "kubernetes_manifest" "authorization_policies" {
           from = rule.from != null ? [
             for from_rule in rule.from : {
               source = from_rule.source != null ? {
-                principals      = from_rule.source.principals
+                principals        = from_rule.source.principals
                 requestPrincipals = from_rule.source.request_principals
-                namespaces      = from_rule.source.namespaces
-                ipBlocks        = from_rule.source.ip_blocks
-                remoteIpBlocks  = from_rule.source.remote_ip_blocks
+                namespaces        = from_rule.source.namespaces
+                ipBlocks          = from_rule.source.ip_blocks
+                remoteIpBlocks    = from_rule.source.remote_ip_blocks
               } : null
             }
           ] : null
@@ -864,8 +864,8 @@ resource "kubernetes_manifest" "authorization_policies" {
 
           when = rule.when != null ? [
             for when_condition in rule.when : {
-              key    = when_condition.key
-              values = when_condition.values
+              key       = when_condition.key
+              values    = when_condition.values
               notValues = when_condition.not_values
             }
           ] : null
@@ -889,7 +889,7 @@ resource "kubernetes_manifest" "telemetry_configs" {
     metadata = {
       name      = each.key
       namespace = each.value.namespace
-      labels = merge(var.labels, each.value.labels)
+      labels    = merge(var.labels, each.value.labels)
     }
     spec = {
       selector = each.value.selector != null ? {
@@ -931,7 +931,7 @@ resource "kubernetes_manifest" "telemetry_configs" {
           randomSamplingPercentage = tracing.random_sampling_percentage
           customTags = {
             for tag_key, tag_config in tracing.custom_tags : tag_key => {
-              literal = tag_config.literal
+              literal     = tag_config.literal
               environment = tag_config.environment
               header = tag_config.header != null ? {
                 name         = tag_config.header.name
@@ -1118,10 +1118,10 @@ resource "google_monitoring_alert_policy" "asm_alerts" {
       threshold_value = each.value.threshold_value
 
       aggregations {
-        alignment_period   = each.value.alignment_period
-        per_series_aligner = each.value.per_series_aligner
+        alignment_period     = each.value.alignment_period
+        per_series_aligner   = each.value.per_series_aligner
         cross_series_reducer = each.value.cross_series_reducer
-        group_by_fields    = each.value.group_by_fields
+        group_by_fields      = each.value.group_by_fields
       }
 
       dynamic "trigger" {
@@ -1180,7 +1180,7 @@ resource "google_logging_project_sink" "asm_audit_sink" {
   ])
 
   unique_writer_identity = true
-  project               = var.project_id
+  project                = var.project_id
 
   depends_on = [
     google_project_service.asm_apis
@@ -1206,10 +1206,10 @@ locals {
 
   # Default Istio configuration values
   default_istio_config = {
-    hub = "gcr.io/istio-release"
-    tag = "1.18.2-asm.3"
-    mesh_id = "mesh-${var.project_id}"
-    network = "default"
+    hub          = "gcr.io/istio-release"
+    tag          = "1.18.2-asm.3"
+    mesh_id      = "mesh-${var.project_id}"
+    network      = "default"
     trust_domain = var.project_id
   }
 

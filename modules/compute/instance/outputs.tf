@@ -269,13 +269,13 @@ output "network_performance_config" {
 output "instance_template" {
   description = "Configuration that can be used to create an instance template"
   value = {
-    machine_type         = google_compute_instance.instance.machine_type
-    boot_disk_image      = var.boot_disk_image
-    boot_disk_size       = var.boot_disk_size
-    boot_disk_type       = var.boot_disk_type
-    network_tags         = google_compute_instance.instance.tags
-    labels              = google_compute_instance.instance.labels
-    service_account_email = google_compute_instance.instance.service_account[0].email
+    machine_type           = google_compute_instance.instance.machine_type
+    boot_disk_image        = var.boot_disk_image
+    boot_disk_size         = var.boot_disk_size
+    boot_disk_type         = var.boot_disk_type
+    network_tags           = google_compute_instance.instance.tags
+    labels                 = google_compute_instance.instance.labels
+    service_account_email  = google_compute_instance.instance.service_account[0].email
     service_account_scopes = google_compute_instance.instance.service_account[0].scopes
   }
 }

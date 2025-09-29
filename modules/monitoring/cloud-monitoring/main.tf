@@ -17,7 +17,7 @@ resource "google_monitoring_alert_policy" "alert_policies" {
   project      = var.project_id
 
   documentation {
-    content = each.value.documentation.content
+    content   = each.value.documentation.content
     mime_type = each.value.documentation.mime_type
   }
 
@@ -29,8 +29,8 @@ resource "google_monitoring_alert_policy" "alert_policies" {
       threshold_value = each.value.conditions[0].condition_threshold.threshold_value
       duration        = each.value.conditions[0].condition_threshold.duration
       aggregations {
-        alignment_period     = each.value.conditions[0].condition_threshold.aggregations[0].alignment_period
-        per_series_aligner   = each.value.conditions[0].condition_threshold.aggregations[0].per_series_aligner
+        alignment_period   = each.value.conditions[0].condition_threshold.aggregations[0].alignment_period
+        per_series_aligner = each.value.conditions[0].condition_threshold.aggregations[0].per_series_aligner
       }
     }
   }
@@ -44,12 +44,12 @@ resource "google_monitoring_alert_policy" "alert_policies" {
 resource "google_monitoring_service" "monitoring_services" {
   for_each = var.monitoring_services
 
-  service_id = each.key
+  service_id   = each.key
   display_name = each.value.display_name
-  project = var.project_id
+  project      = var.project_id
 
   basic_service {
-    service_type = each.value.service_type
+    service_type   = each.value.service_type
     service_labels = each.value.service_labels
   }
 
@@ -60,11 +60,11 @@ resource "google_monitoring_service" "monitoring_services" {
 resource "google_monitoring_slo" "slos" {
   for_each = var.slos
 
-  service = google_monitoring_service.monitoring_services[each.value.service].service_id
-  slo_id = each.key
+  service      = google_monitoring_service.monitoring_services[each.value.service].service_id
+  slo_id       = each.key
   display_name = each.value.display_name
-  goal = each.value.goal
-  project = var.project_id
+  goal         = each.value.goal
+  project      = var.project_id
 
   rolling_period_days = each.value.rolling_period_days
 

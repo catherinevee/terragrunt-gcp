@@ -38,14 +38,14 @@ variable "existing_instance_name" {
 variable "instance_config" {
   description = "Spanner instance configuration"
   type = object({
-    name         = optional(string)
-    config       = optional(string)  # e.g., "regional-us-central1", "multi-region-us"
-    display_name = optional(string)
-    num_nodes    = optional(number)
+    name             = optional(string)
+    config           = optional(string) # e.g., "regional-us-central1", "multi-region-us"
+    display_name     = optional(string)
+    num_nodes        = optional(number)
     processing_units = optional(number)
-    labels       = optional(map(string))
-    force_destroy = optional(bool)
-    edition      = optional(string)  # "STANDARD", "ENTERPRISE", "ENTERPRISE_PLUS"
+    labels           = optional(map(string))
+    force_destroy    = optional(bool)
+    edition          = optional(string) # "STANDARD", "ENTERPRISE", "ENTERPRISE_PLUS"
   })
   default = {}
 }
@@ -56,10 +56,10 @@ variable "databases" {
   type = map(object({
     name                     = optional(string)
     version_retention_period = optional(string)
-    ddl                     = optional(list(string))
-    deletion_protection     = optional(bool)
-    enable_drop_protection  = optional(bool)
-    database_dialect        = optional(string)  # "GOOGLE_STANDARD_SQL", "POSTGRESQL"
+    ddl                      = optional(list(string))
+    deletion_protection      = optional(bool)
+    enable_drop_protection   = optional(bool)
+    database_dialect         = optional(string) # "GOOGLE_STANDARD_SQL", "POSTGRESQL"
     encryption_config = optional(object({
       kms_key_name = optional(string)
     }))
@@ -72,13 +72,13 @@ variable "backup_configs" {
   description = "Map of backup configurations"
   type = map(object({
     database_id      = string
-    backup_id       = optional(string)
-    expire_time     = optional(string)
+    backup_id        = optional(string)
+    expire_time      = optional(string)
     retention_period = optional(string)
-    version_time    = optional(string)
+    version_time     = optional(string)
     encryption_config = optional(object({
-      encryption_type = optional(string)  # "USE_DATABASE_ENCRYPTION", "CUSTOMER_MANAGED_ENCRYPTION"
-      kms_key_name   = optional(string)
+      encryption_type = optional(string) # "USE_DATABASE_ENCRYPTION", "CUSTOMER_MANAGED_ENCRYPTION"
+      kms_key_name    = optional(string)
     }))
   }))
   default = {}
@@ -90,14 +90,14 @@ variable "backup_schedules" {
   type = map(object({
     database_id        = string
     retention_duration = string
-    backup_type       = string  # "full", "incremental"
+    backup_type        = string # "full", "incremental"
     cron_spec = optional(object({
       text      = string
       time_zone = string
     }))
     encryption_config = optional(object({
       encryption_type = string
-      kms_key_name   = optional(string)
+      kms_key_name    = optional(string)
     }))
   }))
   default = {}
@@ -175,27 +175,27 @@ variable "monitoring_alerts" {
   type = map(object({
     display_name           = string
     condition_display_name = string
-    filter                = string
-    threshold_value       = number
-    combiner              = optional(string)
-    enabled               = optional(bool)
-    duration              = optional(string)
-    comparison            = optional(string)
-    alignment_period      = optional(string)
-    per_series_aligner    = optional(string)
-    cross_series_reducer  = optional(string)
-    group_by_fields       = optional(list(string))
-    trigger_count         = optional(number)
-    trigger_percent       = optional(number)
-    notification_channels = optional(list(string))
-    auto_close           = optional(string)
+    filter                 = string
+    threshold_value        = number
+    combiner               = optional(string)
+    enabled                = optional(bool)
+    duration               = optional(string)
+    comparison             = optional(string)
+    alignment_period       = optional(string)
+    per_series_aligner     = optional(string)
+    cross_series_reducer   = optional(string)
+    group_by_fields        = optional(list(string))
+    trigger_count          = optional(number)
+    trigger_percent        = optional(number)
+    notification_channels  = optional(list(string))
+    auto_close             = optional(string)
     rate_limit = optional(object({
       period = string
     }))
     documentation_content   = optional(string)
     documentation_mime_type = optional(string)
     documentation_subject   = optional(string)
-    labels                 = optional(map(string))
+    labels                  = optional(map(string))
   }))
   default = {}
 }
@@ -216,7 +216,7 @@ variable "create_log_metrics" {
 variable "log_metrics" {
   description = "Log-based metrics configuration"
   type = map(object({
-    filter = string
+    filter           = string
     label_extractors = optional(map(string))
 
     metric_descriptor = optional(object({
@@ -258,17 +258,17 @@ variable "create_operation_functions" {
 variable "operation_functions" {
   description = "Cloud Function operation configurations"
   type = map(object({
-    runtime          = string
-    entry_point      = string
-    source_bucket    = string
-    source_object    = string
-    trigger_type     = string  # "http", "pubsub", "storage"
-    event_type       = optional(string)
-    trigger_resource = optional(string)
-    memory_mb        = optional(number)
-    timeout_seconds  = optional(number)
+    runtime               = string
+    entry_point           = string
+    source_bucket         = string
+    source_object         = string
+    trigger_type          = string # "http", "pubsub", "storage"
+    event_type            = optional(string)
+    trigger_resource      = optional(string)
+    memory_mb             = optional(number)
+    timeout_seconds       = optional(number)
     environment_variables = optional(map(string))
-    labels          = optional(map(string))
+    labels                = optional(map(string))
   }))
   default = {}
 }
@@ -289,7 +289,7 @@ variable "bigquery_export_location" {
 variable "bigquery_table_expiration_ms" {
   description = "Default table expiration in milliseconds"
   type        = number
-  default     = 3600000  # 1 hour
+  default     = 3600000 # 1 hour
 }
 
 variable "bigquery_partition_expiration_ms" {
@@ -357,8 +357,8 @@ variable "change_stream_topics" {
   description = "Pub/Sub topics for change streams"
   type = map(object({
     message_retention_duration = optional(number)
-    schema_name               = optional(string)
-    schema_encoding          = optional(string)
+    schema_name                = optional(string)
+    schema_encoding            = optional(string)
   }))
   default = {}
 }
@@ -374,10 +374,10 @@ variable "maintenance_jobs" {
   description = "Maintenance job configurations"
   type = map(object({
     description           = string
-    schedule             = string
-    time_zone            = string
-    target_url           = string
-    payload              = map(any)
+    schedule              = string
+    time_zone             = string
+    target_url            = string
+    payload               = map(any)
     service_account_email = optional(string)
   }))
   default = {}
@@ -387,10 +387,10 @@ variable "maintenance_jobs" {
 variable "performance_config" {
   description = "Performance configuration for Spanner"
   type = object({
-    query_optimizer_version     = optional(string)
+    query_optimizer_version            = optional(string)
     query_optimizer_statistics_package = optional(string)
-    max_commit_delay           = optional(string)
-    enable_batch_write_optimization = optional(bool)
+    max_commit_delay                   = optional(string)
+    enable_batch_write_optimization    = optional(bool)
   })
   default = {}
 }
@@ -399,18 +399,18 @@ variable "performance_config" {
 variable "security_config" {
   description = "Security configuration for Spanner"
   type = object({
-    enable_audit_logs          = optional(bool)
-    enable_data_access_logs    = optional(bool)
-    enable_vpc_sc             = optional(bool)
-    allowed_ip_ranges         = optional(list(string))
-    require_ssl               = optional(bool)
-    enable_cmek               = optional(bool)
-    kms_key_ring             = optional(string)
-    kms_crypto_key           = optional(string)
+    enable_audit_logs       = optional(bool)
+    enable_data_access_logs = optional(bool)
+    enable_vpc_sc           = optional(bool)
+    allowed_ip_ranges       = optional(list(string))
+    require_ssl             = optional(bool)
+    enable_cmek             = optional(bool)
+    kms_key_ring            = optional(string)
+    kms_crypto_key          = optional(string)
   })
   default = {
     enable_audit_logs = true
-    require_ssl      = true
+    require_ssl       = true
   }
 }
 
@@ -418,13 +418,13 @@ variable "security_config" {
 variable "scaling_config" {
   description = "Scaling configuration for Spanner"
   type = object({
-    enable_autoscaling        = optional(bool)
-    min_processing_units     = optional(number)
-    max_processing_units     = optional(number)
-    target_cpu_utilization   = optional(number)
+    enable_autoscaling         = optional(bool)
+    min_processing_units       = optional(number)
+    max_processing_units       = optional(number)
+    target_cpu_utilization     = optional(number)
     target_storage_utilization = optional(number)
-    scale_down_cooldown      = optional(string)
-    scale_up_cooldown        = optional(string)
+    scale_down_cooldown        = optional(string)
+    scale_up_cooldown          = optional(string)
   })
   default = {
     enable_autoscaling = false
@@ -435,8 +435,8 @@ variable "scaling_config" {
 variable "multi_region_config" {
   description = "Multi-region configuration for Spanner"
   type = object({
-    enable_multi_region      = optional(bool)
-    read_replicas           = optional(list(object({
+    enable_multi_region = optional(bool)
+    read_replicas = optional(list(object({
       region      = string
       config      = string
       description = optional(string)
@@ -467,7 +467,7 @@ variable "disaster_recovery_config" {
   })
   default = {
     enable_point_in_time_recovery = true
-    backup_retention_days        = 7
+    backup_retention_days         = 7
   }
 }
 
@@ -475,11 +475,11 @@ variable "disaster_recovery_config" {
 variable "connection_config" {
   description = "Connection configuration for Spanner clients"
   type = object({
-    max_sessions            = optional(number)
-    min_sessions            = optional(number)
-    max_idle_sessions       = optional(number)
-    write_sessions_fraction = optional(number)
-    keep_alive_interval     = optional(string)
+    max_sessions             = optional(number)
+    min_sessions             = optional(number)
+    max_idle_sessions        = optional(number)
+    write_sessions_fraction  = optional(number)
+    keep_alive_interval      = optional(string)
     action_on_exhausted_pool = optional(string)
   })
   default = {}
@@ -489,12 +489,12 @@ variable "connection_config" {
 variable "query_config" {
   description = "Query configuration for Spanner"
   type = object({
-    query_timeout           = optional(string)
+    query_timeout          = optional(string)
     max_staleness          = optional(string)
     enable_query_hints     = optional(bool)
     enable_commit_stats    = optional(bool)
     enable_execution_stats = optional(bool)
-    priority              = optional(string)  # "PRIORITY_LOW", "PRIORITY_MEDIUM", "PRIORITY_HIGH"
+    priority               = optional(string) # "PRIORITY_LOW", "PRIORITY_MEDIUM", "PRIORITY_HIGH"
   })
   default = {}
 }
@@ -503,8 +503,8 @@ variable "query_config" {
 variable "cost_optimization_config" {
   description = "Cost optimization configuration"
   type = object({
-    enable_low_cost_instances    = optional(bool)
-    enable_regional_instances    = optional(bool)
+    enable_low_cost_instances   = optional(bool)
+    enable_regional_instances   = optional(bool)
     optimize_for_cost           = optional(bool)
     enable_storage_optimization = optional(bool)
     compression_algorithm       = optional(string)
@@ -518,10 +518,10 @@ variable "cost_optimization_config" {
 variable "compliance_config" {
   description = "Compliance configuration for Spanner"
   type = object({
-    data_residency_regions = optional(list(string))
-    enable_field_encryption = optional(bool)
-    pii_detection_enabled  = optional(bool)
-    audit_log_retention_days = optional(number)
+    data_residency_regions     = optional(list(string))
+    enable_field_encryption    = optional(bool)
+    pii_detection_enabled      = optional(bool)
+    audit_log_retention_days   = optional(number)
     enable_data_classification = optional(bool)
   })
   default = {}
@@ -531,11 +531,11 @@ variable "compliance_config" {
 variable "advanced_features_config" {
   description = "Advanced features configuration"
   type = object({
-    enable_foreign_key_cascades = optional(bool)
-    enable_interleaved_tables  = optional(bool)
-    enable_json_data_type      = optional(bool)
-    enable_generated_columns   = optional(bool)
-    enable_check_constraints   = optional(bool)
+    enable_foreign_key_cascades  = optional(bool)
+    enable_interleaved_tables    = optional(bool)
+    enable_json_data_type        = optional(bool)
+    enable_generated_columns     = optional(bool)
+    enable_check_constraints     = optional(bool)
     enable_column_default_values = optional(bool)
   })
   default = {}
@@ -546,10 +546,10 @@ variable "migration_config" {
   description = "Migration configuration for database imports"
   type = object({
     enable_database_migration = optional(bool)
-    source_database_type     = optional(string)  # "mysql", "postgresql", "oracle"
-    migration_tool          = optional(string)  # "dms", "striim", "custom"
-    parallel_import_workers = optional(number)
-    batch_size             = optional(number)
+    source_database_type      = optional(string) # "mysql", "postgresql", "oracle"
+    migration_tool            = optional(string) # "dms", "striim", "custom"
+    parallel_import_workers   = optional(number)
+    batch_size                = optional(number)
   })
   default = {
     enable_database_migration = false
@@ -567,9 +567,9 @@ variable "labels" {
 variable "lifecycle_config" {
   description = "Lifecycle configuration for resources"
   type = object({
-    prevent_destroy          = optional(bool)
-    ignore_changes          = optional(list(string))
-    create_before_destroy   = optional(bool)
+    prevent_destroy       = optional(bool)
+    ignore_changes        = optional(list(string))
+    create_before_destroy = optional(bool)
   })
   default = {
     prevent_destroy = true

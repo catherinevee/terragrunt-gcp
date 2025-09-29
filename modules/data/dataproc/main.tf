@@ -119,7 +119,7 @@ resource "google_storage_bucket" "staging_bucket" {
   storage_class = "STANDARD"
 
   uniform_bucket_level_access = true
-  force_destroy              = var.staging_bucket_force_destroy
+  force_destroy               = var.staging_bucket_force_destroy
 
   lifecycle_rule {
     condition {
@@ -149,10 +149,10 @@ resource "google_dataproc_autoscaling_policy" "autoscaling_policy" {
 
   basic_algorithm {
     yarn_config {
-      graceful_decommission_timeout = var.autoscale_graceful_decommission_timeout
-      scale_up_factor               = var.autoscale_scale_up_factor
-      scale_down_factor             = var.autoscale_scale_down_factor
-      scale_up_min_worker_fraction  = var.autoscale_scale_up_min_worker_fraction
+      graceful_decommission_timeout  = var.autoscale_graceful_decommission_timeout
+      scale_up_factor                = var.autoscale_scale_up_factor
+      scale_down_factor              = var.autoscale_scale_down_factor
+      scale_up_min_worker_fraction   = var.autoscale_scale_up_min_worker_fraction
       scale_down_min_worker_fraction = var.autoscale_scale_down_min_worker_fraction
     }
 
@@ -187,9 +187,9 @@ resource "google_dataproc_metastore_service" "metastore" {
   service_id = var.metastore_service_name != null ? var.metastore_service_name : "${local.cluster_name}-metastore"
   location   = var.region
 
-  tier          = var.metastore_tier
+  tier            = var.metastore_tier
   release_channel = var.metastore_release_channel
-  database_type = var.metastore_database_type
+  database_type   = var.metastore_database_type
 
   maintenance_window {
     hour_of_day = var.metastore_maintenance_window_hour
@@ -197,18 +197,18 @@ resource "google_dataproc_metastore_service" "metastore" {
   }
 
   hive_metastore_config {
-    version           = var.metastore_hive_version
-    config_overrides  = var.metastore_config_overrides
+    version          = var.metastore_hive_version
+    config_overrides = var.metastore_config_overrides
     kerberos_config {
       keytab {
         cloud_secret = var.metastore_kerberos_keytab_secret
       }
-      principal = var.metastore_kerberos_principal
+      principal           = var.metastore_kerberos_principal
       krb5_config_gcs_uri = var.metastore_kerberos_config_gcs_uri
     }
     auxiliary_versions {
-      key     = var.metastore_auxiliary_version_key
-      version = var.metastore_auxiliary_version
+      key              = var.metastore_auxiliary_version_key
+      version          = var.metastore_auxiliary_version
       config_overrides = var.metastore_auxiliary_config_overrides
     }
   }
@@ -236,8 +236,8 @@ resource "google_dataproc_metastore_service" "metastore" {
   }
 
   scaling_config {
-    instance_size    = var.metastore_instance_size
-    scaling_factor   = var.metastore_scaling_factor
+    instance_size  = var.metastore_instance_size
+    scaling_factor = var.metastore_scaling_factor
   }
 
   labels = local.labels
@@ -266,9 +266,9 @@ resource "google_dataproc_cluster" "cluster" {
       min_cpu_platform = var.master_min_cpu_platform
 
       disk_config {
-        boot_disk_type    = var.master_boot_disk_type
-        boot_disk_size_gb = var.master_boot_disk_size_gb
-        num_local_ssds    = var.master_num_local_ssds
+        boot_disk_type      = var.master_boot_disk_type
+        boot_disk_size_gb   = var.master_boot_disk_size_gb
+        num_local_ssds      = var.master_num_local_ssds
         local_ssd_interface = var.master_local_ssd_interface
       }
 
@@ -285,15 +285,15 @@ resource "google_dataproc_cluster" "cluster" {
 
     # Worker configuration
     worker_config {
-      num_instances    = var.worker_num_instances
-      machine_type     = var.worker_machine_type
-      min_cpu_platform = var.worker_min_cpu_platform
+      num_instances     = var.worker_num_instances
+      machine_type      = var.worker_machine_type
+      min_cpu_platform  = var.worker_min_cpu_platform
       min_num_instances = var.enable_autoscaling ? var.autoscale_min_workers : null
 
       disk_config {
-        boot_disk_type    = var.worker_boot_disk_type
-        boot_disk_size_gb = var.worker_boot_disk_size_gb
-        num_local_ssds    = var.worker_num_local_ssds
+        boot_disk_type      = var.worker_boot_disk_type
+        boot_disk_size_gb   = var.worker_boot_disk_size_gb
+        num_local_ssds      = var.worker_num_local_ssds
         local_ssd_interface = var.worker_local_ssd_interface
       }
 
@@ -312,12 +312,12 @@ resource "google_dataproc_cluster" "cluster" {
     dynamic "preemptible_worker_config" {
       for_each = var.preemptible_workers > 0 ? [1] : []
       content {
-        num_instances = var.preemptible_workers
+        num_instances  = var.preemptible_workers
         preemptibility = var.preemptible_worker_type
         disk_config {
-          boot_disk_type    = var.preemptible_boot_disk_type
-          boot_disk_size_gb = var.preemptible_boot_disk_size_gb
-          num_local_ssds    = var.preemptible_num_local_ssds
+          boot_disk_type      = var.preemptible_boot_disk_type
+          boot_disk_size_gb   = var.preemptible_boot_disk_size_gb
+          num_local_ssds      = var.preemptible_num_local_ssds
           local_ssd_interface = var.preemptible_local_ssd_interface
         }
       }
@@ -327,27 +327,27 @@ resource "google_dataproc_cluster" "cluster" {
     software_config {
       image_version       = var.image_version
       optional_components = var.optional_components
-      properties         = local.software_config.override_properties
+      properties          = local.software_config.override_properties
     }
 
     # Security configuration
     security_config {
       kerberos_config {
-        enable_kerberos                    = var.enable_kerberos
-        root_principal_password_uri        = var.kerberos_root_principal_password_uri
-        kms_key_uri                        = var.kerberos_kms_key_uri
-        keystore_uri                       = var.kerberos_keystore_uri
-        truststore_uri                     = var.kerberos_truststore_uri
-        keystore_password_uri              = var.kerberos_keystore_password_uri
-        key_password_uri                   = var.kerberos_key_password_uri
-        truststore_password_uri            = var.kerberos_truststore_password_uri
-        cross_realm_trust_realm            = var.kerberos_cross_realm_trust_realm
-        cross_realm_trust_kdc              = var.kerberos_cross_realm_trust_kdc
-        cross_realm_trust_admin_server     = var.kerberos_cross_realm_trust_admin_server
+        enable_kerberos                       = var.enable_kerberos
+        root_principal_password_uri           = var.kerberos_root_principal_password_uri
+        kms_key_uri                           = var.kerberos_kms_key_uri
+        keystore_uri                          = var.kerberos_keystore_uri
+        truststore_uri                        = var.kerberos_truststore_uri
+        keystore_password_uri                 = var.kerberos_keystore_password_uri
+        key_password_uri                      = var.kerberos_key_password_uri
+        truststore_password_uri               = var.kerberos_truststore_password_uri
+        cross_realm_trust_realm               = var.kerberos_cross_realm_trust_realm
+        cross_realm_trust_kdc                 = var.kerberos_cross_realm_trust_kdc
+        cross_realm_trust_admin_server        = var.kerberos_cross_realm_trust_admin_server
         cross_realm_trust_shared_password_uri = var.kerberos_cross_realm_trust_shared_password_uri
-        kdc_db_key_uri                     = var.kerberos_kdc_db_key_uri
-        tgt_lifetime_hours                 = var.kerberos_tgt_lifetime_hours
-        realm                              = var.kerberos_realm
+        kdc_db_key_uri                        = var.kerberos_kdc_db_key_uri
+        tgt_lifetime_hours                    = var.kerberos_tgt_lifetime_hours
+        realm                                 = var.kerberos_realm
       }
 
       identity_config {
@@ -386,13 +386,13 @@ resource "google_dataproc_cluster" "cluster" {
 
     # GCE cluster configuration
     gce_cluster_config {
-      zone             = var.zone
-      network          = local.network
-      subnetwork       = local.subnetwork
-      internal_ip_only = var.internal_ip_only
-      service_account  = var.service_account
+      zone                   = var.zone
+      network                = local.network
+      subnetwork             = local.subnetwork
+      internal_ip_only       = var.internal_ip_only
+      service_account        = var.service_account
       service_account_scopes = var.service_account_scopes
-      tags            = var.network_tags
+      tags                   = var.network_tags
 
       metadata = merge(
         var.metadata,
@@ -403,8 +403,8 @@ resource "google_dataproc_cluster" "cluster" {
 
       reservation_affinity {
         consume_reservation_type = var.reservation_affinity_consume_type
-        key                     = var.reservation_affinity_key
-        values                  = var.reservation_affinity_values
+        key                      = var.reservation_affinity_key
+        values                   = var.reservation_affinity_values
       }
 
       node_group_affinity {
@@ -470,14 +470,14 @@ resource "google_dataproc_cluster" "cluster" {
                 disk_type        = var.gke_node_disk_type
                 oauth_scopes     = var.gke_node_oauth_scopes
                 service_account  = var.gke_node_service_account
-                tags            = var.gke_node_tags
+                tags             = var.gke_node_tags
                 min_cpu_platform = var.gke_node_min_cpu_platform
                 preemptible      = var.gke_node_preemptible
-                spot            = var.gke_node_spot
+                spot             = var.gke_node_spot
 
                 accelerators {
-                  accelerator_count = var.gke_node_accelerator_count
-                  accelerator_type  = var.gke_node_accelerator_type
+                  accelerator_count  = var.gke_node_accelerator_count
+                  accelerator_type   = var.gke_node_accelerator_type
                   gpu_partition_size = var.gke_node_gpu_partition_size
                 }
               }
@@ -508,8 +508,8 @@ resource "google_dataproc_cluster" "cluster" {
 resource "google_dataproc_job" "spark_job" {
   for_each = var.spark_jobs
 
-  project = var.project_id
-  region  = var.region
+  project      = var.project_id
+  region       = var.region
   force_delete = lookup(each.value, "force_delete", false)
 
   placement {
@@ -550,8 +550,8 @@ resource "google_dataproc_job" "spark_job" {
 resource "google_dataproc_job" "pyspark_job" {
   for_each = var.pyspark_jobs
 
-  project = var.project_id
-  region  = var.region
+  project      = var.project_id
+  region       = var.region
   force_delete = lookup(each.value, "force_delete", false)
 
   placement {
@@ -592,8 +592,8 @@ resource "google_dataproc_job" "pyspark_job" {
 resource "google_dataproc_job" "hive_job" {
   for_each = var.hive_jobs
 
-  project = var.project_id
-  region  = var.region
+  project      = var.project_id
+  region       = var.region
   force_delete = lookup(each.value, "force_delete", false)
 
   placement {
@@ -601,12 +601,12 @@ resource "google_dataproc_job" "hive_job" {
   }
 
   hive_config {
-    query_file_uri = lookup(each.value, "query_file_uri", null)
-    query_list     = lookup(each.value, "query_list", null)
+    query_file_uri      = lookup(each.value, "query_file_uri", null)
+    query_list          = lookup(each.value, "query_list", null)
     continue_on_failure = lookup(each.value, "continue_on_failure", false)
-    script_variables = lookup(each.value, "script_variables", {})
-    properties      = lookup(each.value, "properties", {})
-    jar_file_uris   = lookup(each.value, "jar_file_uris", [])
+    script_variables    = lookup(each.value, "script_variables", {})
+    properties          = lookup(each.value, "properties", {})
+    jar_file_uris       = lookup(each.value, "jar_file_uris", [])
   }
 
   labels = merge(
@@ -629,8 +629,8 @@ resource "google_dataproc_job" "hive_job" {
 resource "google_dataproc_job" "pig_job" {
   for_each = var.pig_jobs
 
-  project = var.project_id
-  region  = var.region
+  project      = var.project_id
+  region       = var.region
   force_delete = lookup(each.value, "force_delete", false)
 
   placement {
@@ -638,12 +638,12 @@ resource "google_dataproc_job" "pig_job" {
   }
 
   pig_config {
-    query_file_uri = lookup(each.value, "query_file_uri", null)
-    query_list     = lookup(each.value, "query_list", null)
+    query_file_uri      = lookup(each.value, "query_file_uri", null)
+    query_list          = lookup(each.value, "query_list", null)
     continue_on_failure = lookup(each.value, "continue_on_failure", false)
-    script_variables = lookup(each.value, "script_variables", {})
-    properties      = lookup(each.value, "properties", {})
-    jar_file_uris   = lookup(each.value, "jar_file_uris", [])
+    script_variables    = lookup(each.value, "script_variables", {})
+    properties          = lookup(each.value, "properties", {})
+    jar_file_uris       = lookup(each.value, "jar_file_uris", [])
 
     logging_config {
       driver_log_levels = lookup(each.value, "driver_log_levels", {})
@@ -670,8 +670,8 @@ resource "google_dataproc_job" "pig_job" {
 resource "google_dataproc_job" "hadoop_job" {
   for_each = var.hadoop_jobs
 
-  project = var.project_id
-  region  = var.region
+  project      = var.project_id
+  region       = var.region
   force_delete = lookup(each.value, "force_delete", false)
 
   placement {
@@ -712,8 +712,8 @@ resource "google_dataproc_job" "hadoop_job" {
 resource "google_dataproc_job" "sparksql_job" {
   for_each = var.sparksql_jobs
 
-  project = var.project_id
-  region  = var.region
+  project      = var.project_id
+  region       = var.region
   force_delete = lookup(each.value, "force_delete", false)
 
   placement {
@@ -721,11 +721,11 @@ resource "google_dataproc_job" "sparksql_job" {
   }
 
   sparksql_config {
-    query_file_uri = lookup(each.value, "query_file_uri", null)
-    query_list     = lookup(each.value, "query_list", null)
+    query_file_uri   = lookup(each.value, "query_file_uri", null)
+    query_list       = lookup(each.value, "query_list", null)
     script_variables = lookup(each.value, "script_variables", {})
-    properties      = lookup(each.value, "properties", {})
-    jar_file_uris   = lookup(each.value, "jar_file_uris", [])
+    properties       = lookup(each.value, "properties", {})
+    jar_file_uris    = lookup(each.value, "jar_file_uris", [])
 
     logging_config {
       driver_log_levels = lookup(each.value, "driver_log_levels", {})
@@ -752,8 +752,8 @@ resource "google_dataproc_job" "sparksql_job" {
 resource "google_dataproc_job" "presto_job" {
   for_each = var.presto_jobs
 
-  project = var.project_id
-  region  = var.region
+  project      = var.project_id
+  region       = var.region
   force_delete = lookup(each.value, "force_delete", false)
 
   placement {
@@ -761,12 +761,12 @@ resource "google_dataproc_job" "presto_job" {
   }
 
   presto_config {
-    query_file_uri = lookup(each.value, "query_file_uri", null)
-    query_list     = lookup(each.value, "query_list", null)
+    query_file_uri      = lookup(each.value, "query_file_uri", null)
+    query_list          = lookup(each.value, "query_list", null)
     continue_on_failure = lookup(each.value, "continue_on_failure", false)
-    output_format  = lookup(each.value, "output_format", "CSV")
-    client_tags    = lookup(each.value, "client_tags", [])
-    properties     = lookup(each.value, "properties", {})
+    output_format       = lookup(each.value, "output_format", "CSV")
+    client_tags         = lookup(each.value, "client_tags", [])
+    properties          = lookup(each.value, "properties", {})
 
     logging_config {
       driver_log_levels = lookup(each.value, "driver_log_levels", {})
@@ -809,8 +809,8 @@ resource "google_dataproc_workflow_template" "workflow" {
         temp_bucket    = var.temp_bucket
 
         master_config {
-          num_instances    = var.workflow_master_num_instances
-          machine_type     = var.workflow_master_machine_type
+          num_instances = var.workflow_master_num_instances
+          machine_type  = var.workflow_master_machine_type
           disk_config {
             boot_disk_type    = var.workflow_master_boot_disk_type
             boot_disk_size_gb = var.workflow_master_boot_disk_size_gb
@@ -818,8 +818,8 @@ resource "google_dataproc_workflow_template" "workflow" {
         }
 
         worker_config {
-          num_instances    = var.workflow_worker_num_instances
-          machine_type     = var.workflow_worker_machine_type
+          num_instances = var.workflow_worker_num_instances
+          machine_type  = var.workflow_worker_machine_type
           disk_config {
             boot_disk_type    = var.workflow_worker_boot_disk_type
             boot_disk_size_gb = var.workflow_worker_boot_disk_size_gb
@@ -832,13 +832,13 @@ resource "google_dataproc_workflow_template" "workflow" {
         }
 
         gce_cluster_config {
-          zone             = var.zone
-          network          = local.network
-          subnetwork       = local.subnetwork
-          internal_ip_only = var.internal_ip_only
-          service_account  = var.service_account
+          zone                   = var.zone
+          network                = local.network
+          subnetwork             = local.subnetwork
+          internal_ip_only       = var.internal_ip_only
+          service_account        = var.service_account
           service_account_scopes = var.service_account_scopes
-          tags            = var.network_tags
+          tags                   = var.network_tags
         }
 
         lifecycle_config {

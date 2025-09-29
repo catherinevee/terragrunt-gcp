@@ -61,12 +61,12 @@ output "config_connector_operator_name" {
 output "config_connector_operator_details" {
   description = "Detailed information about the Config Connector operator"
   value = var.install_config_connector_operator ? {
-    name                     = kubernetes_manifest.config_connector_operator[0].manifest.metadata.name
-    mode                     = kubernetes_manifest.config_connector_operator[0].manifest.spec.mode
-    google_service_account   = kubernetes_manifest.config_connector_operator[0].manifest.spec.googleServiceAccount
-    credential_secret_name   = kubernetes_manifest.config_connector_operator[0].manifest.spec.credentialSecretName
-    state_into_spec         = kubernetes_manifest.config_connector_operator[0].manifest.spec.stateIntoSpec
-    actuation_mode          = kubernetes_manifest.config_connector_operator[0].manifest.spec.actuationMode
+    name                   = kubernetes_manifest.config_connector_operator[0].manifest.metadata.name
+    mode                   = kubernetes_manifest.config_connector_operator[0].manifest.spec.mode
+    google_service_account = kubernetes_manifest.config_connector_operator[0].manifest.spec.googleServiceAccount
+    credential_secret_name = kubernetes_manifest.config_connector_operator[0].manifest.spec.credentialSecretName
+    state_into_spec        = kubernetes_manifest.config_connector_operator[0].manifest.spec.stateIntoSpec
+    actuation_mode         = kubernetes_manifest.config_connector_operator[0].manifest.spec.actuationMode
   } : null
 }
 
@@ -82,14 +82,14 @@ output "config_connector_context_details" {
   description = "Detailed information about Config Connector contexts"
   value = {
     for k, v in kubernetes_manifest.config_connector_contexts : k => {
-      name                     = v.manifest.metadata.name
-      namespace                = v.manifest.metadata.namespace
-      google_service_account   = v.manifest.spec.googleServiceAccount
-      billing_project          = v.manifest.spec.billingProject
-      request_project_policy   = v.manifest.spec.requestProjectPolicy
-      credential_secret_name   = v.manifest.spec.credentialSecretName
-      state_into_spec         = v.manifest.spec.stateIntoSpec
-      actuation_mode          = v.manifest.spec.actuationMode
+      name                   = v.manifest.metadata.name
+      namespace              = v.manifest.metadata.namespace
+      google_service_account = v.manifest.spec.googleServiceAccount
+      billing_project        = v.manifest.spec.billingProject
+      request_project_policy = v.manifest.spec.requestProjectPolicy
+      credential_secret_name = v.manifest.spec.credentialSecretName
+      state_into_spec        = v.manifest.spec.stateIntoSpec
+      actuation_mode         = v.manifest.spec.actuationMode
     }
   }
 }
@@ -242,11 +242,11 @@ output "resource_quota_details" {
   description = "Detailed information about resource quotas"
   value = {
     for k, v in kubernetes_resource_quota.config_connector_quotas : k => {
-      name       = v.metadata[0].name
-      namespace  = v.metadata[0].namespace
-      hard       = v.spec[0].hard
-      scopes     = v.spec[0].scopes
-      labels     = v.metadata[0].labels
+      name      = v.metadata[0].name
+      namespace = v.metadata[0].namespace
+      hard      = v.spec[0].hard
+      scopes    = v.spec[0].scopes
+      labels    = v.metadata[0].labels
     }
   }
 }
@@ -362,31 +362,31 @@ output "backup_config_details" {
 output "configuration_metadata" {
   description = "Metadata about the Config Connector configuration"
   value = {
-    project_id                         = var.project_id
-    config_connector_enabled           = var.enable_config_connector
-    config_connector_mode             = var.config_connector_mode
-    config_connector_namespace        = var.config_connector_namespace
-    operator_installed                = var.install_config_connector_operator
-    workload_identity_enabled         = var.enable_workload_identity
-    memberships_count                 = length(google_gke_hub_feature_membership.config_connector_memberships)
-    contexts_count                    = length(kubernetes_manifest.config_connector_contexts)
-    custom_resources_count            = length(kubernetes_manifest.config_connector_crds)
-    policy_controller_enabled         = var.enable_policy_controller
-    config_sync_enabled               = var.enable_config_sync
-    hierarchy_controller_enabled      = var.enable_hierarchy_controller
-    resource_quotas_enabled           = var.enable_resource_quotas
-    network_policies_enabled          = var.enable_network_policies
-    rbac_enabled                      = var.enable_rbac
-    monitoring_enabled                = var.enable_monitoring
-    audit_logging_enabled             = var.enable_audit_logging
-    backup_enabled                    = var.enable_backup
-    drift_detection_enabled           = var.enable_drift_detection
-    resource_validation_enabled       = var.enable_resource_validation
-    multi_tenancy_enabled             = var.enable_multi_tenancy
-    disaster_recovery_enabled         = var.enable_disaster_recovery
-    compliance_monitoring_enabled     = var.enable_compliance_monitoring
-    performance_optimization_enabled  = var.enable_performance_optimization
-    total_alert_policies              = length(google_monitoring_alert_policy.config_connector_alerts)
+    project_id                       = var.project_id
+    config_connector_enabled         = var.enable_config_connector
+    config_connector_mode            = var.config_connector_mode
+    config_connector_namespace       = var.config_connector_namespace
+    operator_installed               = var.install_config_connector_operator
+    workload_identity_enabled        = var.enable_workload_identity
+    memberships_count                = length(google_gke_hub_feature_membership.config_connector_memberships)
+    contexts_count                   = length(kubernetes_manifest.config_connector_contexts)
+    custom_resources_count           = length(kubernetes_manifest.config_connector_crds)
+    policy_controller_enabled        = var.enable_policy_controller
+    config_sync_enabled              = var.enable_config_sync
+    hierarchy_controller_enabled     = var.enable_hierarchy_controller
+    resource_quotas_enabled          = var.enable_resource_quotas
+    network_policies_enabled         = var.enable_network_policies
+    rbac_enabled                     = var.enable_rbac
+    monitoring_enabled               = var.enable_monitoring
+    audit_logging_enabled            = var.enable_audit_logging
+    backup_enabled                   = var.enable_backup
+    drift_detection_enabled          = var.enable_drift_detection
+    resource_validation_enabled      = var.enable_resource_validation
+    multi_tenancy_enabled            = var.enable_multi_tenancy
+    disaster_recovery_enabled        = var.enable_disaster_recovery
+    compliance_monitoring_enabled    = var.enable_compliance_monitoring
+    performance_optimization_enabled = var.enable_performance_optimization
+    total_alert_policies             = length(google_monitoring_alert_policy.config_connector_alerts)
   }
 }
 
@@ -394,20 +394,20 @@ output "configuration_metadata" {
 output "config_connector_status" {
   description = "Status summary of Config Connector components"
   value = {
-    feature_status = var.enable_config_connector ? "enabled" : "disabled"
-    operator_status = var.install_config_connector_operator ? "installed" : "not_installed"
+    feature_status   = var.enable_config_connector ? "enabled" : "disabled"
+    operator_status  = var.install_config_connector_operator ? "installed" : "not_installed"
     namespace_status = var.create_config_connector_namespace ? "created" : "not_created"
     memberships = {
-      total = length(var.config_connector_memberships)
+      total      = length(var.config_connector_memberships)
       configured = length(google_gke_hub_feature_membership.config_connector_memberships)
     }
     contexts = {
-      total = length(var.config_connector_contexts)
+      total      = length(var.config_connector_contexts)
       configured = length(kubernetes_manifest.config_connector_contexts)
     }
     service_accounts = {
       google_sa_created = var.create_service_account
-      k8s_sa_created = var.create_kubernetes_service_account
+      k8s_sa_created    = var.create_kubernetes_service_account
       workload_identity = var.enable_workload_identity
     }
   }
@@ -418,36 +418,36 @@ output "features_configuration" {
   description = "Configuration summary of enabled features"
   value = {
     policy_controller = {
-      enabled = var.enable_policy_controller
+      enabled     = var.enable_policy_controller
       constraints = length(var.policy_constraints)
-      templates = length(var.constraint_templates)
+      templates   = length(var.constraint_templates)
     }
     config_sync = {
       enabled = var.enable_config_sync
       secrets = length(var.config_sync_secrets)
     }
     hierarchy_controller = {
-      enabled = var.enable_hierarchy_controller
+      enabled        = var.enable_hierarchy_controller
       configurations = length(var.hierarchy_configurations)
     }
     resource_management = {
-      quotas_enabled = var.enable_resource_quotas
+      quotas_enabled           = var.enable_resource_quotas
       network_policies_enabled = var.enable_network_policies
-      rbac_enabled = var.enable_rbac
+      rbac_enabled             = var.enable_rbac
     }
     backup_and_recovery = {
-      backup_enabled = var.enable_backup
+      backup_enabled            = var.enable_backup
       disaster_recovery_enabled = var.enable_disaster_recovery
-      backup_configs = length(var.backup_configurations)
+      backup_configs            = length(var.backup_configurations)
     }
     security = {
-      drift_detection = var.enable_drift_detection
-      resource_validation = var.enable_resource_validation
+      drift_detection       = var.enable_drift_detection
+      resource_validation   = var.enable_resource_validation
       compliance_monitoring = var.enable_compliance_monitoring
     }
     operational = {
-      monitoring_enabled = var.enable_monitoring
-      audit_logging_enabled = var.enable_audit_logging
+      monitoring_enabled       = var.enable_monitoring
+      audit_logging_enabled    = var.enable_audit_logging
       performance_optimization = var.enable_performance_optimization
     }
   }
@@ -458,30 +458,30 @@ output "advanced_configuration" {
   description = "Advanced configuration details"
   value = {
     multi_tenancy = var.enable_multi_tenancy ? {
-      enabled = var.enable_multi_tenancy
+      enabled          = var.enable_multi_tenancy
       tenant_isolation = var.multi_tenancy_config.tenant_isolation_enabled
       namespace_quotas = length(var.multi_tenancy_config.namespace_quotas)
-      rbac_per_tenant = var.multi_tenancy_config.rbac_per_tenant
+      rbac_per_tenant  = var.multi_tenancy_config.rbac_per_tenant
     } : null
 
     drift_detection = var.enable_drift_detection ? {
-      enabled = var.enable_drift_detection
-      interval_minutes = var.drift_detection_config.detection_interval_minutes
-      auto_remediation = var.drift_detection_config.auto_remediation
+      enabled            = var.enable_drift_detection
+      interval_minutes   = var.drift_detection_config.detection_interval_minutes
+      auto_remediation   = var.drift_detection_config.auto_remediation
       excluded_resources = length(var.drift_detection_config.excluded_resources)
     } : null
 
     compliance = var.enable_compliance_monitoring ? {
-      enabled = var.enable_compliance_monitoring
-      standards = var.compliance_config.compliance_standards
-      audit_frequency = var.compliance_config.audit_frequency
+      enabled          = var.enable_compliance_monitoring
+      standards        = var.compliance_config.compliance_standards
+      audit_frequency  = var.compliance_config.audit_frequency
       violation_alerts = var.compliance_config.violation_alerts
     } : null
 
     performance = var.enable_performance_optimization ? {
-      enabled = var.enable_performance_optimization
-      controller_replicas = var.performance_config.controller_replicas
-      parallel_workers = var.performance_config.parallel_workers
+      enabled                = var.enable_performance_optimization
+      controller_replicas    = var.performance_config.controller_replicas
+      parallel_workers       = var.performance_config.parallel_workers
       reconciliation_timeout = var.performance_config.reconciliation_timeout
     } : null
   }
@@ -492,11 +492,11 @@ output "management_urls" {
   description = "URLs for managing Config Connector resources"
   value = {
     anthos_config_management_console = "https://console.cloud.google.com/kubernetes/config_management?project=${var.project_id}"
-    gke_hub_console = "https://console.cloud.google.com/kubernetes/clusters?project=${var.project_id}"
-    policy_controller_console = var.enable_policy_controller ? "https://console.cloud.google.com/kubernetes/policy?project=${var.project_id}" : null
-    monitoring_console = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
-    logs_console = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
-    workload_identity_console = var.enable_workload_identity ? "https://console.cloud.google.com/iam-admin/workload-identity-pools?project=${var.project_id}" : null
+    gke_hub_console                  = "https://console.cloud.google.com/kubernetes/clusters?project=${var.project_id}"
+    policy_controller_console        = var.enable_policy_controller ? "https://console.cloud.google.com/kubernetes/policy?project=${var.project_id}" : null
+    monitoring_console               = var.enable_monitoring ? "https://console.cloud.google.com/monitoring?project=${var.project_id}" : null
+    logs_console                     = "https://console.cloud.google.com/logs/query?project=${var.project_id}"
+    workload_identity_console        = var.enable_workload_identity ? "https://console.cloud.google.com/iam-admin/workload-identity-pools?project=${var.project_id}" : null
   }
 }
 
@@ -509,11 +509,11 @@ output "resource_identifiers" {
       for k, v in google_gke_hub_feature_membership.config_connector_memberships : k => v.membership
     }
     namespace_resource = var.create_config_connector_namespace ? kubernetes_namespace.config_connector_system[0].metadata[0].name : null
-    operator_resource = var.install_config_connector_operator ? kubernetes_manifest.config_connector_operator[0].manifest.metadata.name : null
+    operator_resource  = var.install_config_connector_operator ? kubernetes_manifest.config_connector_operator[0].manifest.metadata.name : null
     context_resources = {
       for k, v in kubernetes_manifest.config_connector_contexts : k => v.manifest.metadata.name
     }
-    google_service_account_resource = var.create_service_account ? google_service_account.config_connector_sa[0].email : null
+    google_service_account_resource     = var.create_service_account ? google_service_account.config_connector_sa[0].email : null
     kubernetes_service_account_resource = var.create_kubernetes_service_account ? kubernetes_service_account.config_connector_ksa[0].metadata[0].name : null
   }
 }
@@ -528,12 +528,12 @@ output "supported_resource_types" {
 output "configuration_validation" {
   description = "Configuration validation results"
   value = {
-    valid_config_connector_mode = contains(["cluster", "namespaced"], var.config_connector_mode)
-    service_account_configured = var.create_service_account || var.google_service_account_email != ""
+    valid_config_connector_mode           = contains(["cluster", "namespaced"], var.config_connector_mode)
+    service_account_configured            = var.create_service_account || var.google_service_account_email != ""
     workload_identity_properly_configured = var.enable_workload_identity ? (var.create_service_account && var.create_kubernetes_service_account) : true
-    monitoring_configured = var.enable_monitoring
-    required_apis_enabled = var.enable_apis
-    namespace_properly_configured = var.create_config_connector_namespace || length(var.config_connector_contexts) > 0
+    monitoring_configured                 = var.enable_monitoring
+    required_apis_enabled                 = var.enable_apis
+    namespace_properly_configured         = var.create_config_connector_namespace || length(var.config_connector_contexts) > 0
   }
 }
 
@@ -542,11 +542,11 @@ output "operational_health" {
   description = "Operational health indicators"
   value = {
     config_connector_operational = var.enable_config_connector && var.install_config_connector_operator
-    memberships_configured = length(google_gke_hub_feature_membership.config_connector_memberships) > 0
-    contexts_configured = length(kubernetes_manifest.config_connector_contexts) > 0 || var.config_connector_mode == "cluster"
-    service_accounts_configured = (var.create_service_account || var.google_service_account_email != "") && (var.create_kubernetes_service_account || !var.enable_workload_identity)
-    monitoring_active = var.enable_monitoring
-    security_configured = var.enable_policy_controller || var.enable_rbac || var.enable_network_policies
-    backup_configured = var.enable_backup && length(var.backup_configurations) > 0
+    memberships_configured       = length(google_gke_hub_feature_membership.config_connector_memberships) > 0
+    contexts_configured          = length(kubernetes_manifest.config_connector_contexts) > 0 || var.config_connector_mode == "cluster"
+    service_accounts_configured  = (var.create_service_account || var.google_service_account_email != "") && (var.create_kubernetes_service_account || !var.enable_workload_identity)
+    monitoring_active            = var.enable_monitoring
+    security_configured          = var.enable_policy_controller || var.enable_rbac || var.enable_network_policies
+    backup_configured            = var.enable_backup && length(var.backup_configurations) > 0
   }
 }

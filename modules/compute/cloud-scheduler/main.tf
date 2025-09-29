@@ -30,7 +30,7 @@ locals {
   # Generate job configurations with defaults
   job_configs = {
     for job_name, job_config in var.scheduler_jobs : job_name => merge({
-      schedule         = "0 9 * * 1"  # Default: 9 AM every Monday
+      schedule         = "0 9 * * 1" # Default: 9 AM every Monday
       time_zone        = "UTC"
       attempt_deadline = "180s"
       retry_config = {
@@ -158,7 +158,7 @@ resource "google_cloud_scheduler_job" "http_jobs" {
       for_each = each.value.http_config.oauth_token != null ? [1] : []
       content {
         service_account_email = each.value.http_config.oauth_token.service_account_email
-        scope                = each.value.http_config.oauth_token.scope
+        scope                 = each.value.http_config.oauth_token.scope
       }
     }
 
@@ -166,7 +166,7 @@ resource "google_cloud_scheduler_job" "http_jobs" {
       for_each = each.value.http_config.oidc_token != null ? [1] : []
       content {
         service_account_email = each.value.http_config.oidc_token.service_account_email
-        audience             = each.value.http_config.oidc_token.audience
+        audience              = each.value.http_config.oidc_token.audience
       }
     }
   }
@@ -294,7 +294,7 @@ resource "google_cloud_scheduler_job" "cloud_function_jobs" {
       for_each = each.value.cloud_function_config.oidc_token != null ? [1] : []
       content {
         service_account_email = each.value.cloud_function_config.oidc_token.service_account_email
-        audience             = each.value.cloud_function_config.oidc_token.audience
+        audience              = each.value.cloud_function_config.oidc_token.audience
       }
     }
   }
@@ -304,11 +304,11 @@ resource "google_cloud_scheduler_job" "cloud_function_jobs" {
 resource "google_cloud_scheduler_job_iam_member" "job_iam" {
   for_each = var.job_iam_bindings
 
-  project  = var.project_id
-  region   = var.region
-  job      = google_cloud_scheduler_job.http_jobs[each.value.job_name].name
-  role     = each.value.role
-  member   = each.value.member
+  project = var.project_id
+  region  = var.region
+  job     = google_cloud_scheduler_job.http_jobs[each.value.job_name].name
+  role    = each.value.role
+  member  = each.value.member
 
   depends_on = [
     google_cloud_scheduler_job.http_jobs,
@@ -331,9 +331,9 @@ resource "google_monitoring_alert_policy" "scheduler_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -387,7 +387,7 @@ resource "google_monitoring_alert_policy" "scheduler_alerts" {
 resource "google_monitoring_dashboard" "scheduler" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Cloud Scheduler - ${title(local.environment)}"
     mosaicLayout = {
@@ -486,9 +486,9 @@ resource "google_logging_metric" "scheduler_metrics" {
   dynamic "metric_descriptor" {
     for_each = each.value.metric_descriptor != null ? [1] : []
     content {
-      metric_kind = each.value.metric_descriptor.metric_kind
-      value_type  = each.value.metric_descriptor.value_type
-      unit        = each.value.metric_descriptor.unit
+      metric_kind  = each.value.metric_descriptor.metric_kind
+      value_type   = each.value.metric_descriptor.value_type
+      unit         = each.value.metric_descriptor.unit
       display_name = each.value.metric_descriptor.display_name
 
       dynamic "labels" {

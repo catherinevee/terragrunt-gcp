@@ -31,16 +31,16 @@ locals {
   backend_services = {
     for name, config in var.backend_services : name => merge({
       name                            = "${local.name_prefix}-${name}-${local.environment}"
-      description                    = "Backend service for ${name}"
-      protocol                       = "HTTP"
-      port_name                      = "http"
-      timeout_sec                    = 30
-      enable_cdn                     = true
+      description                     = "Backend service for ${name}"
+      protocol                        = "HTTP"
+      port_name                       = "http"
+      timeout_sec                     = 30
+      enable_cdn                      = true
       connection_draining_timeout_sec = 300
-      load_balancing_scheme          = "EXTERNAL"
-      locality_lb_policy             = "ROUND_ROBIN"
-      session_affinity               = "NONE"
-      affinity_cookie_ttl_sec        = null
+      load_balancing_scheme           = "EXTERNAL"
+      locality_lb_policy              = "ROUND_ROBIN"
+      session_affinity                = "NONE"
+      affinity_cookie_ttl_sec         = null
 
       # CDN policy with comprehensive defaults
       cdn_policy = {
@@ -50,11 +50,11 @@ locals {
         max_ttl                      = 86400
         negative_caching             = true
         negative_caching_policy      = []
-        serve_while_stale           = 86400
+        serve_while_stale            = 86400
         signed_url_cache_max_age_sec = 0
 
         cache_key_policy = {
-          include_protocol        = false
+          include_protocol       = false
           include_host           = true
           include_query_string   = false
           query_string_whitelist = []
@@ -102,8 +102,8 @@ locals {
   # URL map configurations with defaults
   url_maps = {
     for name, config in var.url_maps : name => merge({
-      name        = "${local.name_prefix}-${name}-${local.environment}"
-      description = "URL map for ${name}"
+      name            = "${local.name_prefix}-${name}-${local.environment}"
+      description     = "URL map for ${name}"
       default_service = null
 
       # Host rules
@@ -129,15 +129,15 @@ locals {
   # Global forwarding rule configurations
   global_forwarding_rules = {
     for name, config in var.global_forwarding_rules : name => merge({
-      name        = "${local.name_prefix}-${name}-${local.environment}"
-      description = "Global forwarding rule for ${name}"
-      port_range  = "80"
-      ip_protocol = "TCP"
-      ip_address  = null
-      target      = null
+      name                  = "${local.name_prefix}-${name}-${local.environment}"
+      description           = "Global forwarding rule for ${name}"
+      port_range            = "80"
+      ip_protocol           = "TCP"
+      ip_address            = null
+      target                = null
       load_balancing_scheme = "EXTERNAL"
-      network_tier = "PREMIUM"
-      labels      = {}
+      network_tier          = "PREMIUM"
+      labels                = {}
     }, config)
   }
 
@@ -158,12 +158,12 @@ locals {
   # Target HTTPS proxy configurations
   target_https_proxies = {
     for name, config in var.target_https_proxies : name => merge({
-      name         = "${local.name_prefix}-${name}-${local.environment}"
-      description  = "HTTPS proxy for ${name}"
-      url_map      = null
-      ssl_certificates = []
-      ssl_policy   = null
-      quic_override = "NONE"
+      name                        = "${local.name_prefix}-${name}-${local.environment}"
+      description                 = "HTTPS proxy for ${name}"
+      url_map                     = null
+      ssl_certificates            = []
+      ssl_policy                  = null
+      quic_override               = "NONE"
       http_keep_alive_timeout_sec = null
     }, config)
   }
@@ -210,24 +210,24 @@ locals {
 
       # Health check configuration
       health_check = {
-        type               = "HTTP"
-        port               = 80
-        request_path       = "/"
-        check_interval_sec = 10
-        timeout_sec        = 5
-        healthy_threshold  = 2
+        type                = "HTTP"
+        port                = 80
+        request_path        = "/"
+        check_interval_sec  = 10
+        timeout_sec         = 5
+        healthy_threshold   = 2
         unhealthy_threshold = 3
       }
 
       # Backend service configuration
       backend_config = {
-        max_rate_per_instance    = null
-        max_rate                = null
-        max_connections         = null
+        max_rate_per_instance        = null
+        max_rate                     = null
+        max_connections              = null
         max_connections_per_instance = null
-        max_utilization         = 0.8
-        capacity_scaler         = 1.0
-        balancing_mode          = "UTILIZATION"
+        max_utilization              = 0.8
+        capacity_scaler              = 1.0
+        balancing_mode               = "UTILIZATION"
       }
     }, config)
   }
@@ -254,7 +254,7 @@ resource "google_project_service" "apis" {
   service = each.key
 
   disable_dependent_services = false
-  disable_on_destroy        = false
+  disable_on_destroy         = false
 }
 
 # Service account for CDN operations
@@ -362,15 +362,15 @@ resource "google_compute_backend_service" "backend_services" {
   name    = each.value.name
 
   description                     = each.value.description
-  protocol                       = each.value.protocol
-  port_name                      = each.value.port_name
-  timeout_sec                    = each.value.timeout_sec
-  enable_cdn                     = each.value.enable_cdn
+  protocol                        = each.value.protocol
+  port_name                       = each.value.port_name
+  timeout_sec                     = each.value.timeout_sec
+  enable_cdn                      = each.value.enable_cdn
   connection_draining_timeout_sec = each.value.connection_draining_timeout_sec
-  load_balancing_scheme          = each.value.load_balancing_scheme
-  locality_lb_policy             = each.value.locality_lb_policy
-  session_affinity               = each.value.session_affinity
-  affinity_cookie_ttl_sec        = each.value.affinity_cookie_ttl_sec
+  load_balancing_scheme           = each.value.load_balancing_scheme
+  locality_lb_policy              = each.value.locality_lb_policy
+  session_affinity                = each.value.session_affinity
+  affinity_cookie_ttl_sec         = each.value.affinity_cookie_ttl_sec
 
   # Health checks
   health_checks = length(each.value.health_checks) > 0 ? each.value.health_checks : [
@@ -382,30 +382,30 @@ resource "google_compute_backend_service" "backend_services" {
   dynamic "backend" {
     for_each = length(each.value.backends) > 0 ? each.value.backends : [
       for origin_name, origin in local.origins : {
-        group               = var.create_instance_groups ? google_compute_instance_group.backend_groups[origin_name].id : origin.address
-        balancing_mode      = origin.backend_config.balancing_mode
-        capacity_scaler     = origin.backend_config.capacity_scaler
-        max_rate_per_instance = origin.backend_config.max_rate_per_instance
-        max_rate           = origin.backend_config.max_rate
-        max_connections    = origin.backend_config.max_connections
+        group                        = var.create_instance_groups ? google_compute_instance_group.backend_groups[origin_name].id : origin.address
+        balancing_mode               = origin.backend_config.balancing_mode
+        capacity_scaler              = origin.backend_config.capacity_scaler
+        max_rate_per_instance        = origin.backend_config.max_rate_per_instance
+        max_rate                     = origin.backend_config.max_rate
+        max_connections              = origin.backend_config.max_connections
         max_connections_per_instance = origin.backend_config.max_connections_per_instance
-        max_utilization    = origin.backend_config.max_utilization
-        description        = "Backend for ${origin_name}"
+        max_utilization              = origin.backend_config.max_utilization
+        description                  = "Backend for ${origin_name}"
       }
       if contains(keys(var.origins), origin_name)
     ]
     content {
       group                        = backend.value.group
-      balancing_mode              = backend.value.balancing_mode
-      capacity_scaler             = backend.value.capacity_scaler
-      description                 = backend.value.description
-      max_connections             = backend.value.max_connections
+      balancing_mode               = backend.value.balancing_mode
+      capacity_scaler              = backend.value.capacity_scaler
+      description                  = backend.value.description
+      max_connections              = backend.value.max_connections
       max_connections_per_instance = backend.value.max_connections_per_instance
       max_connections_per_endpoint = backend.value.max_connections_per_endpoint
-      max_rate                    = backend.value.max_rate
-      max_rate_per_instance       = backend.value.max_rate_per_instance
-      max_rate_per_endpoint       = backend.value.max_rate_per_endpoint
-      max_utilization            = backend.value.max_utilization
+      max_rate                     = backend.value.max_rate
+      max_rate_per_instance        = backend.value.max_rate_per_instance
+      max_rate_per_endpoint        = backend.value.max_rate_per_endpoint
+      max_utilization              = backend.value.max_utilization
     }
   }
 
@@ -418,7 +418,7 @@ resource "google_compute_backend_service" "backend_services" {
       client_ttl                   = each.value.cdn_policy.client_ttl
       max_ttl                      = each.value.cdn_policy.max_ttl
       negative_caching             = each.value.cdn_policy.negative_caching
-      serve_while_stale           = each.value.cdn_policy.serve_while_stale
+      serve_while_stale            = each.value.cdn_policy.serve_while_stale
       signed_url_cache_max_age_sec = each.value.cdn_policy.signed_url_cache_max_age_sec
 
       dynamic "negative_caching_policy" {
@@ -432,7 +432,7 @@ resource "google_compute_backend_service" "backend_services" {
       dynamic "cache_key_policy" {
         for_each = each.value.cdn_policy.cache_key_policy != null ? [1] : []
         content {
-          include_protocol        = each.value.cdn_policy.cache_key_policy.include_protocol
+          include_protocol       = each.value.cdn_policy.cache_key_policy.include_protocol
           include_host           = each.value.cdn_policy.cache_key_policy.include_host
           include_query_string   = each.value.cdn_policy.cache_key_policy.include_query_string
           query_string_whitelist = each.value.cdn_policy.cache_key_policy.query_string_whitelist
@@ -456,10 +456,10 @@ resource "google_compute_backend_service" "backend_services" {
     for_each = each.value.circuit_breakers != null ? [1] : []
     content {
       max_requests_per_connection = each.value.circuit_breakers.max_requests_per_connection
-      max_connections            = each.value.circuit_breakers.max_connections
-      max_pending_requests       = each.value.circuit_breakers.max_pending_requests
-      max_requests              = each.value.circuit_breakers.max_requests
-      max_retries               = each.value.circuit_breakers.max_retries
+      max_connections             = each.value.circuit_breakers.max_connections
+      max_pending_requests        = each.value.circuit_breakers.max_pending_requests
+      max_requests                = each.value.circuit_breakers.max_requests
+      max_retries                 = each.value.circuit_breakers.max_retries
     }
   }
 
@@ -468,10 +468,10 @@ resource "google_compute_backend_service" "backend_services" {
     for_each = each.value.consistent_hash != null ? [1] : []
     content {
       http_cookie_ttl_seconds = each.value.consistent_hash.http_cookie_ttl_seconds
-      http_cookie_name       = each.value.consistent_hash.http_cookie_name
-      http_cookie_path       = each.value.consistent_hash.http_cookie_path
-      http_header_name       = each.value.consistent_hash.http_header_name
-      minimum_ring_size      = each.value.consistent_hash.minimum_ring_size
+      http_cookie_name        = each.value.consistent_hash.http_cookie_name
+      http_cookie_path        = each.value.consistent_hash.http_cookie_path
+      http_header_name        = each.value.consistent_hash.http_header_name
+      minimum_ring_size       = each.value.consistent_hash.minimum_ring_size
     }
   }
 
@@ -489,17 +489,17 @@ resource "google_compute_backend_service" "backend_services" {
     for_each = each.value.outlier_detection != null ? [1] : []
     content {
       consecutive_errors                    = each.value.outlier_detection.consecutive_errors
-      consecutive_gateway_failure          = each.value.outlier_detection.consecutive_gateway_failure
-      enforcing_consecutive_errors         = each.value.outlier_detection.enforcing_consecutive_errors
+      consecutive_gateway_failure           = each.value.outlier_detection.consecutive_gateway_failure
+      enforcing_consecutive_errors          = each.value.outlier_detection.enforcing_consecutive_errors
       enforcing_consecutive_gateway_failure = each.value.outlier_detection.enforcing_consecutive_gateway_failure
-      enforcing_success_rate               = each.value.outlier_detection.enforcing_success_rate
-      interval_seconds                     = each.value.outlier_detection.interval_seconds
-      base_ejection_time_seconds           = each.value.outlier_detection.base_ejection_time_seconds
-      max_ejection_percent                 = each.value.outlier_detection.max_ejection_percent
-      split_external_local_origin_errors   = each.value.outlier_detection.split_external_local_origin_errors
-      success_rate_minimum_hosts           = each.value.outlier_detection.success_rate_minimum_hosts
-      success_rate_request_volume          = each.value.outlier_detection.success_rate_request_volume
-      success_rate_stdev_factor            = each.value.outlier_detection.success_rate_stdev_factor
+      enforcing_success_rate                = each.value.outlier_detection.enforcing_success_rate
+      interval_seconds                      = each.value.outlier_detection.interval_seconds
+      base_ejection_time_seconds            = each.value.outlier_detection.base_ejection_time_seconds
+      max_ejection_percent                  = each.value.outlier_detection.max_ejection_percent
+      split_external_local_origin_errors    = each.value.outlier_detection.split_external_local_origin_errors
+      success_rate_minimum_hosts            = each.value.outlier_detection.success_rate_minimum_hosts
+      success_rate_request_volume           = each.value.outlier_detection.success_rate_request_volume
+      success_rate_stdev_factor             = each.value.outlier_detection.success_rate_stdev_factor
     }
   }
 
@@ -538,8 +538,8 @@ resource "google_compute_security_policy" "security_policies" {
 
   # Default rule
   rule {
-    action   = each.value.default_rule.action
-    priority = each.value.default_rule.priority
+    action      = each.value.default_rule.action
+    priority    = each.value.default_rule.priority
     description = each.value.default_rule.description
 
     match {
@@ -554,8 +554,8 @@ resource "google_compute_security_policy" "security_policies" {
   dynamic "rule" {
     for_each = each.value.rules
     content {
-      action   = rule.value.action
-      priority = rule.value.priority
+      action      = rule.value.action
+      priority    = rule.value.priority
       description = rule.value.description
 
       dynamic "match" {
@@ -689,11 +689,11 @@ resource "google_compute_url_map" "url_maps" {
         for_each = path_matcher.value.default_url_redirect != null ? [1] : []
         content {
           redirect_response_code = path_matcher.value.default_url_redirect.redirect_response_code
-          strip_query           = path_matcher.value.default_url_redirect.strip_query
-          host_redirect         = path_matcher.value.default_url_redirect.host_redirect
-          path_redirect         = path_matcher.value.default_url_redirect.path_redirect
-          prefix_redirect       = path_matcher.value.default_url_redirect.prefix_redirect
-          https_redirect        = path_matcher.value.default_url_redirect.https_redirect
+          strip_query            = path_matcher.value.default_url_redirect.strip_query
+          host_redirect          = path_matcher.value.default_url_redirect.host_redirect
+          path_redirect          = path_matcher.value.default_url_redirect.path_redirect
+          prefix_redirect        = path_matcher.value.default_url_redirect.prefix_redirect
+          https_redirect         = path_matcher.value.default_url_redirect.https_redirect
         }
       }
     }
@@ -704,11 +704,11 @@ resource "google_compute_url_map" "url_maps" {
     for_each = each.value.default_url_redirect != null ? [1] : []
     content {
       redirect_response_code = each.value.default_url_redirect.redirect_response_code
-      strip_query           = each.value.default_url_redirect.strip_query
-      host_redirect         = each.value.default_url_redirect.host_redirect
-      path_redirect         = each.value.default_url_redirect.path_redirect
-      prefix_redirect       = each.value.default_url_redirect.prefix_redirect
-      https_redirect        = each.value.default_url_redirect.https_redirect
+      strip_query            = each.value.default_url_redirect.strip_query
+      host_redirect          = each.value.default_url_redirect.host_redirect
+      path_redirect          = each.value.default_url_redirect.path_redirect
+      prefix_redirect        = each.value.default_url_redirect.prefix_redirect
+      https_redirect         = each.value.default_url_redirect.https_redirect
     }
   }
 
@@ -733,11 +733,11 @@ resource "google_compute_target_https_proxy" "target_https_proxies" {
   project = var.project_id
   name    = each.value.name
 
-  description             = each.value.description
-  url_map                = each.value.url_map
-  ssl_certificates       = each.value.ssl_certificates
-  ssl_policy             = each.value.ssl_policy
-  quic_override          = each.value.quic_override
+  description                 = each.value.description
+  url_map                     = each.value.url_map
+  ssl_certificates            = each.value.ssl_certificates
+  ssl_policy                  = each.value.ssl_policy
+  quic_override               = each.value.quic_override
   http_keep_alive_timeout_sec = each.value.http_keep_alive_timeout_sec
 
   depends_on = [
@@ -769,13 +769,13 @@ resource "google_compute_global_forwarding_rule" "global_forwarding_rules" {
   name    = each.value.name
 
   description           = each.value.description
-  port_range           = each.value.port_range
-  ip_protocol          = each.value.ip_protocol
-  ip_address           = each.value.ip_address != null ? each.value.ip_address : (var.create_global_ips ? google_compute_global_address.global_ips[each.key].address : null)
-  target               = each.value.target
+  port_range            = each.value.port_range
+  ip_protocol           = each.value.ip_protocol
+  ip_address            = each.value.ip_address != null ? each.value.ip_address : (var.create_global_ips ? google_compute_global_address.global_ips[each.key].address : null)
+  target                = each.value.target
   load_balancing_scheme = each.value.load_balancing_scheme
-  network_tier         = each.value.network_tier
-  labels               = merge(local.default_labels, each.value.labels)
+  network_tier          = each.value.network_tier
+  labels                = merge(local.default_labels, each.value.labels)
 
   depends_on = [
     google_compute_target_https_proxy.target_https_proxies,
@@ -796,9 +796,9 @@ resource "google_monitoring_alert_policy" "cdn_alerts" {
     display_name = each.value.condition_display_name
 
     condition_threshold {
-      filter         = each.value.filter
-      duration       = each.value.duration != null ? each.value.duration : "300s"
-      comparison     = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
+      filter          = each.value.filter
+      duration        = each.value.duration != null ? each.value.duration : "300s"
+      comparison      = each.value.comparison != null ? each.value.comparison : "COMPARISON_GREATER_THAN"
       threshold_value = each.value.threshold_value
 
       aggregations {
@@ -852,7 +852,7 @@ resource "google_monitoring_alert_policy" "cdn_alerts" {
 resource "google_monitoring_dashboard" "cdn" {
   count = var.create_monitoring_dashboard ? 1 : 0
 
-  project        = var.project_id
+  project = var.project_id
   dashboard_json = jsonencode({
     displayName = "Cloud CDN - ${title(local.environment)}"
     mosaicLayout = {
