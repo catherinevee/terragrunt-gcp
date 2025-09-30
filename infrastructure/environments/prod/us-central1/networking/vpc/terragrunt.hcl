@@ -33,18 +33,21 @@ prevent_destroy = true
 locals {
   # Extract configuration from includes
   env_config    = include.env.locals
-  region_config = include.region.locals
+  region_locals = include.region.locals
 
   # Network configuration from region.hcl
-  network_config = region_config.network_config
-  subnets        = region_config.network_config.subnets
+  network_config = local.region_locals.network_config
+  subnets        = local.region_locals.network_config.subnets
+  region_config  = local.region_locals.region_config
+  region         = local.region_locals.region
+  region_short   = local.region_locals.region_short
 
   # Build subnet configurations
   subnet_configs = {
     for subnet_name, subnet in local.subnets : subnet_name => {
-      subnet_name                      = "${local.env_config.environment}-${local.region_config.region_short}-${subnet_name}"
+      subnet_name                      = "${local.env_config.environment}-${local.region_short}-${subnet_name}"
       subnet_ip                        = subnet.cidr
-      subnet_region                    = local.region_config.region
+      subnet_region                    = local.region
       subnet_private_access           = try(subnet.private_ip_google_access, true)
       subnet_private_ipv6_access      = try(subnet.private_ipv6_google_access, false)
       subnet_flow_logs                = try(subnet.flow_logs, true)
@@ -52,7 +55,7 @@ locals {
       subnet_flow_logs_sampling       = try(subnet.flow_logs_sampling, 0.5)
       subnet_flow_logs_metadata       = try(subnet.flow_logs_metadata, "INCLUDE_ALL")
       subnet_flow_logs_filter         = try(subnet.flow_logs_filter, "all")
-      description                      = "Subnet for ${subnet.purpose} in ${local.region_config.region}"
+      description                      = "Subnet for ${subnet.purpose} in ${local.region}"
       purpose                          = try(subnet.purpose, "PRIVATE")
       role                            = try(subnet.role, null)
       secondary_ip_range              = try(subnet.secondary_ranges, [])
@@ -170,8 +173,8 @@ locals {
 # Module inputs
 inputs = {
   # Network name and description
-  network_name = "${local.env_config.environment}-${local.region_config.region_short}-vpc"
-  description  = "Production VPC network for ${local.region_config.region}"
+  network_name = "${local.env_config.environment}-${local.region_short}-vpc"
+  description  = "Production VPC network for ${local.region}"
 
   # Routing mode
   routing_mode = "REGIONAL"
@@ -200,7 +203,7 @@ inputs = {
   # Secondary ranges (for GKE pods and services)
   secondary_ranges = {
     for subnet_name, subnet in local.subnets :
-    "${local.env_config.environment}-${local.region_config.region_short}-${subnet_name}" => [
+    "${local.env_config.environment}-${local.region_short}-${subnet_name}" => [
       for range_name, range_cidr in try(subnet.secondary_ranges, {}) : {
         range_name    = range_name
         ip_cidr_range = range_cidr
@@ -236,10 +239,10 @@ inputs = {
     enable_private_service_connect = true
     psc_service_attachments = {}
     psc_nat_subnets = {
-      "${local.env_config.environment}-${local.region_config.region_short}-psc-nat" = {
-        subnet_name = "${local.env_config.environment}-${local.region_config.region_short}-psc-nat"
+      "${local.env_config.environment}-${local.region_short}-psc-nat" = {
+        subnet_name = "${local.env_config.environment}-${local.region_short}-psc-nat"
         subnet_ip   = cidrsubnet(local.network_config.vpc_cidr_primary, 8, 250)
-        subnet_region = local.region_config.region
+        subnet_region = local.region
         purpose = "PRIVATE_SERVICE_CONNECT"
       }
     }
@@ -265,7 +268,7 @@ inputs = {
 
   # Labels
   labels = merge(
-    var.common_labels,
+    local.env_config.environment_labels,
     {
       component = "networking"
       service   = "vpc"
@@ -282,8 +285,8 @@ inputs = {
     "networksecurity.googleapis.com"
   ]
 
-  # Project ID (inherited from root)
-  project_id = var.project_id
+  # Project ID (inherited from env config)
+  project_id = local.env_config.project_id
 
   # Additional production-specific settings
   enable_flow_logs = true
@@ -299,17 +302,17 @@ inputs = {
     enable_service_networking = true
     allocated_ip_ranges = [
       {
-        name         = "${local.env_config.environment}-${local.region_config.region_short}-service-networking"
+        name         = "${local.env_config.environment}-${local.region_short}-service-networking"
         description  = "IP range for service networking"
         address      = "10.100.0.0"
         prefix_length = 16
         purpose      = "VPC_PEERING"
-        network      = "${local.env_config.environment}-${local.region_config.region_short}-vpc"
+        network      = "${local.env_config.environment}-${local.region_short}-vpc"
       }
     ]
     private_vpc_connection = {
       service = "servicenetworking.googleapis.com"
-      reserved_peering_ranges = ["${local.env_config.environment}-${local.region_config.region_short}-service-networking"]
+      reserved_peering_ranges = ["${local.env_config.environment}-${local.region_short}-service-networking"]
       delete_default_routes_on_create = true
     }
   }
@@ -317,8 +320,8 @@ inputs = {
   # Network connectivity center
   network_connectivity_center = local.network_config.enable_interconnect ? {
     enable = true
-    hub_name = "${local.env_config.environment}-${local.region_config.region_short}-hub"
-    hub_description = "Network connectivity hub for ${local.region_config.region}"
+    hub_name = "${local.env_config.environment}-${local.region_short}-hub"
+    hub_description = "Network connectivity hub for ${local.region}"
     spokes = {}
   } : null
 }
