@@ -89,7 +89,7 @@ variable "staging_budget_alert_thresholds" {
 variable "kms_rotation_period" {
   description = "Rotation period for KMS keys in seconds"
   type        = string
-  default     = "7776000s"  # 90 days
+  default     = "7776000s" # 90 days
 }
 
 variable "artifact_retention_days" {
@@ -107,13 +107,13 @@ variable "log_retention_days" {
 variable "pubsub_message_retention" {
   description = "Message retention duration for Pub/Sub topics"
   type        = string
-  default     = "86400s"  # 1 day
+  default     = "86400s" # 1 day
 }
 
 variable "dlq_message_retention" {
   description = "Message retention duration for dead letter queue"
   type        = string
-  default     = "604800s"  # 7 days
+  default     = "604800s" # 7 days
 }
 
 variable "rate_limit_threshold" {
@@ -131,7 +131,7 @@ variable "rate_limit_threshold" {
 variable "rate_limit_ban_duration" {
   description = "Ban duration in seconds for rate limit violations"
   type        = number
-  default     = 600  # 10 minutes
+  default     = 600 # 10 minutes
 }
 
 variable "enable_adaptive_protection" {
@@ -161,32 +161,32 @@ variable "staging_regions" {
 variable "staging_network_config" {
   description = "Network configuration for staging environment"
   type = object({
-    vpc_name               = string
+    vpc_name                = string
     auto_create_subnetworks = bool
-    routing_mode           = string
-    mtu                    = number
-    enable_flow_logs       = bool
+    routing_mode            = string
+    mtu                     = number
+    enable_flow_logs        = bool
   })
   default = {
-    vpc_name               = "staging-vpc"
+    vpc_name                = "staging-vpc"
     auto_create_subnetworks = false
-    routing_mode           = "REGIONAL"
-    mtu                    = 1460
-    enable_flow_logs       = true
+    routing_mode            = "REGIONAL"
+    mtu                     = 1460
+    enable_flow_logs        = true
   }
 }
 
 variable "staging_compute_defaults" {
   description = "Default compute settings for staging"
   type = object({
-    machine_type           = string
-    preemptible           = bool
-    automatic_restart     = bool
-    on_host_maintenance   = string
-    provisioning_model    = string
+    machine_type        = string
+    preemptible         = bool
+    automatic_restart   = bool
+    on_host_maintenance = string
+    provisioning_model  = string
   })
   default = {
-    machine_type         = "e2-medium"
+    machine_type        = "e2-medium"
     preemptible         = true
     automatic_restart   = false
     on_host_maintenance = "TERMINATE"
@@ -197,17 +197,17 @@ variable "staging_compute_defaults" {
 variable "staging_database_defaults" {
   description = "Default database settings for staging"
   type = object({
-    tier                = string
-    availability_type   = string
-    backup_enabled      = bool
-    backup_start_time   = string
+    tier                   = string
+    availability_type      = string
+    backup_enabled         = bool
+    backup_start_time      = string
     point_in_time_recovery = bool
   })
   default = {
-    tier                = "db-g1-small"
-    availability_type   = "ZONAL"
-    backup_enabled      = true
-    backup_start_time   = "03:00"
+    tier                   = "db-g1-small"
+    availability_type      = "ZONAL"
+    backup_enabled         = true
+    backup_start_time      = "03:00"
     point_in_time_recovery = false
   }
 }
@@ -215,12 +215,12 @@ variable "staging_database_defaults" {
 variable "staging_autoscaling_defaults" {
   description = "Default autoscaling settings for staging"
   type = object({
-    min_replicas            = number
-    max_replicas            = number
-    cpu_utilization_target  = number
+    min_replicas           = number
+    max_replicas           = number
+    cpu_utilization_target = number
     scale_down_control = object({
       max_scaled_down_replicas = number
-      time_window_sec         = number
+      time_window_sec          = number
     })
   })
   default = {
@@ -229,7 +229,7 @@ variable "staging_autoscaling_defaults" {
     cpu_utilization_target = 0.8
     scale_down_control = {
       max_scaled_down_replicas = 2
-      time_window_sec         = 300
+      time_window_sec          = 300
     }
   }
 }

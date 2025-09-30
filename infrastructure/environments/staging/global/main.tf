@@ -36,10 +36,10 @@ locals {
   environment = "staging"
 
   common_labels = {
-    environment  = local.environment
-    managed_by   = "terraform"
-    organization = var.organization
-    cost_center  = "engineering"
+    environment   = local.environment
+    managed_by    = "terraform"
+    organization  = var.organization
+    cost_center   = "engineering"
     business_unit = "platform"
   }
 
@@ -53,37 +53,37 @@ locals {
     preemptible_enabled  = true
 
     # Database settings - smaller configurations
-    db_tier = "db-g1-small"
+    db_tier              = "db-g1-small"
     db_high_availability = false
-    db_backup_enabled = true
-    db_backup_window = "03:00"
+    db_backup_enabled    = true
+    db_backup_window     = "03:00"
 
     # Storage settings
     storage_class = "STANDARD"
 
     # Monitoring settings - less aggressive
     monitoring_interval = "60s"
-    log_retention_days = 30
+    log_retention_days  = 30
 
     # Autoscaling settings - aggressive scaling
-    min_replicas = 1
-    max_replicas = 10
+    min_replicas           = 1
+    max_replicas           = 10
     target_cpu_utilization = 0.8
   }
 
   # Regional configuration
   regions = {
-    primary = var.default_region
-    secondary = "us-east1"  # Secondary region for staging
+    primary   = var.default_region
+    secondary = "us-east1" # Secondary region for staging
   }
 
   # Service accounts
   service_accounts = {
-    compute = "compute-staging-sa"
-    storage = "storage-staging-sa"
-    network = "network-staging-sa"
+    compute    = "compute-staging-sa"
+    storage    = "storage-staging-sa"
+    network    = "network-staging-sa"
     monitoring = "monitoring-staging-sa"
-    ci_cd = "cicd-staging-sa"
+    ci_cd      = "cicd-staging-sa"
   }
 }
 
@@ -140,7 +140,7 @@ resource "google_compute_security_policy" "staging_default" {
         interval_sec = 60
       }
 
-      ban_duration_sec = 600  # 10 minutes ban
+      ban_duration_sec = 600 # 10 minutes ban
     }
     description = "Rate limiting for staging environment"
   }
@@ -165,7 +165,7 @@ resource "google_compute_security_policy" "staging_default" {
   # Adaptive protection for DDoS
   adaptive_protection_config {
     layer_7_ddos_defense_config {
-      enable = true
+      enable          = true
       rule_visibility = "STANDARD"
     }
   }
@@ -243,7 +243,7 @@ resource "google_kms_crypto_key" "staging_keys" {
   rotation_period = "7776000s" # 90 days for staging
 
   lifecycle {
-    prevent_destroy = false  # Allow destruction in staging
+    prevent_destroy = false # Allow destruction in staging
   }
 
   version_template {
@@ -354,7 +354,7 @@ resource "google_monitoring_dashboard" "staging_overview" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 }
               ]
@@ -385,7 +385,7 @@ resource "google_monitoring_dashboard" "staging_overview" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 }
               ]
@@ -415,7 +415,7 @@ resource "google_monitoring_dashboard" "staging_overview" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 }
               ]
@@ -447,7 +447,7 @@ resource "google_monitoring_dashboard" "staging_overview" {
                       }
                     }
                   }
-                  plotType = "STACKED_AREA"
+                  plotType   = "STACKED_AREA"
                   targetAxis = "Y1"
                 }
               ]
@@ -478,7 +478,7 @@ resource "google_monitoring_dashboard" "staging_overview" {
                       }
                     }
                   }
-                  plotType = "STACKED_BAR"
+                  plotType   = "STACKED_BAR"
                   targetAxis = "Y1"
                 }
               ]
@@ -511,7 +511,7 @@ resource "google_billing_budget" "staging_budget" {
   amount {
     specified_amount {
       currency_code = "USD"
-      units        = "5000"  # $5000 per month for staging
+      units         = "5000" # $5000 per month for staging
     }
   }
 
@@ -521,17 +521,17 @@ resource "google_billing_budget" "staging_budget" {
 
   threshold_rules {
     threshold_percent = 0.75
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 0.9
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 1.0
-    spend_basis      = "FORECASTED_SPEND"
+    spend_basis       = "FORECASTED_SPEND"
   }
 
   all_updates_rule {
@@ -559,21 +559,21 @@ output "staging_kms_keys" {
 }
 
 output "staging_artifact_registry" {
-  value = google_artifact_registry_repository.staging_images.id
+  value       = google_artifact_registry_repository.staging_images.id
   description = "Artifact Registry repository ID for staging"
 }
 
 output "staging_global_ip" {
-  value = google_compute_global_address.staging_lb.address
+  value       = google_compute_global_address.staging_lb.address
   description = "Global IP address for staging load balancer"
 }
 
 output "staging_security_policy" {
-  value = google_compute_security_policy.staging_default.id
+  value       = google_compute_security_policy.staging_default.id
   description = "Default security policy ID for staging"
 }
 
 output "staging_ssl_certificate" {
-  value = google_compute_managed_ssl_certificate.staging.id
+  value       = google_compute_managed_ssl_certificate.staging.id
   description = "SSL certificate ID for staging"
 }

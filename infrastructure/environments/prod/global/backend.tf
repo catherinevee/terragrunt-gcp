@@ -5,7 +5,7 @@ terraform {
   backend "gcs" {
     bucket = "acme-prod-terraform-state"
     prefix = "global/terraform.tfstate"
-    
+
     # Enable versioning and encryption
     enable_bucket_policy_only = true
   }
@@ -60,7 +60,7 @@ resource "google_project_service" "required_apis" {
   project = var.project_id
   service = each.value
 
-  disable_on_destroy = false
+  disable_on_destroy         = false
   disable_dependent_services = false
 }
 
@@ -68,10 +68,10 @@ resource "google_project_service" "required_apis" {
 resource "google_storage_bucket" "terraform_state" {
   project  = var.project_id
   name     = "acme-prod-terraform-state"
-  location = "US"  # Multi-region for high availability
+  location = "US" # Multi-region for high availability
 
   uniform_bucket_level_access = true
-  public_access_prevention   = "enforced"
+  public_access_prevention    = "enforced"
 
   versioning {
     enabled = true
@@ -79,7 +79,7 @@ resource "google_storage_bucket" "terraform_state" {
 
   lifecycle_rule {
     condition {
-      num_newer_versions = 30  # Keep more versions in production
+      num_newer_versions = 30 # Keep more versions in production
     }
     action {
       type = "Delete"
@@ -88,7 +88,7 @@ resource "google_storage_bucket" "terraform_state" {
 
   lifecycle_rule {
     condition {
-      days_since_noncurrent_time = 90  # Longer retention in production
+      days_since_noncurrent_time = 90 # Longer retention in production
     }
     action {
       type = "Delete"
@@ -102,8 +102,8 @@ resource "google_storage_bucket" "terraform_state" {
 
   # Retention policy to prevent accidental deletion
   retention_policy {
-    retention_period = 7776000  # 90 days in seconds
-    is_locked       = true
+    retention_period = 7776000 # 90 days in seconds
+    is_locked        = true
   }
 
   labels = {
@@ -125,7 +125,7 @@ resource "google_kms_crypto_key" "terraform_state_key" {
   name     = "terraform-state-key"
   key_ring = google_kms_key_ring.terraform_state.id
 
-  rotation_period = "2592000s"  # 30 days
+  rotation_period = "2592000s" # 30 days
 
   lifecycle {
     prevent_destroy = true
@@ -133,7 +133,7 @@ resource "google_kms_crypto_key" "terraform_state_key" {
 
   version_template {
     algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
-    protection_level = "HSM"  # Hardware security module for production
+    protection_level = "HSM" # Hardware security module for production
   }
 
   labels = {
@@ -149,11 +149,11 @@ resource "google_storage_bucket" "state_logs" {
   location = "US"
 
   uniform_bucket_level_access = true
-  public_access_prevention   = "enforced"
+  public_access_prevention    = "enforced"
 
   lifecycle_rule {
     condition {
-      age = 365  # Keep logs for 1 year in production
+      age = 365 # Keep logs for 1 year in production
     }
     action {
       type = "Delete"
@@ -176,11 +176,11 @@ resource "google_storage_bucket_iam_member" "state_logs_writer" {
 
 # Logging configuration for state access
 resource "google_logging_project_bucket_config" "state_bucket_logs" {
-  project  = var.project_id
+  project   = var.project_id
   bucket_id = "terraform-state-logs-prod"
-  location = "us"
+  location  = "us"
 
-  retention_days = 365  # 1 year retention for production
+  retention_days = 365 # 1 year retention for production
   description    = "Audit logs for Terraform state bucket access in production"
 
   # Lock the retention policy

@@ -1,0 +1,21 @@
+{
+  "name": "terragrunt-gcp-security",
+  "version": "1.0.0",
+  "description": "Security monitoring and badge server for Terragrunt GCP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "security",
+    "terraform",
+    "terragrunt",
+    "gcp"
+  ],
+  "author": "ACME Corp",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

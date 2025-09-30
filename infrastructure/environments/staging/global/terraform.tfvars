@@ -1,33 +1,33 @@
 # Terraform variable values for staging environment global configuration
 
 # Core project configuration
-project_id                 = "acme-staging-platform"
-billing_account           = "012345-6789AB-CDEF01"
-organization              = "acme-corp"
-default_region            = "us-central1"
+project_id      = "acme-staging-platform"
+billing_account = "012345-6789AB-CDEF01"
+organization    = "acme-corp"
+default_region  = "us-central1"
 
 # Domain and notifications
 staging_domain             = "staging.acme-corp.com"
 staging_notification_email = "staging-alerts@acme-corp.com"
 
 # Budget configuration
-staging_budget_amount      = 5000
+staging_budget_amount           = 5000
 staging_budget_alert_thresholds = [0.5, 0.75, 0.9, 1.0]
 
 # Security and encryption
-kms_rotation_period       = "7776000s"  # 90 days
+kms_rotation_period = "7776000s" # 90 days
 rate_limit_threshold = {
   count        = 100
   interval_sec = 60
 }
-rate_limit_ban_duration   = 600
+rate_limit_ban_duration    = 600
 enable_adaptive_protection = true
 
 # Retention policies
-artifact_retention_days   = 30
+artifact_retention_days  = 30
 log_retention_days       = 30
-pubsub_message_retention = "86400s"   # 1 day
-dlq_message_retention    = "604800s"  # 7 days
+pubsub_message_retention = "86400s"  # 1 day
+dlq_message_retention    = "604800s" # 7 days
 
 # Regional configuration
 staging_regions = {
@@ -43,16 +43,16 @@ staging_regions = {
 
 # Network configuration
 staging_network_config = {
-  vpc_name               = "staging-vpc"
+  vpc_name                = "staging-vpc"
   auto_create_subnetworks = false
-  routing_mode           = "REGIONAL"
-  mtu                    = 1460
-  enable_flow_logs       = true
+  routing_mode            = "REGIONAL"
+  mtu                     = 1460
+  enable_flow_logs        = true
 }
 
 # Compute defaults for cost optimization
 staging_compute_defaults = {
-  machine_type         = "e2-medium"
+  machine_type        = "e2-medium"
   preemptible         = true
   automatic_restart   = false
   on_host_maintenance = "TERMINATE"
@@ -75,7 +75,7 @@ staging_autoscaling_defaults = {
   cpu_utilization_target = 0.8
   scale_down_control = {
     max_scaled_down_replicas = 2
-    time_window_sec         = 300
+    time_window_sec          = 300
   }
 }
 
@@ -89,11 +89,11 @@ staging_monitoring_config = {
 
 # Resource labels
 labels = {
-  environment   = "staging"
-  managed_by    = "terraform"
-  cost_center   = "engineering"
-  business_unit = "platform"
-  criticality   = "medium"
+  environment         = "staging"
+  managed_by          = "terraform"
+  cost_center         = "engineering"
+  business_unit       = "platform"
+  criticality         = "medium"
   data_classification = "internal"
 }
 

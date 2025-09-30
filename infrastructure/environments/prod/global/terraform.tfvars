@@ -32,13 +32,13 @@ access_level_id  = "YOUR_ACCESS_LEVEL_ID"
 
 # Security - IP ranges to block
 blocked_ip_ranges = [
-  "192.0.2.0/24",     # TEST-NET-1
-  "198.51.100.0/24",  # TEST-NET-2
-  "203.0.113.0/24",   # TEST-NET-3
+  "192.0.2.0/24",    # TEST-NET-1
+  "198.51.100.0/24", # TEST-NET-2
+  "203.0.113.0/24",  # TEST-NET-3
 ]
 
 # Budget configuration
-prod_budget_amount = 50000  # $50,000 per month
+prod_budget_amount = 50000 # $50,000 per month
 
 # Multi-region deployment configuration
 prod_regions = {
@@ -68,36 +68,36 @@ prod_regions = {
 prod_network_config = {
   vpc_name                = "prod-vpc"
   auto_create_subnetworks = false
-  routing_mode           = "GLOBAL"
-  mtu                    = 1500
-  enable_flow_logs       = true
-  flow_log_sampling      = 1.0  # 100% sampling for security
+  routing_mode            = "GLOBAL"
+  mtu                     = 1500
+  enable_flow_logs        = true
+  flow_log_sampling       = 1.0 # 100% sampling for security
 }
 
 # Compute defaults - production grade
 prod_compute_defaults = {
-  machine_type               = "n2-standard-4"
-  preemptible               = false
-  automatic_restart         = true
-  on_host_maintenance       = "MIGRATE"
-  provisioning_model        = "STANDARD"
-  enable_shielded_vm        = true
-  enable_secure_boot        = true
-  enable_vtpm               = true
+  machine_type                = "n2-standard-4"
+  preemptible                 = false
+  automatic_restart           = true
+  on_host_maintenance         = "MIGRATE"
+  provisioning_model          = "STANDARD"
+  enable_shielded_vm          = true
+  enable_secure_boot          = true
+  enable_vtpm                 = true
   enable_integrity_monitoring = true
 }
 
 # Database configuration - high availability
 prod_database_defaults = {
-  tier                    = "db-n1-highmem-4"
-  availability_type       = "REGIONAL"
-  backup_enabled         = true
-  backup_start_time      = "02:00"
-  point_in_time_recovery = true
-  transaction_log_retention_days = 7
-  backup_retention_count  = 30
-  maintenance_window_day  = 7  # Sunday
-  maintenance_window_hour = 3   # 3 AM
+  tier                            = "db-n1-highmem-4"
+  availability_type               = "REGIONAL"
+  backup_enabled                  = true
+  backup_start_time               = "02:00"
+  point_in_time_recovery          = true
+  transaction_log_retention_days  = 7
+  backup_retention_count          = 30
+  maintenance_window_day          = 7 # Sunday
+  maintenance_window_hour         = 3 # 3 AM
   maintenance_window_update_track = "stable"
   database_flags = {
     slow_query_log = "on"
@@ -124,88 +124,88 @@ prod_storage_defaults = {
     }
   ]
   encryption = {
-    default_kms_key_name = null  # Set dynamically
+    default_kms_key_name = null # Set dynamically
   }
   uniform_bucket_level_access = true
-  public_access_prevention   = "enforced"
-  retention_policy_days      = 30
+  public_access_prevention    = "enforced"
+  retention_policy_days       = 30
 }
 
 # Autoscaling configuration - conservative for stability
 prod_autoscaling_defaults = {
-  min_replicas           = 3   # HA minimum
+  min_replicas           = 3 # HA minimum
   max_replicas           = 100
   cpu_utilization_target = 0.6
   scale_down_control = {
     max_scaled_down_replicas = 10
-    time_window_sec         = 600
+    time_window_sec          = 600
   }
   scale_up_control = {
     max_scaled_up_replicas = 20
-    time_window_sec       = 60
+    time_window_sec        = 60
   }
 }
 
 # Monitoring configuration - comprehensive
 prod_monitoring_config = {
-  metrics_interval       = "30s"
-  log_sampling_ratio    = 1.0
-  trace_sampling_ratio  = 0.5
-  profiler_enabled      = true
-  debugger_enabled      = false
+  metrics_interval        = "30s"
+  log_sampling_ratio      = 1.0
+  trace_sampling_ratio    = 0.5
+  profiler_enabled        = true
+  debugger_enabled        = false
   error_reporting_enabled = true
-  uptime_check_interval = "60s"
-  alert_auto_close      = "86400s"
+  uptime_check_interval   = "60s"
+  alert_auto_close        = "86400s"
   notification_rate_limit = "300s"
 }
 
 # Security configuration - maximum security
 prod_security_config = {
-  enable_private_google_access = true
-  enable_private_service_connect = true
-  enable_binary_authorization = true
-  enable_vulnerability_scanning = true
-  enable_security_command_center = true
-  enable_access_transparency = true
-  enable_data_access_logs = true
-  require_ssl_database = true
-  enable_cmek_encryption = true
+  enable_private_google_access        = true
+  enable_private_service_connect      = true
+  enable_binary_authorization         = true
+  enable_vulnerability_scanning       = true
+  enable_security_command_center      = true
+  enable_access_transparency          = true
+  enable_data_access_logs             = true
+  require_ssl_database                = true
+  enable_cmek_encryption              = true
   enable_application_layer_encryption = true
 }
 
 # Compliance configuration
 prod_compliance_config = {
-  enable_audit_logs = true
-  log_retention_days = 365
-  enable_data_residency = true
-  data_residency_regions = ["us-central1", "us-east1"]
-  enable_hipaa_compliance = false
-  enable_pci_compliance = true
-  enable_sox_compliance = true
-  enable_gdpr_compliance = true
+  enable_audit_logs          = true
+  log_retention_days         = 365
+  enable_data_residency      = true
+  data_residency_regions     = ["us-central1", "us-east1"]
+  enable_hipaa_compliance    = false
+  enable_pci_compliance      = true
+  enable_sox_compliance      = true
+  enable_gdpr_compliance     = true
   enable_iso27001_compliance = true
 }
 
 # Disaster recovery configuration
 prod_disaster_recovery = {
-  enable_cross_region_backup = true
-  backup_regions = ["us-east1", "europe-west1"]
-  rto_hours = 4
-  rpo_hours = 1
-  enable_automated_failover = true
+  enable_cross_region_backup    = true
+  backup_regions                = ["us-east1", "europe-west1"]
+  rto_hours                     = 4
+  rpo_hours                     = 1
+  enable_automated_failover     = true
   failover_grace_period_seconds = 300
 }
 
 # Resource labels
 labels = {
-  environment   = "production"
-  managed_by    = "terraform"
-  cost_center   = "operations"
-  business_unit = "platform"
-  criticality   = "critical"
-  compliance    = "pci-sox-gdpr"
+  environment         = "production"
+  managed_by          = "terraform"
+  cost_center         = "operations"
+  business_unit       = "platform"
+  criticality         = "critical"
+  compliance          = "pci-sox-gdpr"
   data_classification = "sensitive"
-  dr_tier = "tier-1"
+  dr_tier             = "tier-1"
 }
 
 # Network tags

@@ -234,7 +234,6 @@ resource "google_storage_bucket" "bucket" {
   timeouts {
     create = var.timeouts.create
     update = var.timeouts.update
-    delete = var.timeouts.delete
   }
 
   depends_on = [var.module_depends_on]
@@ -296,31 +295,17 @@ resource "google_storage_bucket_acl" "acl" {
 
   bucket         = google_storage_bucket.bucket.name
   predefined_acl = var.predefined_acl
-
-  dynamic "role_entity" {
-    for_each = var.role_entities
-    content {
-      role   = role_entity.value.role
-      entity = role_entity.value.entity
-    }
-  }
+  role_entity    = [for re in var.role_entities : "${re.role}:${re.entity}"]
 
   depends_on = [google_storage_bucket.bucket]
 }
 
 # Default Object ACL
 resource "google_storage_default_object_acl" "default_acl" {
-  count = !var.uniform_bucket_level_access && var.default_acl != null ? 1 : 0
+  count = !var.uniform_bucket_level_access && length(var.default_acl) > 0 ? 1 : 0
 
-  bucket = google_storage_bucket.bucket.name
-
-  dynamic "role_entity" {
-    for_each = var.default_acl
-    content {
-      role   = role_entity.value.role
-      entity = role_entity.value.entity
-    }
-  }
+  bucket      = google_storage_bucket.bucket.name
+  role_entity = [for re in var.default_acl : "${re.role}:${re.entity}"]
 
   depends_on = [google_storage_bucket.bucket]
 }

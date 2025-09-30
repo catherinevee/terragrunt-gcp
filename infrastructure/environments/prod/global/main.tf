@@ -49,13 +49,13 @@ locals {
   environment = "prod"
 
   common_labels = {
-    environment   = local.environment
-    managed_by    = "terraform"
-    organization  = var.organization
-    cost_center   = "operations"
-    business_unit = "platform"
-    criticality   = "critical"
-    compliance    = "pci-dss"
+    environment         = local.environment
+    managed_by          = "terraform"
+    organization        = var.organization
+    cost_center         = "operations"
+    business_unit       = "platform"
+    criticality         = "critical"
+    compliance          = "pci-dss"
     data_classification = "sensitive"
   }
 
@@ -66,59 +66,59 @@ locals {
   resource_settings = {
     # Compute settings - production grade instances
     default_machine_type = "n2-standard-4"
-    preemptible_enabled  = false  # No preemptible in production
+    preemptible_enabled  = false # No preemptible in production
 
     # Database settings - high availability configurations
-    db_tier = "db-n1-highmem-4"
-    db_high_availability = true
-    db_backup_enabled = true
-    db_backup_window = "02:00"
+    db_tier                   = "db-n1-highmem-4"
+    db_high_availability      = true
+    db_backup_enabled         = true
+    db_backup_window          = "02:00"
     db_point_in_time_recovery = true
-    db_backup_retention_days = 30
+    db_backup_retention_days  = 30
 
     # Storage settings
-    storage_class = "MULTI_REGIONAL"
+    storage_class    = "MULTI_REGIONAL"
     storage_location = "US"
 
     # Monitoring settings - comprehensive monitoring
     monitoring_interval = "30s"
-    log_retention_days = 365  # 1 year for compliance
+    log_retention_days  = 365 # 1 year for compliance
 
     # Autoscaling settings - conservative scaling
-    min_replicas = 3  # Minimum 3 for high availability
-    max_replicas = 100
+    min_replicas           = 3 # Minimum 3 for high availability
+    max_replicas           = 100
     target_cpu_utilization = 0.6
   }
 
   # Multi-region configuration for production
   regions = {
-    primary   = "us-central1"
-    secondary = "us-east1"
-    tertiary  = "europe-west1"
+    primary    = "us-central1"
+    secondary  = "us-east1"
+    tertiary   = "europe-west1"
     quaternary = "asia-southeast1"
   }
 
   # Service accounts for production
   service_accounts = {
-    compute    = "compute-prod-sa"
-    storage    = "storage-prod-sa"
-    network    = "network-prod-sa"
-    monitoring = "monitoring-prod-sa"
-    security   = "security-prod-sa"
-    backup     = "backup-prod-sa"
+    compute           = "compute-prod-sa"
+    storage           = "storage-prod-sa"
+    network           = "network-prod-sa"
+    monitoring        = "monitoring-prod-sa"
+    security          = "security-prod-sa"
+    backup            = "backup-prod-sa"
     disaster_recovery = "dr-prod-sa"
-    audit      = "audit-prod-sa"
-    ci_cd      = "cicd-prod-sa"
+    audit             = "audit-prod-sa"
+    ci_cd             = "cicd-prod-sa"
   }
 
   # Compliance and security tags
   security_tags = {
-    pci_compliant = "true"
-    sox_compliant = "true"
-    gdpr_compliant = "true"
+    pci_compliant   = "true"
+    sox_compliant   = "true"
+    gdpr_compliant  = "true"
     hipaa_compliant = "false"
-    encryption = "aes-256"
-    audit_logging = "enabled"
+    encryption      = "aes-256"
+    audit_logging   = "enabled"
   }
 }
 
@@ -163,7 +163,7 @@ resource "google_compute_security_policy" "prod_comprehensive" {
   # Adaptive protection for DDoS with advanced configuration
   adaptive_protection_config {
     layer_7_ddos_defense_config {
-      enable = true
+      enable          = true
       rule_visibility = "PREMIUM"
     }
   }
@@ -183,11 +183,11 @@ resource "google_compute_security_policy" "prod_comprehensive" {
       exceed_action  = "deny(429)"
 
       rate_limit_threshold {
-        count        = 500  # Higher limit for production
+        count        = 500 # Higher limit for production
         interval_sec = 60
       }
 
-      ban_duration_sec = 1800  # 30 minutes ban
+      ban_duration_sec = 1800 # 30 minutes ban
 
       enforce_on_key = "IP"
     }
@@ -470,15 +470,15 @@ resource "google_kms_crypto_key" "prod_keys" {
   name     = "${local.environment}-${each.value}-key"
   key_ring = google_kms_key_ring.prod_multiregion.id
 
-  rotation_period = "2592000s"  # 30 days for production
+  rotation_period = "2592000s" # 30 days for production
 
   lifecycle {
-    prevent_destroy = true  # Prevent accidental deletion in production
+    prevent_destroy = true # Prevent accidental deletion in production
   }
 
   version_template {
     algorithm        = "GOOGLE_SYMMETRIC_ENCRYPTION"
-    protection_level = "HSM"  # Hardware security module for production
+    protection_level = "HSM" # Hardware security module for production
   }
 
   labels = merge(local.common_labels, {
@@ -489,7 +489,7 @@ resource "google_kms_crypto_key" "prod_keys" {
 # Artifact Registry for container images with vulnerability scanning
 resource "google_artifact_registry_repository" "prod_images" {
   project       = var.project_id
-  location      = "us"  # Multi-region
+  location      = "us" # Multi-region
   repository_id = "${local.environment}-images"
   format        = "DOCKER"
 
@@ -502,7 +502,7 @@ resource "google_artifact_registry_repository" "prod_images" {
     action = "KEEP"
 
     most_recent_versions {
-      keep_count = 50  # Keep more versions in production
+      keep_count = 50 # Keep more versions in production
     }
   }
 
@@ -511,8 +511,8 @@ resource "google_artifact_registry_repository" "prod_images" {
     action = "DELETE"
 
     condition {
-      tag_state = "UNTAGGED"
-      older_than = "604800s"  # 7 days
+      tag_state  = "UNTAGGED"
+      older_than = "604800s" # 7 days
     }
   }
 
@@ -543,10 +543,10 @@ resource "google_pubsub_topic" "prod_events" {
   project = var.project_id
   name    = "${local.environment}-${each.value}"
 
-  message_retention_duration = "604800s"  # 7 days for production
+  message_retention_duration = "604800s" # 7 days for production
 
   message_storage_policy {
-    allowed_persistence_regions = ["us-central1", "us-east1"]  # Multi-region
+    allowed_persistence_regions = ["us-central1", "us-east1"] # Multi-region
   }
 
   labels = local.common_labels
@@ -557,7 +557,7 @@ resource "google_pubsub_topic" "prod_dlq" {
   project = var.project_id
   name    = "${local.environment}-dead-letter-queue"
 
-  message_retention_duration = "2678400s"  # 31 days
+  message_retention_duration = "2678400s" # 31 days
 
   message_storage_policy {
     allowed_persistence_regions = ["us-central1", "us-east1"]
@@ -738,7 +738,7 @@ resource "google_monitoring_dashboard" "prod_executive" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType   = "LINE"
                   targetAxis = "Y1"
                 }
               ]
@@ -748,9 +748,9 @@ resource "google_monitoring_dashboard" "prod_executive" {
               }
               thresholds = [
                 {
-                  value = 10
+                  value     = 10
                   direction = "ABOVE"
-                  color = "RED"
+                  color     = "RED"
                 }
               ]
             }
@@ -775,7 +775,7 @@ resource "google_monitoring_dashboard" "prod_executive" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType       = "LINE"
                   legendTemplate = "P50"
                 },
                 {
@@ -789,7 +789,7 @@ resource "google_monitoring_dashboard" "prod_executive" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType       = "LINE"
                   legendTemplate = "P95"
                 },
                 {
@@ -803,7 +803,7 @@ resource "google_monitoring_dashboard" "prod_executive" {
                       }
                     }
                   }
-                  plotType = "LINE"
+                  plotType       = "LINE"
                   legendTemplate = "P99"
                 }
               ]
@@ -893,7 +893,7 @@ resource "google_billing_budget" "prod_budget" {
   amount {
     specified_amount {
       currency_code = "USD"
-      units        = tostring(var.prod_budget_amount)
+      units         = tostring(var.prod_budget_amount)
     }
   }
 
@@ -903,27 +903,27 @@ resource "google_billing_budget" "prod_budget" {
 
   threshold_rules {
     threshold_percent = 0.75
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 0.9
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 0.95
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 1.0
-    spend_basis      = "FORECASTED_SPEND"
+    spend_basis       = "FORECASTED_SPEND"
   }
 
   threshold_rules {
     threshold_percent = 1.1
-    spend_basis      = "CURRENT_SPEND"
+    spend_basis       = "CURRENT_SPEND"
   }
 
   all_updates_rule {
@@ -955,7 +955,7 @@ output "prod_kms_keys" {
 }
 
 output "prod_artifact_registry" {
-  value = google_artifact_registry_repository.prod_images.id
+  value       = google_artifact_registry_repository.prod_images.id
   description = "Artifact Registry repository ID for production"
 }
 
@@ -969,7 +969,7 @@ output "prod_global_ips" {
 }
 
 output "prod_security_policy" {
-  value = google_compute_security_policy.prod_comprehensive.id
+  value       = google_compute_security_policy.prod_comprehensive.id
   description = "Comprehensive security policy ID for production"
 }
 

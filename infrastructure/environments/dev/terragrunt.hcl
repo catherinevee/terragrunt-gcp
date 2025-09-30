@@ -19,13 +19,11 @@ generate "provider" {
   if_exists = "overwrite"
   contents = <<PROVIDER
 provider "google" {
-  project = local.project_id
-  region  = local.region
+  project = var.project_id
 }
 
 provider "google-beta" {
-  project = local.project_id
-  region  = local.region
+  project = var.project_id
 }
 PROVIDER
 }

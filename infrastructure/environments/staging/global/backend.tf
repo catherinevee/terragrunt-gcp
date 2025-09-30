@@ -49,7 +49,7 @@ resource "google_project_service" "required_apis" {
   project = var.project_id
   service = each.value
 
-  disable_on_destroy = false
+  disable_on_destroy         = false
   disable_dependent_services = false
 }
 
@@ -60,7 +60,7 @@ resource "google_storage_bucket" "terraform_state" {
   location = var.default_region
 
   uniform_bucket_level_access = true
-  public_access_prevention   = "enforced"
+  public_access_prevention    = "enforced"
 
   versioning {
     enabled = true
@@ -98,7 +98,7 @@ resource "google_storage_bucket" "state_logs" {
   location = var.default_region
 
   uniform_bucket_level_access = true
-  public_access_prevention   = "enforced"
+  public_access_prevention    = "enforced"
 
   lifecycle_rule {
     condition {
@@ -124,9 +124,9 @@ resource "google_storage_bucket_iam_member" "state_logs_writer" {
 
 # Configure logging for state bucket
 resource "google_logging_project_bucket_config" "state_bucket_logs" {
-  project  = var.project_id
+  project   = var.project_id
   bucket_id = "terraform-state-logs"
-  location = var.default_region
+  location  = var.default_region
 
   retention_days = 30
   description    = "Logs for Terraform state bucket access in staging"
