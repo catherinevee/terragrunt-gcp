@@ -40,18 +40,3 @@ resource "google_dns_record_set" "records" {
   rrdatas = [var.load_balancer_ip]
 }
 
-# Outputs
-output "zone_name" {
-  description = "Name of the DNS zone"
-  value       = google_dns_managed_zone.dns_zone.name
-}
-
-output "dns_name" {
-  description = "DNS name of the zone"
-  value       = google_dns_managed_zone.dns_zone.dns_name
-}
-
-output "name_servers" {
-  description = "Name servers of the DNS zone"
-  value       = google_dns_managed_zone.dns_zone.name_servers
-}

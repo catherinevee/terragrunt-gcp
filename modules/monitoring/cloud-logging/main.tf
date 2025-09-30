@@ -41,17 +41,3 @@ resource "google_project_service" "logging_api" {
   disable_on_destroy = false
 }
 
-# Outputs
-output "log_sink_names" {
-  description = "Names of log sinks"
-  value = {
-    for k, v in google_logging_project_sink.log_sinks : k => v.name
-  }
-}
-
-output "log_exclusion_names" {
-  description = "Names of log exclusions"
-  value = {
-    for k, v in google_logging_project_exclusion.log_exclusions : k => v.name
-  }
-}

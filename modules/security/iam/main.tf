@@ -88,27 +88,3 @@ resource "google_project_service" "iam_api" {
   disable_on_destroy = false
 }
 
-# Outputs
-output "service_account_emails" {
-  description = "Email addresses of the service accounts"
-  value = {
-    for k, v in google_service_account.service_accounts : k => v.email
-  }
-}
-
-output "service_account_names" {
-  description = "Names of the service accounts"
-  value = {
-    for k, v in google_service_account.service_accounts : k => v.name
-  }
-}
-
-output "workload_identity_pool_id" {
-  description = "ID of the workload identity pool"
-  value       = var.enable_workload_identity ? google_iam_workload_identity_pool.workload_identity_pool[0].workload_identity_pool_id : null
-}
-
-output "workload_identity_pool_provider_id" {
-  description = "ID of the workload identity pool provider"
-  value       = var.enable_workload_identity ? google_iam_workload_identity_pool_provider.workload_identity_pool_provider[0].workload_identity_pool_provider_id : null
-}

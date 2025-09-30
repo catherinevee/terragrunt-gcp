@@ -33,7 +33,7 @@ locals {
 
 # Global VPC Network (shared across regions)
 module "vpc" {
-  source = "../../../modules/networking/vpc"
+  source = "../../../../modules/networking/vpc"
 
   project_id   = local.project_id
   environment  = local.environment
@@ -54,7 +54,7 @@ module "vpc" {
 
 # Global Load Balancer
 module "load_balancer" {
-  source = "../../../modules/networking/load-balancer"
+  source = "../../../../modules/networking/load-balancer"
 
   project_id  = local.project_id
   environment = local.environment
@@ -82,7 +82,7 @@ module "load_balancer" {
 
 # Global DNS Configuration
 module "dns" {
-  source = "../../../modules/networking/dns"
+  source = "../../../../modules/networking/dns"
 
   project_id  = local.project_id
   environment = local.environment
@@ -111,7 +111,7 @@ module "dns" {
 
 # Global IAM Configuration
 module "iam" {
-  source = "../../../modules/security/iam"
+  source = "../../../../modules/security/iam"
 
   project_id          = local.project_id
   environment         = local.environment
@@ -205,7 +205,7 @@ module "iam" {
 
 # Global KMS Configuration
 module "kms" {
-  source = "../../../modules/security/kms"
+  source = "../../../../modules/security/kms"
 
   project_id          = local.project_id
   key_ring_name       = "${local.global_prefix}-keyring"
@@ -248,7 +248,7 @@ module "kms" {
 
 # Global Secret Manager Configuration
 module "secret_manager" {
-  source = "../../../modules/security/secret-manager"
+  source = "../../../../modules/security/secret-manager"
 
   project_id          = local.project_id
   environment         = local.environment
@@ -300,7 +300,7 @@ module "secret_manager" {
 
 # Global Container Registry
 module "container_registry" {
-  source = "../../../modules/storage/container-registry"
+  source = "../../../../modules/storage/container-registry"
 
   project_id          = local.project_id
   environment         = local.environment
@@ -343,7 +343,7 @@ module "container_registry" {
 
 # Global Monitoring Configuration
 module "monitoring" {
-  source = "../../../modules/monitoring/cloud-monitoring"
+  source = "../../../../modules/monitoring/cloud-monitoring"
 
   project_id  = local.project_id
   environment = local.environment
@@ -447,7 +447,7 @@ module "monitoring" {
 
 # Global Logging Configuration
 module "logging" {
-  source = "../../../modules/monitoring/cloud-logging"
+  source = "../../../../modules/monitoring/cloud-logging"
 
   project_id  = local.project_id
   environment = local.environment

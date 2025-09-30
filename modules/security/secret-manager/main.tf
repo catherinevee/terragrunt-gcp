@@ -59,17 +59,3 @@ resource "google_project_service" "secret_manager_api" {
   disable_on_destroy = false
 }
 
-# Outputs
-output "secret_names" {
-  description = "Names of the secrets"
-  value = {
-    for k, v in google_secret_manager_secret.secrets : k => v.name
-  }
-}
-
-output "secret_ids" {
-  description = "IDs of the secrets"
-  value = {
-    for k, v in google_secret_manager_secret.secrets : k => v.id
-  }
-}

@@ -86,17 +86,3 @@ resource "google_project_service" "monitoring_api" {
   disable_on_destroy = false
 }
 
-# Outputs
-output "alert_policy_names" {
-  description = "Names of alert policies"
-  value = {
-    for k, v in google_monitoring_alert_policy.alert_policies : k => v.display_name
-  }
-}
-
-output "monitoring_service_names" {
-  description = "Names of monitoring services"
-  value = {
-    for k, v in google_monitoring_service.monitoring_services : k => v.display_name
-  }
-}
