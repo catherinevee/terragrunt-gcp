@@ -102,3 +102,5 @@ grafana-storage/
 prometheus-data/
 # Backups
 .backup-*
+terragrunt.exe
+terraform.exe
