@@ -36,20 +36,12 @@ module "vpc" {
   source = "../../../../modules/networking/vpc"
 
   project_id   = local.project_id
-  environment  = local.environment
   network_name = "${local.global_prefix}-vpc"
   description  = "Global VPC network for ${local.environment} environment"
 
   # Global VPC settings
-  auto_create_subnetworks   = false
-  routing_mode              = "GLOBAL"
-  enable_service_networking = false # Disable service networking to handle permission issues
-
-  tags = {
-    environment = local.environment
-    purpose     = "global-networking"
-    managed_by  = "terraform"
-  }
+  auto_create_subnetworks = false
+  routing_mode            = "GLOBAL"
 }
 
 # Global Load Balancer
@@ -208,8 +200,9 @@ module "kms" {
   source = "../../../../modules/security/kms"
 
   project_id          = local.project_id
+  environment         = local.environment
+  region              = local.primary_region
   key_ring_name       = "${local.global_prefix}-keyring"
-  location            = local.primary_region
   enable_iam_bindings = local.enable_iam_bindings
 
   crypto_keys = {
@@ -220,9 +213,10 @@ module "kms" {
       rotation_period = "7776000s" # 90 days
     }
     "acme-ecommerce-signing-key" = {
-      name      = "acme-ecommerce-signing-key"
-      purpose   = "ASYMMETRIC_SIGN"
-      algorithm = "EC_SIGN_P256_SHA256"
+      name            = "acme-ecommerce-signing-key"
+      purpose         = "ASYMMETRIC_SIGN"
+      algorithm       = "EC_SIGN_P256_SHA256"
+      rotation_period = "0s" # Asymmetric keys don't support automatic rotation
     }
   }
 
