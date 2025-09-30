@@ -128,34 +128,8 @@ module "iam" {
     }
   }
 
-  # Custom roles
-  custom_roles = {
-    "terraform-custom-role" = {
-      role_id     = "terraform_custom_role_v2"
-      title       = "Terraform Custom Role"
-      description = "Custom role for Terraform operations"
-      permissions = [
-        "compute.instances.create",
-        "compute.instances.delete",
-        "compute.instances.get",
-        "compute.instances.list",
-        "compute.instances.setMetadata",
-        "compute.instances.setTags",
-        "compute.instances.start",
-        "compute.instances.stop",
-        "compute.instances.update",
-        "compute.instances.use",
-        "compute.instances.attachDisk",
-        "compute.instances.detachDisk",
-        "compute.instances.reset",
-        "compute.instances.setServiceAccount",
-        "compute.instances.setShieldedInstanceIntegrityPolicy",
-        "compute.instances.setShieldedVmIntegrityPolicy",
-        "compute.instances.setShieldedInstanceIntegrityPolicy",
-        "compute.instances.setShieldedVmIntegrityPolicy"
-      ]
-    }
-  }
+  # Custom roles - Disabled to avoid soft-delete conflicts
+  custom_roles = {}
 
   # Service account roles - Only pass when IAM bindings are enabled
   service_account_roles = local.enable_iam_bindings ? {
