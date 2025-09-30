@@ -131,7 +131,7 @@ module "iam" {
   # Custom roles
   custom_roles = {
     "terraform-custom-role" = {
-      role_id     = "terraform_custom_role"
+      role_id     = "terraform_custom_role_v2"
       title       = "Terraform Custom Role"
       description = "Custom role for Terraform operations"
       permissions = [
@@ -182,7 +182,7 @@ module "iam" {
   } : {}
 
   # Workload Identity Pool for GitHub Actions
-  enable_workload_identity       = true
+  enable_workload_identity       = false
   workload_identity_pool_id      = "github-actions"
   workload_identity_display_name = "GitHub Actions Workload Identity Pool"
   workload_identity_description  = "Workload Identity Pool for GitHub Actions CI/CD"
