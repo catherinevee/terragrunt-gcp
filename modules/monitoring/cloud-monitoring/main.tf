@@ -15,6 +15,7 @@ resource "google_monitoring_alert_policy" "alert_policies" {
 
   display_name = each.value.display_name
   project      = var.project_id
+  combiner     = try(each.value.combiner, "OR") # Default to OR if not specified
 
   documentation {
     content   = each.value.documentation.content

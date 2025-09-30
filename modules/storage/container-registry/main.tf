@@ -40,18 +40,3 @@ resource "google_project_service" "artifact_registry_api" {
 
   disable_on_destroy = false
 }
-
-# Outputs
-output "repository_names" {
-  description = "Names of the repositories"
-  value = {
-    for k, v in google_artifact_registry_repository.repositories : k => v.name
-  }
-}
-
-output "repository_ids" {
-  description = "IDs of the repositories"
-  value = {
-    for k, v in google_artifact_registry_repository.repositories : k => v.id
-  }
-}
