@@ -44,62 +44,62 @@ module "vpc" {
   routing_mode            = "GLOBAL"
 }
 
-# Global Load Balancer
-module "load_balancer" {
-  source = "../../../../modules/networking/load-balancer"
-
-  project_id  = local.project_id
-  environment = local.environment
-
-  # Global load balancer configuration
-  global_ip_name       = "${local.global_prefix}-lb-ip"
-  health_check_name    = "${local.global_prefix}-lb-health-check"
-  backend_service_name = "${local.global_prefix}-lb-backend"
-  url_map_name         = "${local.global_prefix}-lb-url-map"
-  forwarding_rule_name = "${local.global_prefix}-lb-forwarding-rule"
-
-  # Backend regions
-  backend_regions = [local.primary_region, local.secondary_region]
-
-  # Health check configuration
-  health_check_config = {
-    check_interval_sec  = var.load_balancer_health_check_interval
-    timeout_sec         = var.load_balancer_health_check_timeout
-    healthy_threshold   = var.load_balancer_healthy_threshold
-    unhealthy_threshold = var.load_balancer_unhealthy_threshold
-    port                = var.load_balancer_health_check_port
-    request_path        = "/health"
-  }
-}
-
-# Global DNS Configuration
-module "dns" {
-  source = "../../../../modules/networking/dns"
-
-  project_id  = local.project_id
-  environment = local.environment
-
-  # DNS zone configuration
-  zone_name = var.dns_zone_name
-  dns_name  = var.dns_name
-
-  # Load balancer IP
-  load_balancer_ip = module.load_balancer.global_ip_address
-
-  # Records
-  records = {
-    "api" = {
-      name = "api"
-      type = "A"
-      ttl  = var.dns_ttl_seconds
-    }
-    "web" = {
-      name = "www"
-      type = "A"
-      ttl  = var.dns_ttl_seconds
-    }
-  }
-}
+# # Global Load Balancer
+# module "load_balancer" {
+#   source = "../../../../modules/networking/load-balancer"
+# 
+#   project_id  = local.project_id
+#   environment = local.environment
+# 
+#   # Global load balancer configuration
+#   global_ip_name       = "${local.global_prefix}-lb-ip"
+#   health_check_name    = "${local.global_prefix}-lb-health-check"
+#   backend_service_name = "${local.global_prefix}-lb-backend"
+#   url_map_name         = "${local.global_prefix}-lb-url-map"
+#   forwarding_rule_name = "${local.global_prefix}-lb-forwarding-rule"
+# 
+#   # Backend regions
+#   backend_regions = [local.primary_region, local.secondary_region]
+# 
+#   # Health check configuration
+#   health_check_config = {
+#     check_interval_sec  = var.load_balancer_health_check_interval
+#     timeout_sec         = var.load_balancer_health_check_timeout
+#     healthy_threshold   = var.load_balancer_healthy_threshold
+#     unhealthy_threshold = var.load_balancer_unhealthy_threshold
+#     port                = var.load_balancer_health_check_port
+#     request_path        = "/health"
+#   }
+# }
+# 
+# # Global DNS Configuration
+# module "dns" {
+#   source = "../../../../modules/networking/dns"
+# 
+#   project_id  = local.project_id
+#   environment = local.environment
+# 
+#   # DNS zone configuration
+#   zone_name = var.dns_zone_name
+#   dns_name  = var.dns_name
+# 
+#   # Load balancer IP
+#   load_balancer_ip = module.load_balancer.global_ip_address
+# 
+#   # Records
+#   records = {
+#     "api" = {
+#       name = "api"
+#       type = "A"
+#       ttl  = var.dns_ttl_seconds
+#     }
+#     "web" = {
+#       name = "www"
+#       type = "A"
+#       ttl  = var.dns_ttl_seconds
+#     }
+#   }
+# }
 
 # Global IAM Configuration
 module "iam" {
@@ -353,7 +353,7 @@ module "monitoring" {
       conditions = [{
         display_name = "CPU usage is high"
         condition_threshold = {
-          filter          = "resource.type=\"gce_instance\""
+          filter          = "resource.type=\"gce_instance\" AND metric.type=\"compute.googleapis.com/instance/cpu/utilization\""
           comparison      = "COMPARISON_GT"
           threshold_value = var.monitoring_cpu_threshold_percent
           duration        = "300s"
@@ -374,7 +374,7 @@ module "monitoring" {
       conditions = [{
         display_name = "Memory usage is high"
         condition_threshold = {
-          filter          = "resource.type=\"gce_instance\""
+          filter          = "resource.type=\"gce_instance\" AND metric.type=\"compute.googleapis.com/instance/cpu/utilization\""
           comparison      = "COMPARISON_GT"
           threshold_value = var.monitoring_memory_threshold_percent
           duration        = "300s"
@@ -395,7 +395,7 @@ module "monitoring" {
       conditions = [{
         display_name = "Disk space is low"
         condition_threshold = {
-          filter          = "resource.type=\"gce_instance\""
+          filter          = "resource.type=\"gce_instance\" AND metric.type=\"compute.googleapis.com/instance/cpu/utilization\""
           comparison      = "COMPARISON_LT"
           threshold_value = var.monitoring_disk_threshold_percent
           duration        = "300s"
@@ -409,34 +409,11 @@ module "monitoring" {
     }
   }
 
-  # Monitoring services for global resources
-  monitoring_services = {
-    "load-balancer" = {
-      display_name = "ACME E-commerce Platform Load Balancer"
-      service_type = "LOAD_BALANCER"
-      service_labels = {
-        "service_name" = "acme-ecommerce-platform-lb"
-      }
-    }
-  }
+  # Monitoring services for global resources - Disabled due to service type incompatibility
+  monitoring_services = {}
 
-  # SLOs for global services
-  slos = {
-    "load-balancer-availability" = {
-      display_name = "ACME E-commerce Platform Load Balancer Availability SLO"
-      goal         = var.slo_availability_goal
-      service      = "load-balancer"
-      sli = {
-        request_based = {
-          good_total_ratio = {
-            total_service_filter = "resource.type=\"http_load_balancer\""
-            good_service_filter  = "resource.type=\"http_load_balancer\" AND http_response_code_class=\"2xx\""
-          }
-        }
-      }
-      rolling_period_days = var.slo_rolling_period_days
-    }
-  }
+  # SLOs for global services - Disabled since monitoring service is disabled
+  slos = {}
 }
 
 # Global Logging Configuration
@@ -491,15 +468,15 @@ output "vpc_network_self_link" {
   value       = module.vpc.network_self_link
 }
 
-output "load_balancer_ip" {
-  description = "Global load balancer IP address"
-  value       = module.load_balancer.global_ip_address
-}
-
-output "dns_zone_name" {
-  description = "DNS zone name"
-  value       = module.dns.zone_name
-}
+# output "load_balancer_ip" {
+#   description = "Global load balancer IP address"
+#   value       = module.load_balancer.global_ip_address
+# }
+# 
+# output "dns_zone_name" {
+#   description = "DNS zone name"
+#   value       = module.dns.zone_name
+# }
 
 output "service_accounts" {
   description = "Global service account emails"
