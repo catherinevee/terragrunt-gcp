@@ -25,7 +25,7 @@ resource "google_secret_manager_secret" "secrets" {
         }
       }
     }
-    dynamic "automatic" {
+    dynamic "auto" {
       for_each = each.value.replication.automatic ? [1] : []
       content {}
     }
@@ -58,4 +58,3 @@ resource "google_project_service" "secret_manager_api" {
 
   disable_on_destroy = false
 }
-

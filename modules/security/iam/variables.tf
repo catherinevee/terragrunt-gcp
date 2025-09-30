@@ -107,3 +107,15 @@ variable "oidc_allowed_audiences" {
   type        = list(string)
   default     = []
 }
+
+variable "folder_id" {
+  description = "The folder ID where IAM policies are applied (optional)"
+  type        = string
+  default     = ""
+}
+
+variable "organization_id" {
+  description = "The organization ID where IAM policies are applied (optional)"
+  type        = string
+  default     = ""
+}
