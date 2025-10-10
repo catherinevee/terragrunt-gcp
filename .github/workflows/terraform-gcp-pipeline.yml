@@ -254,11 +254,60 @@ jobs:
   #         tests/coverage.out
   #       retention-days: 30
 
+
+  # Stage 2: Bootstrap Infrastructure
+  bootstrap:
+    name: Bootstrap Infrastructure
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'push'
+    environment: development
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_CREDENTIALS_DEV }}
+
+    - name: Setup Google Cloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Run Bootstrap Script
+      run: |
+        chmod +x scripts/bootstrap-infrastructure.sh
+        ./scripts/bootstrap-infrastructure.sh
+      env:
+        PROJECT_ID: ${{ env.PROJECT_ID }}
+        REGION: us-central1
+        CI: true
+
+    - name: Verify Bootstrap
+      run: |
+        # Verify state bucket exists
+        gsutil ls -b gs://${{ env.PROJECT_ID }}-terraform-state || {
+          echo "State bucket not found"
+          exit 1
+        }
+
+        # Verify BigQuery datasets
+        bq ls --project_id=${{ env.PROJECT_ID }} | grep -q application_logs || {
+          echo "BigQuery datasets not found"
+          exit 1
+        }
+
+        echo "Bootstrap verification successful"
+
+
   # Stage 3: Global Resources Deployment
   deploy-global:
     name: Deploy Global Resources
     runs-on: ubuntu-latest
-    needs: validate
+    needs: [validate, bootstrap]
     if: github.event.inputs.region == 'all' || github.event.inputs.region == 'global' || github.event_name != 'workflow_dispatch'
     environment: development
 
